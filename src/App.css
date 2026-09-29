@@ -1,53 +1,20 @@
-﻿﻿:root {
-  --bg-dark: #0b0b0d;
-  --text-main: #ffffff;
-  --text-muted: #9ca3af;
-  --text-subtle: #4b5563;
-  --primary-purple: #9333ea;
-  --primary-purple-hover: #a855f7;
-  --purple-accent: #c084fc;
-  --purple-light: #d8b4fe;
-  --input-bg: rgba(255, 255, 255, 0.04);
-  --input-border: rgba(255, 255, 255, 0.1);
-  --error-bg: rgba(239, 68, 68, 0.1);
-  --error-border: rgba(239, 68, 68, 0.2);
-  --error-text: #fca5a5;
-  --success-bg: rgba(34, 197, 94, 0.1);
-  --success-border: rgba(34, 197, 94, 0.2);
-  --success-text: #86efac;
-}
-
-/* Reset & Base Layout */
-body {
-  margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-  background-color: var(--bg-dark);
-  color: var(--text-main);
-}
-
+﻿/* Container Layout */
 .app-container {
   min-height: 100vh;
-  background-color: var(--bg-dark);
-  color: var(--text-main);
-  display: flex;
-  flex-direction: column;
+  background-color: #0b0b0d;
+  color: #ffffff;
+  display: block;
 }
 
 @media (min-width: 1024px) {
   .app-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Left Hero / Visual Section */
-.hero-section {
+/* Left Visual Section */
+.visual-section {
   position: relative;
   display: none;
   min-height: 100vh;
@@ -55,23 +22,29 @@ body {
 }
 
 @media (min-width: 1024px) {
-  .hero-section {
+  .visual-section {
     display: block;
   }
 }
 
-.hero-bg-image {
+.bg-image {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   height: 100%;
+  width: 100%;
   object-fit: cover;
   opacity: 0.6;
 }
 
-.hero-overlay {
+.bg-overlay {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   background: linear-gradient(
     to top,
     #000000 0%,
@@ -80,80 +53,72 @@ body {
   );
 }
 
-.hero-content {
+.visual-content {
   position: relative;
   display: flex;
+  height: 100%;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
   padding: 3rem;
-  box-sizing: border-box;
 }
 
 @media (min-width: 1280px) {
-  .hero-content {
+  .visual-content {
     padding: 4rem;
   }
 }
 
-/* Brand Logo Component */
-.brand {
+/* Brand Header */
+.brand-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.brand-icon {
+.brand-logo-badge {
   display: flex;
   height: 2.75rem;
   width: 2.75rem;
   align-items: center;
   justify-content: center;
   border-radius: 0.75rem;
-  background-color: var(--primary-purple);
+  background-color: #9333ea;
   font-size: 1.25rem;
   font-weight: 700;
 }
 
-.brand-icon.small {
-  height: 2.5rem;
-  width: 2.5rem;
-  font-size: 1.125rem;
-}
-
-.brand-text {
+.brand-title {
   font-size: 1.25rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.025em;
 }
 
 .brand-accent {
-  color: var(--purple-accent);
+  color: #c084fc;
 }
 
-/* Hero Typography */
+/* Hero Section Body */
 .hero-body {
   max-width: 32rem;
 }
 
-.hero-tagline {
+.hero-subtitle {
   margin-bottom: 1rem;
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3em;
-  color: var(--purple-light);
+  color: #d8b4fe;
 }
 
-.hero-heading {
+.hero-title {
   font-size: 3rem;
   font-weight: 700;
-  line-height: 1.15;
-  margin: 0;
+  line-height: 1.25;
 }
 
 @media (min-width: 1280px) {
-  .hero-heading {
+  .hero-title {
     font-size: 3.75rem;
   }
 }
@@ -166,35 +131,33 @@ body {
   color: #d1d5db;
 }
 
-.hero-footer-tag {
+.hero-tag-container {
   margin-top: 2.5rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.divider-line {
+.hero-tag-line {
   height: 0.25rem;
   width: 3rem;
   border-radius: 9999px;
-  background-color: var(--primary-purple-hover);
+  background-color: #a855f7;
 }
 
-.tag-text,
-.copyright-text {
+.hero-tag-text,
+.hero-footer {
   font-size: 0.875rem;
-  color: var(--text-muted);
-  margin: 0;
+  color: #9ca3af;
 }
 
-/* Right Auth Section */
+/* Right Authentication Section */
 .auth-section {
   display: flex;
   min-height: 100vh;
   align-items: center;
   justify-content: center;
   padding: 3rem 1.25rem;
-  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
@@ -209,19 +172,34 @@ body {
   max-width: 28rem;
 }
 
-.mobile-brand {
+/* Mobile Brand Header */
+.mobile-brand-header {
   margin-bottom: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.75rem;
 }
 
 @media (min-width: 1024px) {
-  .mobile-brand {
+  .mobile-brand-header {
     display: none;
   }
 }
 
+.mobile-brand-icon {
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background-color: #9333ea;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+/* Auth Section Header */
 .auth-header {
   margin-bottom: 2rem;
 }
@@ -232,14 +210,13 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--purple-accent);
+  color: #c084fc;
 }
 
 .auth-title {
   font-size: 1.875rem;
   font-weight: 700;
   letter-spacing: -0.025em;
-  margin: 0;
 }
 
 @media (min-width: 640px) {
@@ -250,10 +227,10 @@ body {
 
 .auth-description {
   margin-top: 0.75rem;
-  color: var(--text-muted);
+  color: #9ca3af;
 }
 
-/* Form Styles */
+/* Form Styling */
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -276,66 +253,60 @@ body {
 .form-input {
   width: 100%;
   border-radius: 0.75rem;
-  border: 1px solid var(--input-border);
-  background-color: var(--input-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.04);
   padding: 0.875rem 1rem;
-  color: var(--text-main);
-  font-size: 1rem;
+  color: #ffffff;
   outline: none;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: all 0.2s ease-in-out;
   box-sizing: border-box;
 }
 
 .form-input::placeholder {
-  color: var(--text-subtle);
+  color: #4b5563;
 }
 
 .form-input:focus {
-  border-color: var(--primary-purple-hover);
+  border-color: #a855f7;
   box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
 }
 
-/* Status Alert Box */
-.message-box {
+/* Alert Messages */
+.alert-message {
   border-radius: 0.75rem;
-  border: 1px solid transparent;
+  border: 1px solid;
   padding: 1rem;
   font-size: 0.875rem;
 }
 
-.message-box.success {
-  border-color: var(--success-border);
-  background-color: var(--success-bg);
-  color: var(--success-text);
+.alert-success {
+  border-color: rgba(34, 197, 94, 0.2);
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #86efac;
 }
 
-.message-box.error {
-  border-color: var(--error-border);
-  background-color: var(--error-bg);
-  color: var(--error-text);
+.alert-error {
+  border-color: rgba(239, 68, 68, 0.2);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
 }
 
-/* Buttons and Links */
+/* Buttons */
 .submit-btn {
   width: 100%;
   border: none;
   border-radius: 0.75rem;
-  background-color: var(--primary-purple);
+  background-color: #9333ea;
   padding: 0.875rem 1rem;
-  font-size: 1rem;
   font-weight: 600;
-  color: var(--text-main);
-  cursor: pointer;
+  color: #ffffff;
   box-shadow: 0 10px 15px -3px rgba(88, 28, 135, 0.2);
-  transition:
-    background-color 0.2s ease,
-    opacity 0.2s ease;
+  transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
 }
 
-.submit-btn:hover:not(:disabled) {
-  background-color: var(--primary-purple-hover);
+.submit-btn:hover {
+  background-color: #a855f7;
 }
 
 .submit-btn:disabled {
@@ -343,33 +314,32 @@ body {
   opacity: 0.5;
 }
 
-.switch-form {
+/* Form Toggle / Switch */
+.auth-switch {
   margin-top: 2rem;
   text-align: center;
   font-size: 0.875rem;
-  color: var(--text-muted);
+  color: #9ca3af;
 }
 
-.toggle-btn {
-  margin-left: 0.5rem;
-  background: none;
+.switch-btn {
+  background: transparent;
   border: none;
-  padding: 0;
-  font-size: 0.875rem;
+  margin-left: 0.5rem;
   font-weight: 600;
-  color: var(--purple-accent);
+  color: #c084fc;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease-in-out;
 }
 
-.toggle-btn:hover {
-  color: var(--purple-light);
+.switch-btn:hover {
+  color: #d8b4fe;
 }
 
-.terms-text {
+.auth-legal {
   margin-top: 2.5rem;
   text-align: center;
   font-size: 0.75rem;
   line-height: 1.625;
-  color: var(--text-subtle);
+  color: #4b5563;
 }

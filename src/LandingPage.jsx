@@ -1,34 +1,65 @@
-
+import { useState } from 'react'
 import './LandingPage.css'
 
 function LandingPage({ onGetStarted, onLogin }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const toggleMenu = () => setMenuOpen(!menuOpen)
+  const closeMenu = () => setMenuOpen(false)
+
   return (
     <div className="landing-page">
 
       {/* Navigation Bar */}
       <nav className="landing-nav">
-        <a href="#home" className="landing-logo">
+        <a href="#home" className="landing-logo" onClick={closeMenu}>
           <span className="logo-icon">T</span>
           <span>
             TATTOO<span className="purple-text">SHOP</span>
           </span>
         </a>
 
-        <div className="nav-links">
-          <a href="#home">Home</a>
-          <a href="#gallery">Gallery</a>
-          <a href="#services">Services</a>
-          <a href="#about">About</a>
-          <a href="#contact">Contact</a>
-        </div>
+        {/* Hamburger Toggle Button (Mobile) */}
+        <button
+          className={`hamburger-btn ${menuOpen ? 'open' : ''}`}
+          onClick={toggleMenu}
+          aria-label="Toggle navigation menu"
+        >
+          <span className="hamburger-bar"></span>
+          <span className="hamburger-bar"></span>
+          <span className="hamburger-bar"></span>
+        </button>
 
-        <div className="nav-buttons">
-          <button className="nav-login" onClick={onLogin}>
-            Login
-          </button>
-          <button className="nav-start" onClick={onGetStarted}>
-            Get Started
-          </button>
+        {/* Combined Links & Buttons Container */}
+        <div className={`nav-menu ${menuOpen ? 'active' : ''}`}>
+          <div className="nav-links">
+            <a href="#home" onClick={closeMenu}>Home</a>
+            <a href="#gallery" onClick={closeMenu}>Gallery</a>
+            <a href="#services" onClick={closeMenu}>Services</a>
+            <a href="#about" onClick={closeMenu}>About</a>
+            <a href="#contact" onClick={closeMenu}>Contact</a>
+          </div>
+
+          <div className="nav-buttons">
+            <button
+              className="nav-login"
+              onClick={() => {
+                closeMenu()
+                onLogin()
+              }}
+            >
+              Login
+            </button>
+            <button
+              className="nav-start"
+              onClick={() => {
+                closeMenu()
+                onGetStarted()
+              }}
+            >
+              Get Started
+            </button>
+          </div>
         </div>
       </nav>
 
