@@ -1,0 +1,161 @@
+@reference "tailwindcss";
+
+/* fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto */
+.booking-modal__d30ad84c {
+  @apply fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto;
+}
+/* bg-[#121216] border border-white/10 rounded-3xl w-full max-w-lg p-6 sm:p-8 relative shadow-2xl my-8 */
+.booking-modal__9c099de2 {
+  @apply bg-[#121216] border border-white/10 rounded-3xl w-full max-w-lg p-6 relative shadow-2xl my-8;
+}
+@media (width >= 40rem) {
+  .booking-modal__9c099de2 {
+    @apply p-8;
+  }
+}
+/* absolute top-6 right-6 text-gray-400 hover:text-white p-1 */
+.booking-modal__404bb319 {
+  @apply absolute top-6 right-6 text-gray-400 p-1;
+}
+.booking-modal__404bb319:hover {
+  @apply text-white;
+}
+/* w-5 h-5 */
+.booking-modal__a8600f1b {
+  @apply w-5 h-5;
+}
+/* text-center py-12 space-y-4 */
+.booking-modal__e74d0162 {
+  @apply text-center py-12 space-y-4;
+}
+/* w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center mx-auto */
+.booking-modal__9c124d16 {
+  @apply w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center mx-auto;
+}
+/* w-8 h-8 */
+.booking-modal__b034b4d3 {
+  @apply w-8 h-8;
+}
+/* text-2xl font-bold text-white */
+.booking-modal__dcf2c1b7 {
+  @apply text-2xl font-bold text-white;
+}
+/* text-sm text-gray-400 */
+.booking-modal__da468e8c {
+  @apply text-sm text-gray-400;
+}
+/* mb-6 */
+.booking-modal__b6777c6d {
+  @apply mb-6;
+}
+/* text-amber-400 text-xs font-bold uppercase tracking-widest */
+.booking-modal__90cbbb9d {
+  @apply text-amber-400 text-xs font-bold uppercase tracking-widest;
+}
+/* text-2xl font-black uppercase tracking-tight text-white mt-1 */
+.booking-modal__a8f3173f {
+  @apply text-2xl font-black uppercase tracking-tight text-white mt-1;
+}
+/* space-y-4 */
+.booking-modal__3e7ce58d {
+  @apply space-y-4;
+}
+/* grid grid-cols-1 sm:grid-cols-2 gap-4 */
+.booking-modal__4c017de7 {
+  @apply grid grid-cols-1 gap-4;
+}
+@media (width >= 40rem) {
+  .booking-modal__4c017de7 {
+    @apply grid-cols-2;
+  }
+}
+/* block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5 */
+.booking-modal__9943293d {
+  @apply block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1.5;
+}
+/* w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 */
+.booking-modal__d0ef7e06 {
+  @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white;
+}
+.booking-modal__d0ef7e06:focus {
+  @apply outline-none;
+}
+.booking-modal__d0ef7e06:focus {
+  @apply border-amber-400;
+}
+/* w-full bg-[#1c1c24] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 */
+.booking-modal__3353e4a1 {
+  @apply w-full bg-[#1c1c24] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white;
+}
+.booking-modal__3353e4a1:focus {
+  @apply outline-none;
+}
+.booking-modal__3353e4a1:focus {
+  @apply border-amber-400;
+}
+/* flex items-center space-x-3 bg-white/5 border border-white/10 rounded-xl p-3 */
+.booking-modal__0f242944 {
+  @apply flex items-center space-x-3 bg-white/5 border border-white/10 rounded-xl p-3;
+}
+/* w-5 h-5 text-amber-400 flex-shrink-0 */
+.booking-modal__6e05cba6 {
+  @apply w-5 h-5 text-amber-400 flex-shrink-0;
+}
+/* text-xs text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-black hover:file:bg-amber-400 cursor-pointer */
+.booking-modal__69d8cc99 {
+  @apply text-xs text-gray-400 cursor-pointer;
+}
+.booking-modal__69d8cc99::file-selector-button {
+  @apply mr-4;
+}
+.booking-modal__69d8cc99::file-selector-button {
+  @apply py-1;
+}
+.booking-modal__69d8cc99::file-selector-button {
+  @apply px-3;
+}
+.booking-modal__69d8cc99::file-selector-button {
+  @apply rounded-lg;
+}
+.booking-modal__69d8cc99::file-selector-button {
+  @apply border-0;
+}
+.booking-modal__69d8cc99::file-selector-button {
+  @apply text-xs;
+}
+.booking-modal__69d8cc99::file-selector-button {
+  @apply font-bold;
+}
+.booking-modal__69d8cc99::file-selector-button {
+  @apply bg-amber-500;
+}
+.booking-modal__69d8cc99::file-selector-button {
+  @apply text-black;
+}
+.booking-modal__69d8cc99:hover {
+  @apply file:bg-amber-400;
+}
+/* w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-400 resize-none */
+.booking-modal__10aed389 {
+  @apply w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white resize-none;
+}
+.booking-modal__10aed389:focus {
+  @apply outline-none;
+}
+.booking-modal__10aed389:focus {
+  @apply border-amber-400;
+}
+/* text-sm text-rose-400 */
+.booking-modal__cac5c5bc {
+  @apply text-sm text-rose-400;
+}
+/* w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 mt-2 */
+.booking-modal__41a81366 {
+  @apply w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-400 text-black font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 mt-2;
+}
+.booking-modal__41a81366:hover {
+  @apply from-amber-400;
+}
+.booking-modal__41a81366:hover {
+  @apply to-amber-300;
+}

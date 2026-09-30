@@ -1,233 +1,325 @@
-﻿import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
-import backgroundImage from './assets/artist.jpg'
-import LandingPage from './LandingPage'
-import './App.css'
+import { APPOINTMENT_SELECT } from './lib/appointmentFields'
+import HomePage from './pages/public/HomePage'
+import AppModals from './components/forms/AppModals'
+import { toAppointment, toCurrentUser } from './utils/appointmentMappers'
 
-function App() {
-  const [isSignUp, setIsSignUp] = useState(false)
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [message, setMessage] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [currentPage, setCurrentPage] = useState('landing')
 
-  const openSignUp = () => {
-    setIsSignUp(true)
-    setMessage('')
-    setCurrentPage('auth')
+
+
+export default function App() {
+  const [authUser, setAuthUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState(null)
+  const [appointments, setAppointments] = useState([])
+  const [appointmentError, setAppointmentError] = useState('')
+  const [bookingError, setBookingError] = useState('')
+  const [bookingSubmitting, setBookingSubmitting] = useState(false)
+
+  // Modals
+  const [authModal, setAuthModal] = useState(null); // 'login' | 'register' | null
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  // Auth Forms state
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authMessage, setAuthMessage] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // Booking Form state
+  const [bookName, setBookName] = useState('');
+  const [bookPhone, setBookPhone] = useState('');
+  const [bookStyle, setBookStyle] = useState('Fine Line');
+  const [bookSize, setBookSize] = useState('Small (5-10cm)');
+  const [bookPlacement, setBookPlacement] = useState('');
+  const [bookDate, setBookDate] = useState('');
+  const [bookTime, setBookTime] = useState('');
+  const [bookNotes, setBookNotes] = useState('');
+  const [bookImageFile, setBookImageFile] = useState(null);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+
+  // Price Estimator state
+  const [estStyle, setEstStyle] = useState(3000);
+  const [estSize, setEstSize] = useState(2000);
+  const [estPlacement, setEstPlacement] = useState(500);
+
+  // Admin filter state
+  const [adminSearch, setAdminSearch] = useState('');
+  const [adminStatusFilter, setAdminStatusFilter] = useState('All');
+
+  // Restore Supabase auth state, then load the user's database profile.
+  useEffect(() => {
+    let isMounted = true
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!isMounted) return
+      if (error) setAuthError(error.message)
+      setAuthUser(data.session?.user || null)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setAuthUser(session?.user || null)
+      if (event === 'PASSWORD_RECOVERY') setAuthModal('reset-password')
+    })
+
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!authUser) return
+
+    let isActive = true
+    const loadProfile = async () => {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('full_name, phone, role')
+        .eq('id', authUser.id)
+        .maybeSingle()
+
+      if (!isActive) return
+      if (error) {
+        setAuthError(`Could not load your profile: ${error.message}`)
+        return
+      }
+      if (!profile) {
+        setAuthError('Your profile is missing. Run the Supabase schema setup, then register again.')
+        return
+      }
+
+      const user = toCurrentUser(authUser, profile)
+      setCurrentUser(user)
+      if (user.role === 'customer') {
+        setBookName(user.name)
+        setBookPhone(user.phone)
+      }
+    }
+
+    loadProfile()
+    return () => { isActive = false }
+  }, [authUser])
+
+  useEffect(() => {
+    if (!currentUser?.id) return
+
+    let isActive = true
+    const loadAppointments = async () => {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(APPOINTMENT_SELECT)
+        .order('appointment_date', { ascending: true })
+        .order('appointment_time', { ascending: true })
+
+      if (!isActive) return
+      if (error) {
+        setAppointmentError(`Could not load bookings: ${error.message}`)
+        return
+      }
+
+      setAppointmentError('')
+      setAppointments((data || []).map(toAppointment))
+    }
+
+    loadAppointments()
+    return () => { isActive = false }
+  }, [currentUser?.id])
+
+  const openBooking = () => {
+    if (currentUser?.role !== 'customer') {
+      setAuthError('Sign in with a customer account to request an appointment.')
+      setAuthModal('login')
+      return
+    }
+    setBookingError('')
+    setIsBookingOpen(true)
   }
-
-  const openLogin = () => {
-    setIsSignUp(false)
-    setMessage('')
-    setCurrentPage('auth')
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setMessage('')
-    setLoading(true)
+  const handleAuthSubmit = async (event) => {
+    event.preventDefault()
+    setAuthError('')
+    setAuthMessage('')
+    setAuthLoading(true)
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: fullName,
-            },
-          },
-        })
+      const email = authEmail.trim().toLowerCase()
+      const result = authModal === 'register'
+        ? await supabase.auth.signUp({
+            email,
+            password: authPassword,
+            options: { data: { full_name: authName.trim() } },
+          })
+        : authModal === 'reset-password'
+          ? await supabase.auth.updateUser({ password: authPassword })
+          : await supabase.auth.signInWithPassword({ email, password: authPassword })
 
-        if (error) throw error
+      if (result.error) throw result.error
 
-        setMessage('Account created! Please check your email to verify your account.')
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-
-        if (error) throw error
-
-        setMessage('Login successful!')
+      if (authModal === 'reset-password') {
+        setAuthPassword('')
+        setAuthModal(null)
+        return
       }
+
+      if (!result.data.session) {
+        setAuthMessage('Account created. Check your email to confirm the account before signing in.')
+        return
+      }
+
+      setAuthUser(result.data.session.user)
+
+      setAuthEmail('')
+      setAuthPassword('')
+      setAuthName('')
+      setAuthModal(null)
     } catch (error) {
-      setMessage(error.message)
+      setAuthError(error.message || 'Unable to sign in. Please try again.')
     } finally {
-      setLoading(false)
+      setAuthLoading(false)
     }
   }
- 
-  if (currentPage === 'landing') {
-    return (
-      <LandingPage
-        onGetStarted={openSignUp}
-        onLogin={openLogin}
-      />
-    )
+
+  const handlePasswordReset = async () => {
+    setAuthError('')
+    setAuthMessage('')
+    const email = authEmail.trim().toLowerCase()
+    if (!email) {
+      setAuthError('Enter your email address first, then select forgot password.')
+      return
+    }
+
+    setAuthLoading(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      if (error) throw error
+      setAuthMessage('If an account exists for that email, a password reset link is on its way.')
+    } catch (error) {
+      setAuthError(error.message || 'Unable to send a password reset link.')
+    } finally {
+      setAuthLoading(false)
+    }
   }
-  const isSuccessMessage =
-    message.toLowerCase().includes('successful') ||
-    message.toLowerCase().includes('created')
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      setAuthError(error.message)
+      return
+    }
+    setCurrentUser(null)
+    setIsAdminModalOpen(false)
+    setBookName('')
+  }
+  const handleBookingSubmit = async (event) => {
+    event.preventDefault()
+    setBookingError('')
+    setBookingSubmitting(true)
+
+    try {
+      if (!currentUser?.id || currentUser.role !== 'customer') {
+        throw new Error('Sign in with a customer account before booking.')
+      }
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ full_name: bookName.trim(), phone: bookPhone.trim() })
+        .eq('id', currentUser.id)
+      if (profileError) throw profileError
+
+      let referenceImagePath = null
+      if (bookImageFile) {
+        const extension = bookImageFile.name.split('.').pop()?.toLowerCase() || 'jpg'
+        referenceImagePath = `${currentUser.id}/${crypto.randomUUID()}.${extension}`
+        const { error: uploadError } = await supabase.storage
+          .from('appointment-references')
+          .upload(referenceImagePath, bookImageFile, { contentType: bookImageFile.type })
+        if (uploadError) throw uploadError
+      }
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert({
+          customer_id: currentUser.id,
+          appointment_date: bookDate,
+          appointment_time: bookTime,
+          tattoo_style: bookStyle,
+          tattoo_size: bookSize,
+          body_placement: bookPlacement.trim(),
+          description: bookNotes.trim() || null,
+          reference_image_url: referenceImagePath,
+          status: 'pending',
+        })
+        .select(APPOINTMENT_SELECT)
+        .single()
+      if (error) throw error
+
+      setAppointments((currentAppointments) => [...currentAppointments, toAppointment(data)])
+      setBookingSuccess(true)
+      window.setTimeout(() => {
+        setBookingSuccess(false)
+        setIsBookingOpen(false)
+        setBookNotes('')
+        setBookPlacement('')
+        setBookImageFile(null)
+        setBookTime('')
+      }, 2000)
+    } catch (error) {
+      setBookingError(error.message || 'Could not submit this booking.')
+    } finally {
+      setBookingSubmitting(false)
+    }
+  }
+
+  const viewAppointmentReference = async (path) => {
+    const { data, error } = await supabase.storage
+      .from('appointment-references')
+      .createSignedUrl(path, 300)
+
+    if (error) {
+      setAppointmentError(`Could not open reference image: ${error.message}`)
+      return
+    }
+
+    setSelectedImage({ img: data.signedUrl, title: 'Booking Reference', description: '' })
+  }
+  const updateAppointmentStatus = async (appointmentId, status) => {
+    const { error } = await supabase
+      .from('appointments')
+      .update({ status })
+      .eq('id', appointmentId)
+
+    if (error) {
+      setAppointmentError(`Could not update booking: ${error.message}`)
+      return
+    }
+
+    setAppointments((currentAppointments) => currentAppointments.map((appointment) => (
+      appointment.id === appointmentId ? { ...appointment, status } : appointment
+    )))
+  }
+  const modalProps = { authModal, setAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, isBookingOpen, setIsBookingOpen, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, selectedImage, setSelectedImage }
 
   return (
-    <div className="app-container">
-      {/* Left visual section */}
-      <div className="hero-section">
-        <img
-          src={backgroundImage}
-          alt="Tattoo artist working on a tattoo"
-          className="hero-bg-image"
-        />
-
-        <div className="hero-overlay" />
-
-        <div className="hero-content">
-          <div className="brand">
-            <div className="brand-icon">A</div>
-            <span className="brand-text">
-              Air<span className="brand-accent">Wizard</span>
-            </span>
-          </div>
-
-          <div className="hero-body">
-            <p className="hero-tagline">Art that stays with you</p>
-
-            <h1 className="hero-heading">
-              Your story.
-              <br />
-              Your skin.
-              <br />
-              <span className="brand-accent">Your art.</span>
-            </h1>
-
-            <p className="hero-description">
-              Discover unique tattoo designs and book your next appointment with ease.
-            </p>
-
-            <div className="hero-footer-tag">
-              <div className="divider-line" />
-              <span className="tag-text">Designed for self-expression</span>
-            </div>
-          </div>
-
-          <p className="copyright-text">
-            © 2026 AirWizard. All rights reserved.
-          </p>
-        </div>
-      </div>
-
-      {/* Right authentication section */}
-      <div className="auth-section">
-        <div className="auth-card">
-          {/* Mobile logo */}
-          <div className="mobile-brand">
-            <div className="brand">
-              <div className="brand-icon small">A</div>
-              <span className="brand-text">
-                Air<span className="brand-accent">Wizard</span>
-              </span>
-            </div>
-          </div>
-
-          <div className="auth-header">
-            <p className="auth-subtitle">
-              {isSignUp ? 'Join our community' : 'Welcome back'}
-            </p>
-
-            <h2 className="auth-title">
-              {isSignUp ? 'Create your account' : 'Sign in to your account'}
-            </h2>
-
-            <p className="auth-description">
-              {isSignUp
-                ? 'Create an account to start your tattoo journey.'
-                : 'Enter your details to access your account.'}
-            </p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="auth-form">
-            {isSignUp && (
-              <div className="form-group">
-                <label className="form-label">Full Name</label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="John Doe"
-                  required
-                  className="form-input"
-                />
-              </div>
-            )}
-
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                minLength={6}
-                required
-                className="form-input"
-              />
-            </div>
-
-            {message && (
-              <div className={`message-box ${isSuccessMessage ? 'success' : 'error'}`}>
-                {message}
-              </div>
-            )}
-
-            <button type="submit" disabled={loading} className="submit-btn">
-              {loading
-                ? 'Please wait...'
-                : isSignUp
-                ? 'Create Account'
-                : 'Sign In'}
-            </button>
-          </form>
-
-          {/* Switch form toggle */}
-          <div className="switch-form">
-            {isSignUp ? 'Already have an account?' : "Don't have an account?"}
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignUp(!isSignUp)
-                setMessage('')
-              }}
-              className="toggle-btn"
-            >
-              {isSignUp ? 'Sign In' : 'Create Account'}
-            </button>
-          </div>
-
-          <p className="terms-text">
-            By continuing, you agree to our Terms of Service and Privacy Policy.
-          </p>
-        </div>
-      </div>
-    </div>
+    <>
+      <HomePage
+        currentUser={currentUser}
+        openBooking={openBooking}
+        handleLogout={handleLogout}
+        setAuthModal={setAuthModal}
+        setIsAdminModalOpen={setIsAdminModalOpen}
+        setSelectedImage={setSelectedImage}
+        estStyle={estStyle}
+        setEstStyle={setEstStyle}
+        estSize={estSize}
+        setEstSize={setEstSize}
+        estPlacement={estPlacement}
+        setEstPlacement={setEstPlacement}
+        setBookStyle={setBookStyle}
+        setIsBookingOpen={setIsBookingOpen}
+      />
+      <AppModals {...modalProps} />
+    </>
   )
 }
-
-export default App

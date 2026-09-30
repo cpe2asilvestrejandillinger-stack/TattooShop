@@ -1,0 +1,186 @@
+@reference "tailwindcss";
+
+/* fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto */
+.appointment-manager__c57be499 {
+  @apply fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto;
+}
+/* bg-[#121216] border border-white/10 rounded-3xl w-full max-w-5xl p-6 sm:p-8 relative shadow-2xl my-8 */
+.appointment-manager__303e9e49 {
+  @apply bg-[#121216] border border-white/10 rounded-3xl w-full max-w-5xl p-6 relative shadow-2xl my-8;
+}
+@media (width >= 40rem) {
+  .appointment-manager__303e9e49 {
+    @apply p-8;
+  }
+}
+/* absolute top-6 right-6 text-gray-400 hover:text-white p-1 */
+.appointment-manager__404bb319 {
+  @apply absolute top-6 right-6 text-gray-400 p-1;
+}
+.appointment-manager__404bb319:hover {
+  @apply text-white;
+}
+/* w-5 h-5 */
+.appointment-manager__a8600f1b {
+  @apply w-5 h-5;
+}
+/* flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 */
+.appointment-manager__e0ae5739 {
+  @apply flex flex-col items-start justify-between gap-4 mb-8;
+}
+@media (width >= 40rem) {
+  .appointment-manager__e0ae5739 {
+    @apply flex-row;
+  }
+}
+@media (width >= 40rem) {
+  .appointment-manager__e0ae5739 {
+    @apply items-center;
+  }
+}
+/* text-amber-400 text-xs font-bold uppercase tracking-widest */
+.appointment-manager__90cbbb9d {
+  @apply text-amber-400 text-xs font-bold uppercase tracking-widest;
+}
+/* text-2xl font-black uppercase tracking-tight text-white mt-1 */
+.appointment-manager__a8f3173f {
+  @apply text-2xl font-black uppercase tracking-tight text-white mt-1;
+}
+/* flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto */
+.appointment-manager__7c8c9395 {
+  @apply flex flex-col items-stretch gap-3 w-full;
+}
+@media (width >= 40rem) {
+  .appointment-manager__7c8c9395 {
+    @apply flex-row;
+  }
+}
+@media (width >= 40rem) {
+  .appointment-manager__7c8c9395 {
+    @apply items-center;
+  }
+}
+@media (width >= 40rem) {
+  .appointment-manager__7c8c9395 {
+    @apply w-auto;
+  }
+}
+/* bg-white/5 border border-white/10 rounded-xl px-3 py-2 flex items-center space-x-2 */
+.appointment-manager__6211b4b1 {
+  @apply bg-white/5 border border-white/10 rounded-xl px-3 py-2 flex items-center space-x-2;
+}
+/* w-4 h-4 text-gray-400 */
+.appointment-manager__9c7ef073 {
+  @apply w-4 h-4 text-gray-400;
+}
+/* bg-transparent text-xs text-white focus:outline-none */
+.appointment-manager__10e5843a {
+  @apply bg-transparent text-xs text-white;
+}
+.appointment-manager__10e5843a:focus {
+  @apply outline-none;
+}
+/* bg-[#1c1c24] border border-white/10 rounded-xl px-3 py-2 text-xs text-white */
+.appointment-manager__4dac4630 {
+  @apply bg-[#1c1c24] border border-white/10 rounded-xl px-3 py-2 text-xs text-white;
+}
+/* mb-4 text-sm text-rose-400 */
+.appointment-manager__0272786a {
+  @apply mb-4 text-sm text-rose-400;
+}
+/* overflow-x-auto */
+.appointment-manager__1384f66f {
+  @apply overflow-x-auto;
+}
+/* w-full text-left border-collapse */
+.appointment-manager__2c311775 {
+  @apply w-full text-left border-collapse;
+}
+/* border-b border-white/10 text-xs uppercase text-gray-400 font-mono */
+.appointment-manager__720c968f {
+  @apply border-b border-white/10 text-xs uppercase text-gray-400 font-mono;
+}
+/* py-3 px-4 */
+.appointment-manager__bb5afedd {
+  @apply py-3 px-4;
+}
+/* py-3 px-4 text-right */
+.appointment-manager__50e8b884 {
+  @apply py-3 px-4 text-right;
+}
+/* divide-y divide-white/5 text-sm */
+.appointment-manager__ae938a9d {
+  @apply divide-y divide-white/5 text-sm;
+}
+/* py-8 text-center text-sm text-gray-400 */
+.appointment-manager__d77ec0de {
+  @apply py-8 text-center text-sm text-gray-400;
+}
+/* hover:bg-white/[0.02] */
+.appointment-manager__58fb1251 {
+}
+.appointment-manager__58fb1251:hover {
+  @apply bg-white/[0.02];
+}
+/* py-4 px-4 */
+.appointment-manager__6416d1b5 {
+  @apply py-4 px-4;
+}
+/* font-bold text-white */
+.appointment-manager__06f00992 {
+  @apply font-bold text-white;
+}
+/* text-xs text-gray-400 */
+.appointment-manager__3dc37db2 {
+  @apply text-xs text-gray-400;
+}
+/* mt-1 text-xs text-amber-400 hover:text-amber-300 */
+.appointment-manager__1770d52d {
+  @apply mt-1 text-xs text-amber-400;
+}
+.appointment-manager__1770d52d:hover {
+  @apply text-amber-300;
+}
+/* font-medium text-amber-400 */
+.appointment-manager__1c29bae3 {
+  @apply font-medium text-amber-400;
+}
+/* py-4 px-4 text-gray-300 */
+.appointment-manager__08e62c7b {
+  @apply py-4 px-4 text-gray-300;
+}
+/* py-4 px-4 text-gray-300 font-mono text-xs */
+.appointment-manager__6fb5a8f3 {
+  @apply py-4 px-4 text-gray-300 font-mono text-xs;
+}
+/* py-4 px-4 text-right space-x-2 */
+.appointment-manager__83279d67 {
+  @apply py-4 px-4 text-right space-x-2;
+}
+/* px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-black rounded-lg text-xs font-bold transition-all */
+.appointment-manager__013ebe91 {
+  @apply px-3 py-1 bg-emerald-500 text-black rounded-lg text-xs font-bold transition-all;
+}
+.appointment-manager__013ebe91:hover {
+  @apply bg-emerald-400;
+}
+/* px-3 py-1 bg-blue-500 hover:bg-blue-400 text-black rounded-lg text-xs font-bold transition-all */
+.appointment-manager__9df77220 {
+  @apply px-3 py-1 bg-blue-500 text-black rounded-lg text-xs font-bold transition-all;
+}
+.appointment-manager__9df77220:hover {
+  @apply bg-blue-400;
+}
+
+.appointment-status {
+  @apply px-2.5 py-1 rounded-md text-xs font-bold;
+}
+.appointment-status--approved {
+  @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+}
+.appointment-status--completed {
+  @apply bg-blue-500/20 text-blue-400 border border-blue-500/30;
+}
+.appointment-status:not(.appointment-status--approved):not(.appointment-status--completed) {
+  @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
+}
