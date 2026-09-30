@@ -2,7 +2,7 @@ import './BookingModal.css'
 import { Camera, Check, X } from 'lucide-react'
 
 export default function BookingModal(props) {
-  const { isBookingOpen, setIsBookingOpen, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, currentUser } = props
+  const { isBookingOpen, setIsBookingOpen, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookDate, setBookDate, bookTime, setBookTime, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, currentUser } = props
   return (
     <>
       {/* BOOKING SESSION MODAL */}
@@ -127,11 +127,12 @@ export default function BookingModal(props) {
                       <Camera className="booking-modal__6e05cba6" />
                       <input 
                         type="file" 
-                        accept="image/*"
-                        onChange={(event) => setBookImageFile(event.target.files?.[0] || null)}
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleReferenceImageChange}
                         className="booking-modal__69d8cc99"
                       />
                     </div>
+                    <p className="booking-reference-hint">JPG, PNG, or WebP. Maximum 10 MB.</p>
                   </div>
 
                   <div>

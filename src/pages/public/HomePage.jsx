@@ -35,6 +35,8 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
 
   return (
     <div id="home" ref={pageRef} className="home-page__e77318ba home-page__root">
+      <div className="scroll-progress" aria-hidden="true" />
+
       
       {/* STICKY NAVIGATION BAR */}
       <nav className="home-page__6afe1a81">
@@ -126,6 +128,27 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
             <a href="#flash" onClick={() => setIsMobileMenuOpen(false)}>1/1 Flash</a>
             <a href="#location" onClick={() => setIsMobileMenuOpen(false)}>Location</a>
             <a href="#contact" onClick={() => setIsMobileMenuOpen(false)}>Contact</a>
+            {currentUser && (
+              <div className="mobile-nav-account">
+                <div className="mobile-nav-user">
+                  <span className="mobile-nav-user-avatar">{currentUser.name.charAt(0).toUpperCase()}</span>
+                  <span className="mobile-nav-user-details">
+                    <strong>{currentUser.name}</strong>
+                    <small>{currentUser.role} account</small>
+                  </span>
+                </div>
+                <div className="mobile-nav-account-actions">
+                  {currentUser.role === 'admin' && (
+                    <button type="button" onClick={() => { setIsAdminModalOpen(true); setIsMobileMenuOpen(false) }}>
+                      <LayoutDashboard size={15} /> Admin Panel
+                    </button>
+                  )}
+                  <button type="button" onClick={() => { handleLogout(); setIsMobileMenuOpen(false) }}>
+                    <LogOut size={15} /> Log Out
+                  </button>
+                </div>
+              </div>
+            )}
             {!currentUser && (
               <div className="mobile-nav-auth">
                 <button type="button" onClick={() => { setAuthModal('login'); setIsMobileMenuOpen(false) }}>Log In</button>
@@ -137,6 +160,15 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
           </div>
         )}
       </nav>
+
+      {isMobileMenuOpen && (
+        <button
+          type="button"
+          className="mobile-nav-backdrop"
+          aria-label="Close navigation menu"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
       {/* HERO SECTION */}
       <header className="home-page__92a92b8e">
@@ -187,22 +219,6 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
               <div>
                 <p className="home-page__7a44606b">100%</p>
                 <p className="home-page__3dc37db2">Sterile & Safe</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="home-page__82a7fab5">
-            <div className="home-page__3f56b3a0">
-              <img 
-                src={artistImage} 
-                alt="AirWizard Tattoo and Airbrush logo" 
-                className="home-page__c74fa0ce"
-              />
-              <div className="home-page__029e2f67" />
-              <div className="home-page__b22a685d">
-                <span className="home-page__653aaa90">Artist Logo</span>
-                <h3 className="home-page__89fb7efb">AirWizard Tattoo & Airbrush</h3>
-                <p className="home-page__e76a10a9">Custom tattoo, ink, and airbrush painting.</p>
               </div>
             </div>
           </div>

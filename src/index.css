@@ -11,3 +11,13 @@ html {
     scroll-behavior: auto;
   }
 }
+
+
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}

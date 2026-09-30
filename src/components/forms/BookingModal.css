@@ -159,3 +159,11 @@
 .booking-modal__41a81366:hover {
   @apply to-amber-300;
 }
+
+
+.booking-reference-hint {
+  margin: 7px 0 0;
+  color: #9ca3af;
+  font-size: 11px;
+  line-height: 1.5;
+}

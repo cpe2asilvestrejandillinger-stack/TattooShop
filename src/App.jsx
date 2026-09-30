@@ -5,6 +5,9 @@ import HomePage from './pages/public/HomePage'
 import AppModals from './components/forms/AppModals'
 import { toAppointment, toCurrentUser } from './utils/appointmentMappers'
 
+const ALLOWED_REFERENCE_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
+const MAX_REFERENCE_IMAGE_SIZE = 10 * 1024 * 1024
+
 
 
 
@@ -213,6 +216,32 @@ export default function App() {
     setIsAdminModalOpen(false)
     setBookName('')
   }
+  const handleReferenceImageChange = (event) => {
+    const file = event.currentTarget.files?.[0] || null
+    setBookingError('')
+
+    if (!file) {
+      setBookImageFile(null)
+      return
+    }
+
+    if (!ALLOWED_REFERENCE_IMAGE_TYPES.has(file.type)) {
+      setBookImageFile(null)
+      event.currentTarget.value = ''
+      setBookingError('Choose a JPG, PNG, or WebP image.')
+      return
+    }
+
+    if (file.size > MAX_REFERENCE_IMAGE_SIZE) {
+      setBookImageFile(null)
+      event.currentTarget.value = ''
+      setBookingError('The reference image must be 10 MB or smaller.')
+      return
+    }
+
+    setBookImageFile(file)
+  }
+
   const handleBookingSubmit = async (event) => {
     event.preventDefault()
     setBookingError('')
@@ -221,6 +250,12 @@ export default function App() {
     try {
       if (!currentUser?.id || currentUser.role !== 'customer') {
         throw new Error('Sign in with a customer account before booking.')
+      }
+      if (bookImageFile && !ALLOWED_REFERENCE_IMAGE_TYPES.has(bookImageFile.type)) {
+        throw new Error('Choose a JPG, PNG, or WebP reference image.')
+      }
+      if (bookImageFile && bookImageFile.size > MAX_REFERENCE_IMAGE_SIZE) {
+        throw new Error('The reference image must be 10 MB or smaller.')
       }
 
       const { error: profileError } = await supabase
@@ -299,7 +334,7 @@ export default function App() {
       appointment.id === appointmentId ? { ...appointment, status } : appointment
     )))
   }
-  const modalProps = { authModal, setAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, isBookingOpen, setIsBookingOpen, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, selectedImage, setSelectedImage }
+  const modalProps = { authModal, setAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, isBookingOpen, setIsBookingOpen, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, selectedImage, setSelectedImage }
 
   return (
     <>
