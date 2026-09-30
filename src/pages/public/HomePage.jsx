@@ -121,7 +121,28 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
         </button>
 
         {isMobileMenuOpen && (
+          <div className="mobile-nav-bar-blur" aria-hidden="true" />
+        )}
+
+        {isMobileMenuOpen && (
           <div id="mobile-navigation" className="mobile-nav-menu">
+            <div className="mobile-nav-header">
+              <div className="mobile-nav-brand">
+                <img src={artistImage} alt="" />
+                <span>
+                  <strong>AirWizard Tattoo</strong>
+                  <small>Guiguinto, Bulacan</small>
+                </span>
+              </div>
+              <button
+                type="button"
+                className="mobile-nav-close"
+                aria-label="Close navigation menu"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <X size={19} />
+              </button>
+            </div>
             <a href="#home" onClick={() => setIsMobileMenuOpen(false)}>Home</a>
             <a href="#portfolio" onClick={() => setIsMobileMenuOpen(false)}>Portfolio</a>
             <a href="#estimator" onClick={() => setIsMobileMenuOpen(false)}>Estimator</a>
@@ -152,6 +173,7 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
             {!currentUser && (
               <div className="mobile-nav-auth">
                 <button type="button" onClick={() => { setAuthModal('login'); setIsMobileMenuOpen(false) }}>Log In</button>
+                <button type="button" onClick={() => { setAuthModal('register'); setIsMobileMenuOpen(false) }}>Create Account</button>
               </div>
             )}
             <button type="button" className="mobile-nav-book" onClick={() => { openBooking(); setIsMobileMenuOpen(false) }}>
