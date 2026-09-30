@@ -6,6 +6,7 @@ import { FLASH_ITEMS, PORTFOLIO_ITEMS } from '../../data/siteData'
 
 export default function HomePage({ currentUser, openBooking, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, setBookStyle, setIsBookingOpen }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const pageRef = useRef(null)
 
   useEffect(() => {
@@ -60,35 +61,7 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
         </div>
 
         <div className="home-page__6b66ca0f">
-          {currentUser ? (
-            <div className="home-page__04007126">
-              <div className="home-page__2a5c56b3">
-                {currentUser.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="home-page__93d3b6a7">
-                <p className="home-page__1ea0e6a1">{currentUser.name}</p>
-                <p className="home-page__b4bf9de6">{currentUser.role} Account</p>
-              </div>
-
-              {currentUser.role === 'admin' && (
-                <button 
-                  onClick={() => setIsAdminModalOpen(true)}
-                  className="home-page__a3960869"
-                >
-                  <LayoutDashboard className="home-page__b41c1b51" />
-                  <span>Admin Panel</span>
-                </button>
-              )}
-
-              <button 
-                onClick={handleLogout}
-                className="home-page__5ce77922"
-                title="Log Out"
-              >
-                <LogOut className="home-page__0bfbea32" />
-              </button>
-            </div>
-          ) : (
+          {!currentUser && (
             <div className="home-page__37a944a4">
               <button
                 type="button"
@@ -97,16 +70,65 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
               >
                 Log In
               </button>
+              <button
+                type="button"
+                onClick={() => setAuthModal('register')}
+                className="home-page__6a507416"
+              >
+                Sign Up
+              </button>
             </div>
           )}
 
-          <button 
-            onClick={openBooking}
-            className="home-page__a17f1ca4"
-          >
-            <Calendar className="home-page__0bfbea32" />
-            <span>Book Session</span>
-          </button>
+          {currentUser?.role !== 'admin' && (
+            <button
+              type="button"
+              onClick={openBooking}
+              className="home-page__a17f1ca4"
+            >
+              <Calendar className="home-page__0bfbea32" />
+              <span>Book Session</span>
+            </button>
+          )}
+
+          {currentUser && (
+            <div
+              className="desktop-profile"
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) setIsProfileMenuOpen(false)
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') setIsProfileMenuOpen(false)
+              }}
+            >
+              <button
+                type="button"
+                className="desktop-profile-trigger"
+                aria-label={`Open ${currentUser.name}'s profile menu`}
+                aria-expanded={isProfileMenuOpen}
+                aria-haspopup="true"
+                onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+              >
+                {currentUser.name.charAt(0).toUpperCase()}
+              </button>
+              {isProfileMenuOpen && (
+                <div className="desktop-profile-menu">
+                  <div className="desktop-profile-details">
+                    <strong>{currentUser.name}</strong>
+                    <span>{currentUser.role} account</span>
+                  </div>
+                  {currentUser.role === 'admin' && (
+                    <button type="button" onClick={() => { setIsAdminModalOpen(true); setIsProfileMenuOpen(false) }}>
+                      <LayoutDashboard size={15} /> Admin Panel
+                    </button>
+                  )}
+                  <button type="button" onClick={() => { handleLogout(); setIsProfileMenuOpen(false) }}>
+                    <LogOut size={15} /> Log Out
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <button
@@ -115,7 +137,10 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
           aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-navigation"
-          onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+          onClick={() => {
+            setIsProfileMenuOpen(false)
+            setIsMobileMenuOpen((isOpen) => !isOpen)
+          }}
         >
           {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
@@ -134,22 +159,29 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
                   <small>Guiguinto, Bulacan</small>
                 </span>
               </div>
-              <button
-                type="button"
-                className="mobile-nav-close"
-                aria-label="Close navigation menu"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <X size={19} />
-              </button>
+              <div className="mobile-nav-header-actions">
+                {currentUser && (
+                  <button
+                    type="button"
+                    className="mobile-nav-profile-trigger"
+                    aria-label={`Open ${currentUser.name}'s profile menu`}
+                    aria-expanded={isProfileMenuOpen}
+                    onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+                  >
+                    {currentUser.name.charAt(0).toUpperCase()}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="mobile-nav-close"
+                  aria-label="Close navigation menu"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <X size={19} />
+                </button>
+              </div>
             </div>
-            <a href="#home" onClick={() => setIsMobileMenuOpen(false)}>Home</a>
-            <a href="#portfolio" onClick={() => setIsMobileMenuOpen(false)}>Portfolio</a>
-            <a href="#estimator" onClick={() => setIsMobileMenuOpen(false)}>Estimator</a>
-            <a href="#flash" onClick={() => setIsMobileMenuOpen(false)}>1/1 Flash</a>
-            <a href="#location" onClick={() => setIsMobileMenuOpen(false)}>Location</a>
-            <a href="#contact" onClick={() => setIsMobileMenuOpen(false)}>Contact</a>
-            {currentUser && (
+            {currentUser && isProfileMenuOpen && (
               <div className="mobile-nav-account">
                 <div className="mobile-nav-user">
                   <span className="mobile-nav-user-avatar">{currentUser.name.charAt(0).toUpperCase()}</span>
@@ -160,25 +192,33 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
                 </div>
                 <div className="mobile-nav-account-actions">
                   {currentUser.role === 'admin' && (
-                    <button type="button" onClick={() => { setIsAdminModalOpen(true); setIsMobileMenuOpen(false) }}>
+                    <button type="button" onClick={() => { setIsAdminModalOpen(true); setIsMobileMenuOpen(false); setIsProfileMenuOpen(false) }}>
                       <LayoutDashboard size={15} /> Admin Panel
                     </button>
                   )}
-                  <button type="button" onClick={() => { handleLogout(); setIsMobileMenuOpen(false) }}>
+                  <button type="button" onClick={() => { handleLogout(); setIsMobileMenuOpen(false); setIsProfileMenuOpen(false) }}>
                     <LogOut size={15} /> Log Out
                   </button>
                 </div>
               </div>
             )}
+            <a href="#home" onClick={() => setIsMobileMenuOpen(false)}>Home</a>
+            <a href="#portfolio" onClick={() => setIsMobileMenuOpen(false)}>Portfolio</a>
+            <a href="#estimator" onClick={() => setIsMobileMenuOpen(false)}>Estimator</a>
+            <a href="#flash" onClick={() => setIsMobileMenuOpen(false)}>1/1 Flash</a>
+            <a href="#location" onClick={() => setIsMobileMenuOpen(false)}>Location</a>
+            <a href="#contact" onClick={() => setIsMobileMenuOpen(false)}>Contact</a>
             {!currentUser && (
               <div className="mobile-nav-auth">
                 <button type="button" onClick={() => { setAuthModal('login'); setIsMobileMenuOpen(false) }}>Log In</button>
-                <button type="button" onClick={() => { setAuthModal('register'); setIsMobileMenuOpen(false) }}>Create Account</button>
+                <button type="button" onClick={() => { setAuthModal('register'); setIsMobileMenuOpen(false) }}>Sign Up</button>
               </div>
             )}
-            <button type="button" className="mobile-nav-book" onClick={() => { openBooking(); setIsMobileMenuOpen(false) }}>
-              <Calendar size={16} /> Book Session
-            </button>
+            {currentUser?.role !== 'admin' && (
+              <button type="button" className="mobile-nav-book" onClick={() => { openBooking(); setIsMobileMenuOpen(false) }}>
+                <Calendar size={16} /> Book Session
+              </button>
+            )}
           </div>
         )}
       </nav>
