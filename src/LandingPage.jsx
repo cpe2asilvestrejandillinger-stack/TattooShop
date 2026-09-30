@@ -13,9 +13,9 @@ function LandingPage({ onGetStarted, onLogin }) {
       {/* Navigation Bar */}
       <nav className="landing-nav">
         <a href="#home" className="landing-logo" onClick={closeMenu}>
-          <span className="logo-icon">T</span>
+          <span className="logo-icon">A</span>
           <span>
-            TATTOO<span className="purple-text">SHOP</span>
+            Air<span className="purple-text">Wizard</span>
           </span>
         </a>
 
@@ -110,7 +110,7 @@ function LandingPage({ onGetStarted, onLogin }) {
 
       {/* Introduction */}
       <section className="intro-section" id="about">
-        <div className="section-label">WELCOME TO TATTOOSHOP</div>
+        <div className="section-label">WELCOME TO AIRWIZARD</div>
 
         <h2>
           More than ink.
@@ -284,9 +284,9 @@ function LandingPage({ onGetStarted, onLogin }) {
       <footer className="landing-footer" id="contact">
         <div className="footer-top">
           <a href="#home" className="landing-logo">
-            <span className="logo-icon">T</span>
+            <span className="logo-icon">A</span>
             <span>
-              TATTOO<span className="purple-text">SHOP</span>
+              Air<span className="purple-text">Wizard</span>
             </span>
           </a>
 
@@ -298,7 +298,7 @@ function LandingPage({ onGetStarted, onLogin }) {
         </div>
 
         <div className="footer-bottom">
-          <span>© 2026 TattooShop. All rights reserved.</span>
+          <span>© 2026 AirWizard. All rights reserved.</span>
           <span>Made for self-expression.</span>
         </div>
       </footer>

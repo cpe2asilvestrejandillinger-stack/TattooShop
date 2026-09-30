@@ -61,7 +61,7 @@ function App() {
       setLoading(false)
     }
   }
-
+ 
   if (currentPage === 'landing') {
     return (
       <LandingPage
@@ -70,7 +70,6 @@ function App() {
       />
     )
   }
-
   const isSuccessMessage =
     message.toLowerCase().includes('successful') ||
     message.toLowerCase().includes('created')
@@ -78,27 +77,27 @@ function App() {
   return (
     <div className="app-container">
       {/* Left visual section */}
-      <div className="visual-section">
+      <div className="hero-section">
         <img
           src={backgroundImage}
           alt="Tattoo artist working on a tattoo"
-          className="bg-image"
+          className="hero-bg-image"
         />
 
-        <div className="bg-overlay" />
+        <div className="hero-overlay" />
 
-        <div className="visual-content">
-          <div className="brand-header">
-            <div className="brand-logo-badge">A</div>
-            <span className="brand-title">
-              TATTOO<span className="brand-accent">SHOP</span>
+        <div className="hero-content">
+          <div className="brand">
+            <div className="brand-icon">A</div>
+            <span className="brand-text">
+              Air<span className="brand-accent">Wizard</span>
             </span>
           </div>
 
           <div className="hero-body">
-            <p className="hero-subtitle">Art that stays with you</p>
+            <p className="hero-tagline">Art that stays with you</p>
 
-            <h1 className="hero-title">
+            <h1 className="hero-heading">
               Your story.
               <br />
               Your skin.
@@ -110,13 +109,15 @@ function App() {
               Discover unique tattoo designs and book your next appointment with ease.
             </p>
 
-            <div className="hero-tag-container">
-              <div className="hero-tag-line" />
-              <span className="hero-tag-text">Designed for self-expression</span>
+            <div className="hero-footer-tag">
+              <div className="divider-line" />
+              <span className="tag-text">Designed for self-expression</span>
             </div>
           </div>
 
-          <p className="hero-footer">© 2026 TattooShop. All rights reserved.</p>
+          <p className="copyright-text">
+            © 2026 AirWizard. All rights reserved.
+          </p>
         </div>
       </div>
 
@@ -124,11 +125,13 @@ function App() {
       <div className="auth-section">
         <div className="auth-card">
           {/* Mobile logo */}
-          <div className="mobile-brand-header">
-            <div className="mobile-brand-icon">T</div>
-            <span className="brand-title">
-              TATTOO<span className="brand-accent">SHOP</span>
-            </span>
+          <div className="mobile-brand">
+            <div className="brand">
+              <div className="brand-icon small">A</div>
+              <span className="brand-text">
+                Air<span className="brand-accent">Wizard</span>
+              </span>
+            </div>
           </div>
 
           <div className="auth-header">
@@ -169,7 +172,7 @@ function App() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="you@example.com"
                 required
                 className="form-input"
               />
@@ -189,11 +192,7 @@ function App() {
             </div>
 
             {message && (
-              <div
-                className={`alert-message ${
-                  isSuccessMessage ? 'alert-success' : 'alert-error'
-                }`}
-              >
+              <div className={`message-box ${isSuccessMessage ? 'success' : 'error'}`}>
                 {message}
               </div>
             )}
@@ -207,8 +206,8 @@ function App() {
             </button>
           </form>
 
-          {/* Switch form */}
-          <div className="auth-switch">
+          {/* Switch form toggle */}
+          <div className="switch-form">
             {isSignUp ? 'Already have an account?' : "Don't have an account?"}
             <button
               type="button"
@@ -216,13 +215,13 @@ function App() {
                 setIsSignUp(!isSignUp)
                 setMessage('')
               }}
-              className="switch-btn"
+              className="toggle-btn"
             >
               {isSignUp ? 'Sign In' : 'Create Account'}
             </button>
           </div>
 
-          <p className="auth-legal">
+          <p className="terms-text">
             By continuing, you agree to our Terms of Service and Privacy Policy.
           </p>
         </div>
