@@ -420,6 +420,9 @@
 /* py-20 px-6 lg:px-12 max-w-5xl mx-auto */
 .home-page__893ff5b7 {
   @apply py-20 px-6 max-w-5xl mx-auto;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
 }
 @media (width >= 64rem) {
   .home-page__893ff5b7 {
@@ -509,6 +512,26 @@
 }
 .home-page__3dc0d97c:hover {
   @apply to-amber-300;
+}
+
+.home-page__893ff5b7::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: min(88vw, 460px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: url('../../assets/artist.jpg') center / contain no-repeat;
+  opacity: 0.07;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse, #000 35%, transparent 78%);
+}
+
+.home-page__893ff5b7 > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Keep the estimator controls comfortable on narrow phone screens. */
@@ -921,25 +944,6 @@
   border: 0;
   filter: grayscale(0.65) invert(0.9) hue-rotate(180deg) brightness(0.82) contrast(0.9);
 }
-
-.location-map-label {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 13px;
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 12px;
-  color: #f9fafb;
-  background: rgb(15 15 18 / 92%);
-  box-shadow: 0 6px 20px rgb(0 0 0 / 25%);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.location-map-label svg { color: #fbbf24; }
 
 .location-details {
   display: flex;

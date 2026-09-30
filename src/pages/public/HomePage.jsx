@@ -177,8 +177,7 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
           
           <div className="home-page__d4e5279e">
             <div className="home-page__8119ccd0">
-              <Sparkles className="home-page__b41c1b51" />
-              <span>Solo Artist Studio • Meycauayan, Bulacan</span>
+              <span>Tattoo Artist • Guiguinto, Bulacan</span>
             </div>
             
             <h1 className="home-page__67cf6876">
@@ -416,10 +415,6 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
               referrerPolicy="no-referrer-when-downgrade"
               allowFullScreen
             />
-            <div className="location-map-label">
-              <MapPin size={17} aria-hidden="true" />
-              <span>JayTATTOO - Malis</span>
-            </div>
           </div>
 
           <div className="location-details">
