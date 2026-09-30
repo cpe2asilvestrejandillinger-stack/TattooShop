@@ -1,7 +1,10 @@
 import './HomePage.css'
 import { useEffect, useRef, useState } from 'react'
 import artistImage from '../../assets/artist.jpg'
-import { Sparkles, Clock, MapPin, Calendar, ChevronRight, LogOut, LayoutDashboard, Menu, X, Music2, Phone } from 'lucide-react'
+import instagramLogo from '../../assets/iglogo.jpg'
+import facebookLogo from '../../assets/fblogo.jpg'
+import tiktokLogo from '../../assets/tiktoklogo.jpg'
+import { Sparkles, Clock, MapPin, Calendar, ChevronRight, LogOut, LayoutDashboard, Menu, X, Phone } from 'lucide-react'
 import { FLASH_ITEMS, PORTFOLIO_ITEMS } from '../../data/siteData'
 
 export default function HomePage({ currentUser, openBooking, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, setBookStyle, setIsBookingOpen }) {
@@ -515,15 +518,15 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
           </div>
           <div className="home-page__7b83d826">
             <a href="https://www.instagram.com/yajsilver?stkn=ZDNlZDc0MzIxNw==" target="_blank" rel="noreferrer" className="home-page__81b09137">
-              <span aria-hidden="true" className="home-page__69450ef1">◎</span>
+              <img src={instagramLogo} alt="" aria-hidden="true" className="home-page__social-icon" />
               <span>Instagram</span>
             </a>
             <a href="https://www.facebook.com/profile.php?id=61570740783075" target="_blank" rel="noreferrer" className="home-page__81b09137">
-              <span aria-hidden="true" className="home-page__69450ef1">f</span>
+              <img src={facebookLogo} alt="" aria-hidden="true" className="home-page__social-icon" />
               <span>Facebook</span>
             </a>
             <a href="https://www.tiktok.com/@jay_tattoo69?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noreferrer" className="home-page__81b09137">
-              <Music2 size={16} aria-hidden="true" />
+              <img src={tiktokLogo} alt="" aria-hidden="true" className="home-page__social-icon" />
               <span>TikTok</span>
             </a>
             <a href="tel:+639068216233" className="home-page__81b09137">
