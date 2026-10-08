@@ -6,6 +6,7 @@ export default function AuthModal(props) {
   const {
     authModal,
     setAuthModal,
+    closeAuthModal = () => setAuthModal(null),
     authEmail,
     setAuthEmail,
     authPassword,
@@ -24,11 +25,11 @@ export default function AuthModal(props) {
     if (!authModal) return undefined
 
     const closeOnEscape = (event) => {
-      if (event.key === 'Escape') setAuthModal(null)
+      if (event.key === 'Escape') closeAuthModal()
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
-  }, [authModal, setAuthModal])
+  }, [authModal, closeAuthModal])
 
   if (!authModal) return null
 
@@ -49,7 +50,7 @@ export default function AuthModal(props) {
     <div
       className="auth-modal-overlay"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) setAuthModal(null)
+        if (event.target === event.currentTarget) closeAuthModal()
       }}
     >
       <section
@@ -60,7 +61,7 @@ export default function AuthModal(props) {
       >
         <button
           type="button"
-          onClick={() => setAuthModal(null)}
+          onClick={closeAuthModal}
           className="auth-modal-close"
           aria-label="Close sign-in dialog"
         >

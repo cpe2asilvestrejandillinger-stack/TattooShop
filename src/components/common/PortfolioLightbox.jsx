@@ -7,22 +7,22 @@ export default function PortfolioLightbox(props) {
     <>
       {/* LIGHTBOX MODAL FOR PORTFOLIO */}
       {selectedImage && (
-        <div className="portfolio-lightbox__41583c62">
-          <div className="portfolio-lightbox__6e610bab">
+        <div className="portfolio-lightbox__lightbox-backdrop">
+          <div className="portfolio-lightbox__lightbox-content">
             <button 
               onClick={() => setSelectedImage(null)}
-              className="portfolio-lightbox__0c9d78f8"
+              className="portfolio-lightbox__close-button"
             >
-              <X className="portfolio-lightbox__a8600f1b" />
+              <X className="portfolio-lightbox__close-icon" />
             </button>
             <img 
               src={selectedImage.img} 
               alt={selectedImage.title} 
-              className="portfolio-lightbox__dff9ebf1"
+              className="portfolio-lightbox__image"
             />
-            <div className="portfolio-lightbox__1e3c6581">
-              <h3 className="portfolio-lightbox__0a275a21">{selectedImage.title}</h3>
-              <p className="portfolio-lightbox__5aa543ea">{selectedImage.description}</p>
+            <div className="portfolio-lightbox__caption">
+              <h3 className="portfolio-lightbox__title">{selectedImage.title}</h3>
+              <p className="portfolio-lightbox__description">{selectedImage.description}</p>
             </div>
           </div>
         </div>

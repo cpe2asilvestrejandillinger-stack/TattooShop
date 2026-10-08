@@ -34,6 +34,7 @@ create table if not exists public.designs (
 create table if not exists public.appointments (
   id uuid primary key default gen_random_uuid(),
   customer_id uuid not null references public.profiles(id) on delete cascade,
+  flash_design_id uuid references public.designs(id) on delete set null,
   service_id uuid references public.services(id) on delete set null,
   appointment_date date not null,
   appointment_time time not null,
@@ -55,6 +56,36 @@ create table if not exists public.appointments (
 alter table public.appointments add column if not exists tattoo_style text not null default 'Fine Line';
 alter table public.appointments add column if not exists tattoo_size text not null default 'Small (5-10cm)';
 alter table public.appointments add column if not exists body_placement text not null default '';
+alter table public.appointments add column if not exists flash_design_id uuid references public.designs(id) on delete set null;
+
+create or replace function public.reserve_flash_for_appointment()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  reserved_id uuid;
+begin
+  if new.flash_design_id is not null then
+    update public.designs
+    set is_available = false
+    where id = new.flash_design_id and is_available = true
+    returning id into reserved_id;
+
+    if reserved_id is null then
+      raise exception 'This flash design was just claimed. Please choose another design.';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists reserve_flash_before_appointment on public.appointments;
+create trigger reserve_flash_before_appointment
+before insert on public.appointments
+for each row execute function public.reserve_flash_for_appointment();
 
 create table if not exists public.schedules (
   id uuid primary key default gen_random_uuid(),
@@ -157,7 +188,7 @@ with check ((select public.is_admin()));
 drop policy if exists "Anyone can view available designs" on public.designs;
 create policy "Anyone can view available designs" on public.designs
 for select to anon, authenticated
-using (is_available = true or (select public.is_admin()));
+using (true);
 
 drop policy if exists "Admins can manage designs" on public.designs;
 create policy "Admins can manage designs" on public.designs
@@ -216,3 +247,21 @@ using (
     or (select public.is_admin())
   )
 );
+
+-- Public images for admin-managed 1/1 flash designs.
+alter table public.designs add column if not exists size text not null default '';
+
+insert into storage.buckets (id, name, public)
+values ('flash-designs', 'flash-designs', true)
+on conflict (id) do update set public = excluded.public;
+
+drop policy if exists "Anyone can view flash design images" on storage.objects;
+create policy "Anyone can view flash design images" on storage.objects
+for select to anon, authenticated
+using (bucket_id = 'flash-designs');
+
+drop policy if exists "Admins can manage flash design images" on storage.objects;
+create policy "Admins can manage flash design images" on storage.objects
+for all to authenticated
+using (bucket_id = 'flash-designs' and (select public.is_admin()))
+with check (bucket_id = 'flash-designs' and (select public.is_admin()));

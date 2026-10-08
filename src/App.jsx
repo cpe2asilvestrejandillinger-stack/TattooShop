@@ -7,6 +7,7 @@ import { toAppointment, toCurrentUser } from './utils/appointmentMappers'
 
 const ALLOWED_REFERENCE_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const MAX_REFERENCE_IMAGE_SIZE = 10 * 1024 * 1024
+const FLASH_IMAGE_BUCKET = 'flash-designs'
 
 
 
@@ -15,6 +16,12 @@ export default function App() {
   const [authUser, setAuthUser] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
   const [appointments, setAppointments] = useState([])
+  const [flashDesigns, setFlashDesigns] = useState([])
+  const [flashLoaded, setFlashLoaded] = useState(false)
+  const [flashError, setFlashError] = useState('')
+  const [flashSubmitting, setFlashSubmitting] = useState(false)
+  const [pendingFlash, setPendingFlash] = useState(null)
+  const [bookingFlashId, setBookingFlashId] = useState(null)
   const [appointmentError, setAppointmentError] = useState('')
   const [bookingError, setBookingError] = useState('')
   const [bookingSubmitting, setBookingSubmitting] = useState(false)
@@ -132,14 +139,147 @@ export default function App() {
     return () => { isActive = false }
   }, [currentUser?.id])
 
+  useEffect(() => {
+    let isActive = true
+    const loadFlashDesigns = async () => {
+      const { data, error } = await supabase
+        .from('designs')
+        .select('id, title, description, image_url, size, price, is_available')
+        .order('created_at', { ascending: false })
+
+      if (!isActive) return
+      if (error) {
+        setFlashError(`Could not load flash designs: ${error.message}`)
+        setFlashLoaded(true)
+        return
+      }
+
+      setFlashError('')
+      setFlashDesigns(data || [])
+      setFlashLoaded(true)
+    }
+
+    loadFlashDesigns()
+    return () => { isActive = false }
+  }, [currentUser?.id])
+
+  useEffect(() => {
+    if (currentUser?.role !== 'customer' || !pendingFlash) return
+
+    setBookStyle(`Flash: ${pendingFlash.title}`)
+    setBookSize(pendingFlash.size || 'Small (5-10cm)')
+    setBookNotes(`1/1 Flash claim: ${pendingFlash.title}`)
+    setBookingFlashId(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(pendingFlash.id || '') ? pendingFlash.id : null)
+    setBookingError('')
+    setAuthModal(null)
+    setIsBookingOpen(true)
+    setPendingFlash(null)
+  }, [currentUser, pendingFlash])
+
   const openBooking = () => {
     if (currentUser?.role !== 'customer') {
       setAuthError('Sign in with a customer account to request an appointment.')
       setAuthModal('login')
       return
     }
+    setBookStyle('Fine Line')
+    setBookSize('Small (5-10cm)')
+    setBookNotes('')
+    setBookingFlashId(null)
     setBookingError('')
     setIsBookingOpen(true)
+  }
+
+  const handleClaimFlash = (flash) => {
+    if (currentUser?.role === 'customer') {
+      setPendingFlash(flash)
+      return
+    }
+
+    setAuthError(currentUser?.role === 'admin'
+      ? 'Sign in with a customer account to claim a flash design.'
+      : '')
+    setPendingFlash(flash)
+    setAuthModal('login')
+  }
+
+  const handleFlashSubmit = async (event, flashDraft) => {
+    event.preventDefault()
+    setFlashError('')
+    setFlashSubmitting(true)
+    let uploadedImagePath = null
+
+    try {
+      if (currentUser?.role !== 'admin') throw new Error('Only admins can add flash designs.')
+      if (!flashDraft.imageFile || !ALLOWED_REFERENCE_IMAGE_TYPES.has(flashDraft.imageFile.type)) {
+        throw new Error('Choose a JPG, PNG, or WebP flash image.')
+      }
+      if (flashDraft.imageFile.size > MAX_REFERENCE_IMAGE_SIZE) {
+        throw new Error('The flash image must be 10 MB or smaller.')
+      }
+
+      const extension = flashDraft.imageFile.name.split('.').pop()?.toLowerCase() || 'jpg'
+      uploadedImagePath = `${currentUser.id}/${crypto.randomUUID()}.${extension}`
+      const { error: uploadError } = await supabase.storage
+        .from(FLASH_IMAGE_BUCKET)
+        .upload(uploadedImagePath, flashDraft.imageFile, { contentType: flashDraft.imageFile.type })
+      if (uploadError) throw uploadError
+
+      const { data: publicUrl } = supabase.storage.from(FLASH_IMAGE_BUCKET).getPublicUrl(uploadedImagePath)
+      const { data, error } = await supabase
+        .from('designs')
+        .insert({
+          title: flashDraft.title.trim(),
+          description: flashDraft.description.trim() || null,
+          size: flashDraft.size.trim(),
+          price: Number(flashDraft.price),
+          image_url: publicUrl.publicUrl,
+          is_available: true,
+        })
+        .select('id, title, description, image_url, size, price, is_available')
+        .single()
+      if (error) throw error
+
+      setFlashDesigns((items) => [data, ...items])
+      return true
+    } catch (error) {
+      if (uploadedImagePath) {
+        await supabase.storage.from(FLASH_IMAGE_BUCKET).remove([uploadedImagePath])
+      }
+      setFlashError(error.message || 'Could not save this flash design.')
+      return false
+    } finally {
+      setFlashSubmitting(false)
+    }
+  }
+
+  const deleteFlashDesign = async (flash) => {
+    setFlashError('')
+    const { error } = await supabase.from('designs').delete().eq('id', flash.id)
+    if (error) {
+      setFlashError(`Could not delete flash design: ${error.message}`)
+      return
+    }
+
+    setFlashDesigns((items) => items.filter((item) => item.id !== flash.id))
+    const imagePath = flash.image_url?.split(`/storage/v1/object/public/${FLASH_IMAGE_BUCKET}/`)[1]
+    if (imagePath) await supabase.storage.from(FLASH_IMAGE_BUCKET).remove([imagePath])
+  }
+
+  const toggleFlashAvailability = async (flash) => {
+    setFlashError('')
+    const { error } = await supabase
+      .from('designs')
+      .update({ is_available: !flash.is_available })
+      .eq('id', flash.id)
+    if (error) {
+      setFlashError(`Could not update flash design: ${error.message}`)
+      return
+    }
+
+    setFlashDesigns((items) => items.map((item) => (
+      item.id === flash.id ? { ...item, is_available: !flash.is_available } : item
+    )))
   }
   const handleAuthSubmit = async (event) => {
     event.preventDefault()
@@ -216,6 +356,16 @@ export default function App() {
     setIsAdminModalOpen(false)
     setBookName('')
   }
+
+  const closeAuthModal = () => {
+    setAuthModal(null)
+    setPendingFlash(null)
+  }
+
+  const closeBookingModal = () => {
+    setIsBookingOpen(false)
+    setBookingFlashId(null)
+  }
   const handleReferenceImageChange = (event) => {
     const file = event.currentTarget.files?.[0] || null
     setBookingError('')
@@ -251,6 +401,7 @@ export default function App() {
       if (!currentUser?.id || currentUser.role !== 'customer') {
         throw new Error('Sign in with a customer account before booking.')
       }
+
       if (bookImageFile && !ALLOWED_REFERENCE_IMAGE_TYPES.has(bookImageFile.type)) {
         throw new Error('Choose a JPG, PNG, or WebP reference image.')
       }
@@ -277,6 +428,7 @@ export default function App() {
         .from('appointments')
         .insert({
           customer_id: currentUser.id,
+          flash_design_id: bookingFlashId,
           appointment_date: bookDate,
           appointment_time: bookTime,
           tattoo_style: bookStyle,
@@ -290,6 +442,12 @@ export default function App() {
         .single()
       if (error) throw error
 
+      if (bookingFlashId) {
+        setFlashDesigns((items) => items.map((item) => (
+          item.id === bookingFlashId ? { ...item, is_available: false } : item
+        )))
+        setBookingFlashId(null)
+      }
       setAppointments((currentAppointments) => [...currentAppointments, toAppointment(data)])
       setBookingSuccess(true)
       window.setTimeout(() => {
@@ -334,7 +492,7 @@ export default function App() {
       appointment.id === appointmentId ? { ...appointment, status } : appointment
     )))
   }
-  const modalProps = { authModal, setAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, isBookingOpen, setIsBookingOpen, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, selectedImage, setSelectedImage }
+  const modalProps = { authModal, setAuthModal, closeAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, isBookingOpen, setIsBookingOpen, closeBookingModal, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns, flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability, selectedImage, setSelectedImage }
 
   return (
     <>
@@ -342,7 +500,7 @@ export default function App() {
         currentUser={currentUser}
         openBooking={openBooking}
         handleLogout={handleLogout}
-        setAuthModal={setAuthModal}
+        setAuthModal={(modal) => { setPendingFlash(null); setAuthModal(modal) }}
         setIsAdminModalOpen={setIsAdminModalOpen}
         setSelectedImage={setSelectedImage}
         estStyle={estStyle}
@@ -351,8 +509,9 @@ export default function App() {
         setEstSize={setEstSize}
         estPlacement={estPlacement}
         setEstPlacement={setEstPlacement}
-        setBookStyle={setBookStyle}
-        setIsBookingOpen={setIsBookingOpen}
+        flashDesigns={flashDesigns}
+        flashLoaded={flashLoaded}
+        onClaimFlash={handleClaimFlash}
       />
       <AppModals {...modalProps} />
     </>

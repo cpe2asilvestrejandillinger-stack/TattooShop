@@ -7,7 +7,7 @@ import tiktokLogo from '../../assets/tiktoklogo.jpg'
 import { Sparkles, Clock, MapPin, Calendar, ChevronRight, LogOut, LayoutDashboard, Menu, X, Phone } from 'lucide-react'
 import { FLASH_ITEMS, PORTFOLIO_ITEMS } from '../../data/siteData'
 
-export default function HomePage({ currentUser, openBooking, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, setBookStyle, setIsBookingOpen }) {
+export default function HomePage({ currentUser, openBooking, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, flashDesigns = [], flashLoaded = false, onClaimFlash }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const pageRef = useRef(null)
@@ -38,45 +38,45 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
   }, [])
 
   return (
-    <div id="home" ref={pageRef} className="home-page__e77318ba home-page__root">
+    <div id="home" ref={pageRef} className="home-page__root">
       <div className="scroll-progress" aria-hidden="true" />
 
       
       {/* STICKY NAVIGATION BAR */}
-      <nav className="home-page__6afe1a81">
-        <div className="home-page__543ddcd2" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <div className="home-page__8e0dda3b">
+      <nav className="home-page__navbar">
+        <div className="home-page__brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <div className="home-page__brand-mark">
             <img src={artistImage} alt="AirWizard Tattoo logo" className="home-page__brand-image" />
           </div>
           <div>
-            <span className="home-page__e487dd00">AirWizard Tattoo</span>
-            <span className="home-page__a2534b60">Guiguinto, Bulacan</span>
+            <span className="home-page__brand-name">AirWizard Tattoo</span>
+            <span className="home-page__brand-location">Guiguinto, Bulacan</span>
           </div>
         </div>
 
-        <div className="home-page__c95ed303">
-          <a href="#home" className="home-page__36e6f4bf">Home</a>
-          <a href="#portfolio" className="home-page__36e6f4bf">Portfolio</a>
-          <a href="#estimator" className="home-page__36e6f4bf">Estimator</a>
-          <a href="#flash" className="home-page__36e6f4bf">1/1 Flash</a>
-          <a href="#location" className="home-page__36e6f4bf">Location</a>
-          <a href="#contact" className="home-page__36e6f4bf">Contact</a>
+        <div className="home-page__desktop-nav">
+          <a href="#home" className="home-page__nav-link">Home</a>
+          <a href="#portfolio" className="home-page__nav-link">Portfolio</a>
+          <a href="#estimator" className="home-page__nav-link">Estimator</a>
+          <a href="#flash" className="home-page__nav-link">1/1 Flash</a>
+          <a href="#location" className="home-page__nav-link">Location</a>
+          <a href="#contact" className="home-page__nav-link">Contact</a>
         </div>
 
-        <div className="home-page__6b66ca0f">
+        <div className="home-page__nav-actions">
           {!currentUser && (
-            <div className="home-page__37a944a4">
+            <div className="home-page__auth-actions">
               <button
                 type="button"
                 onClick={() => setAuthModal('login')}
-                className="home-page__d207ebbc"
+                className="home-page__login-button"
               >
                 Log In
               </button>
               <button
                 type="button"
                 onClick={() => setAuthModal('register')}
-                className="home-page__6a507416"
+                className="home-page__signup-button"
               >
                 Sign Up
               </button>
@@ -87,9 +87,9 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
             <button
               type="button"
               onClick={openBooking}
-              className="home-page__a17f1ca4"
+              className="home-page__book-session-button"
             >
-              <Calendar className="home-page__0bfbea32" />
+              <Calendar className="home-page__small-icon" />
               <span>Book Session</span>
             </button>
           )}
@@ -236,53 +236,53 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
       )}
 
       {/* HERO SECTION */}
-      <header className="home-page__92a92b8e">
-        <div className="home-page__2a613f04" />
-        <div className="home-page__925957c0">
+      <header className="home-page__hero-section">
+        <div className="home-page__hero-background" />
+        <div className="home-page__hero-container">
           
-          <div className="home-page__d4e5279e">
-            <div className="home-page__8119ccd0">
+          <div className="home-page__hero-copy">
+            <div className="home-page__hero-badge">
               <span>Tattoo Artist • Guiguinto, Bulacan</span>
             </div>
             
-            <h1 className="home-page__67cf6876">
-              Precision <span className="home-page__053aeb71">Fine Line</span> & Cyberwork.
+            <h1 className="home-page__hero-title">
+              Precision <span className="home-page__hero-title-accent">Fine Line</span> & Cyberwork.
             </h1>
             
-            <p className="home-page__798fc550">
+            <p className="home-page__hero-description">
               Custom skin art crafted with immaculate detail. Private studio experience dedicated to unique blackwork, Japanese integration, and minimalist elegance.
             </p>
 
-            <div className="home-page__11a1a8d8">
+            <div className="home-page__hero-actions">
               <button 
                 onClick={openBooking}
-                className="home-page__92aec5de"
+                className="home-page__primary-button"
               >
-                <Calendar className="home-page__0bfbea32" />
+                <Calendar className="home-page__small-icon" />
                 <span>Book a Consultation</span>
               </button>
               
               <a 
                 href="#portfolio"
-                className="home-page__70b816f6"
+                className="home-page__secondary-button"
               >
                 <span>View Portfolio</span>
-                <ChevronRight className="home-page__321ae1ab" />
+                <ChevronRight className="home-page__button-icon" />
               </a>
             </div>
 
-            <div className="home-page__ca178636">
+            <div className="home-page__hero-stats">
               <div>
-                <p className="home-page__7a44606b">8+</p>
-                <p className="home-page__3dc37db2">Years Experience</p>
+                <p className="home-page__stat-value">8+</p>
+                <p className="home-page__muted-text">Years Experience</p>
               </div>
               <div>
-                <p className="home-page__7a44606b">1.2K+</p>
-                <p className="home-page__3dc37db2">Custom Pieces</p>
+                <p className="home-page__stat-value">1.2K+</p>
+                <p className="home-page__muted-text">Custom Pieces</p>
               </div>
               <div>
-                <p className="home-page__7a44606b">100%</p>
-                <p className="home-page__3dc37db2">Sterile & Safe</p>
+                <p className="home-page__stat-value">100%</p>
+                <p className="home-page__muted-text">Sterile & Safe</p>
               </div>
             </div>
           </div>
@@ -291,40 +291,40 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
       </header>
 
       {/* CONTINUOUS SMOOTH MARQUEE CAROUSEL */}
-      <section id="portfolio" className="home-page__e75cdeee scroll-reveal">
+      <section id="portfolio" className="home-page__portfolio-section scroll-reveal">
         <div className="portfolio-heading">
           <div>
-            <span className="home-page__90cbbb9d">Recent Works</span>
-            <h2 className="home-page__2af17e58">Portfolio Showcase</h2>
+            <span className="home-page__eyebrow">Recent Works</span>
+            <h2 className="home-page__section-title">Portfolio Showcase</h2>
           </div>
           <p className="portfolio-description">Explore the artist's tattoo work and open any piece for a closer look.</p>
         </div>
 
         {/* Marquee Track */}
-        <div className="home-page__cb0c750a portfolio-carousel-window">
-          <div className="home-page__bb5e565b" />
-          <div className="home-page__eaa8838b" />
+        <div className="home-page__carousel-window portfolio-carousel-window">
+          <div className="home-page__carousel-fade-left" />
+          <div className="home-page__carousel-fade-right" />
 
-          <div className="home-page__eb1c5816 portfolio-carousel-track marquee-track">
+          <div className="home-page__carousel-track portfolio-carousel-track marquee-track">
             {[...PORTFOLIO_ITEMS, ...PORTFOLIO_ITEMS].map((item, index) => (
               <div 
                 key={`${item.id}-${index}`}
                 onClick={() => setSelectedImage(item)}
-                className="home-page__5e27d5aa"
+                className="home-page__portfolio-card"
               >
-                <div className="home-page__d12cb582">
+                <div className="home-page__portfolio-image-wrap">
                   <img 
                     src={item.img} 
                     alt={item.title} 
-                    className="home-page__c394051e"
+                    className="home-page__portfolio-image"
                   />
-                  <span className="home-page__37931d44">
+                  <span className="home-page__portfolio-category">
                     {item.category}
                   </span>
                 </div>
-                <div className="home-page__c07e54fd">
-                  <h4 className="home-page__d0eda883">{item.title}</h4>
-                  <p className="home-page__a777eab2">{item.description}</p>
+                <div className="home-page__portfolio-card-content">
+                  <h4 className="home-page__portfolio-title">{item.title}</h4>
+                  <p className="home-page__portfolio-description">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -333,20 +333,20 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
       </section>
 
       {/* PRICE ESTIMATOR SECTION */}
-      <section id="estimator" className="home-page__893ff5b7 scroll-reveal">
-        <div className="home-page__bc3f4cfa">
-          <span className="home-page__90cbbb9d">Transparent Pricing</span>
-          <h2 className="home-page__2af17e58">Session Rate Estimator</h2>
-          <p className="home-page__945697ac">Calculate an instant quote for your next tattoo project with AirWizard.</p>
+      <section id="estimator" className="home-page__estimator-section scroll-reveal">
+        <div className="home-page__section-heading">
+          <span className="home-page__eyebrow">Transparent Pricing</span>
+          <h2 className="home-page__section-title">Session Rate Estimator</h2>
+          <p className="home-page__section-subtitle">Calculate an instant quote for your next tattoo project with AirWizard.</p>
         </div>
 
-        <div className="home-page__8a01c4a3">
-          <div className="home-page__8a63dfbd">
+        <div className="home-page__estimator-card">
+          <div className="home-page__estimator-options">
             
             {/* Style Selection */}
             <div>
-              <label className="home-page__be354676">1. Select Tattoo Style</label>
-              <div className="home-page__94f11a0c">
+              <label className="home-page__option-label">1. Select Tattoo Style</label>
+              <div className="home-page__style-options">
                 {[
                   { name: 'Fine Line', price: 3000 },
                   { name: 'Cyberwork', price: 4500 },
@@ -367,8 +367,8 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
 
             {/* Size Selection */}
             <div>
-              <label className="home-page__be354676">2. Choose Approximate Size</label>
-              <div className="home-page__7665800e">
+              <label className="home-page__option-label">2. Choose Approximate Size</label>
+              <div className="home-page__size-options">
                 {[
                   { name: 'Small (5-10cm)', price: 2000 },
                   { name: 'Medium (10-15cm)', price: 4500 },
@@ -387,8 +387,8 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
 
                       {/* Placement Selection */}
             <div>
-              <label className="home-page__be354676">3. Select Placement</label>
-              <div className="home-page__9717e995">
+              <label className="home-page__option-label">3. Select Placement</label>
+              <div className="home-page__placement-options">
                 {[
                   { name: 'Arm / Leg', price: 500 },
                   { name: 'Torso', price: 1000 },
@@ -407,15 +407,15 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
             </div>
 </div>
 
-          <div className="home-page__23303a7e">
-            <span className="home-page__5115736b">Estimated Investment</span>
-            <div className="home-page__f966056d">
+          <div className="home-page__estimate-summary">
+            <span className="home-page__estimate-label">Estimated Investment</span>
+            <div className="home-page__estimate-price">
               ₱{(estStyle + estSize + estPlacement).toLocaleString()}
             </div>
-            <p className="home-page__3dc37db2">Includes consultation, sterile single-use supplies, and aftercare kit.</p>
+            <p className="home-page__muted-text">Includes consultation, sterile single-use supplies, and aftercare kit.</p>
             <button 
               onClick={openBooking}
-              className="home-page__3dc0d97c"
+              className="home-page__estimate-button"
             >
               Lock in Estimate & Book
             </button>
@@ -424,43 +424,50 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
       </section>
 
       {/* 1/1 CLAIMABLE FLASH DESIGNS */}
-      <section id="flash" className="home-page__6f388d19 scroll-reveal">
-        <div className="home-page__bc3f4cfa">
-          <span className="home-page__90cbbb9d">Available Flash</span>
-          <h2 className="home-page__2af17e58">1/1 Claimable Designs</h2>
-          <p className="home-page__945697ac">Original hand-drawn flash pieces tattooed only once. Claim yours before it's gone.</p>
+      <section id="flash" className="home-page__flash-section scroll-reveal">
+        <div className="home-page__section-heading">
+          <span className="home-page__eyebrow">Available Flash</span>
+          <h2 className="home-page__section-title">1/1 Claimable Designs</h2>
+          <p className="home-page__section-subtitle">Original hand-drawn flash pieces tattooed only once. Claim yours before it's gone.</p>
         </div>
 
-        <div className="home-page__d1e1fbcf">
-          {FLASH_ITEMS.map((flash) => (
-            <div key={flash.id} className="home-page__d22d90eb">
+        <div className="home-page__flash-grid">
+          {flashLoaded && flashDesigns.length === 0 ? (
+            <p className="home-page__flash-empty">No flash designs are available right now. Check back soon.</p>
+          ) : (flashLoaded ? flashDesigns.map((design) => ({
+            id: design.id,
+            title: design.title,
+            description: design.description,
+            size: design.size,
+            price: new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(Number(design.price || 0)),
+            available: design.is_available,
+            img: design.image_url,
+          })) : FLASH_ITEMS).map((flash) => (
+            <div key={flash.id} className="home-page__flash-card">
               <div>
-                <div className="home-page__af4eee13">
-                  <img src={flash.img} alt={flash.title} className="home-page__0e16068f" />
-                  <div className="home-page__2c73063d">
+                <div className="home-page__flash-image-wrap">
+                  <img src={flash.img} alt={flash.title} className="home-page__flash-image" />
+                  <div className="home-page__flash-status">
                     {flash.available ? (
-                      <span className="home-page__f683084e">Available</span>
+                      <span className="home-page__available-badge">Available</span>
                     ) : (
-                      <span className="home-page__f5220d58">Claimed</span>
+                      <span className="home-page__claimed-badge">Claimed</span>
                     )}
                   </div>
                 </div>
-                <div className="home-page__8e63407b">
-                  <h4 className="home-page__0d6ca94a">{flash.title}</h4>
-                  <p className="home-page__5aa543ea">Size: {flash.size}</p>
+                <div className="home-page__flash-details">
+                  <h4 className="home-page__flash-title">{flash.title}</h4>
+                  <p className="home-page__flash-size">Size: {flash.size}</p>
                 </div>
               </div>
-              <div className="home-page__f608d25e">
-                <span className="home-page__a30c4755">{flash.price}</span>
+              <div className="home-page__flash-card-footer">
+                <span className="home-page__flash-price">{flash.price}</span>
                 <button 
-                  disabled={!flash.available}
-                  onClick={() => {
-                    setBookStyle(`Flash: ${flash.title}`);
-                    setIsBookingOpen(true);
-                  }}
+                  disabled={!flashLoaded || !flash.available}
+                  onClick={() => onClaimFlash(flash)}
                   className={flash.available ? 'flash-claim-button' : 'flash-claim-button is-unavailable'}
                 >
-                  {flash.available ? 'Claim Flash' : 'Taken'}
+                  {!flashLoaded ? 'Loading...' : flash.available ? 'Claim Flash' : 'Taken'}
                 </button>
               </div>
             </div>
@@ -508,33 +515,33 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
       </section>
 
       {/* FOOTER */}
-      <footer id="contact" className="home-page__46baae01 scroll-reveal">
-        <div className="home-page__c4c17ea5">
-          <div className="home-page__b9fc95fb">
-            <div className="home-page__264a8410">
+      <footer id="contact" className="home-page__footer scroll-reveal">
+        <div className="home-page__footer-container">
+          <div className="home-page__footer-brand">
+            <div className="home-page__footer-logo">
               <img src={artistImage} alt="AirWizard Tattoo logo" className="home-page__brand-image" />
             </div>
-            <span className="home-page__c407b7ca">AirWizard Tattoo</span>
+            <span className="home-page__footer-brand-name">AirWizard Tattoo</span>
           </div>
-          <div className="home-page__7b83d826">
-            <a href="https://www.instagram.com/yajsilver?stkn=ZDNlZDc0MzIxNw==" target="_blank" rel="noreferrer" className="home-page__81b09137">
+          <div className="home-page__footer-social-links">
+            <a href="https://www.instagram.com/yajsilver?stkn=ZDNlZDc0MzIxNw==" target="_blank" rel="noreferrer" className="home-page__footer-social-link">
               <img src={instagramLogo} alt="" aria-hidden="true" className="home-page__social-icon" />
               <span>Instagram</span>
             </a>
-            <a href="https://www.facebook.com/profile.php?id=61570740783075" target="_blank" rel="noreferrer" className="home-page__81b09137">
+            <a href="https://www.facebook.com/profile.php?id=61570740783075" target="_blank" rel="noreferrer" className="home-page__footer-social-link">
               <img src={facebookLogo} alt="" aria-hidden="true" className="home-page__social-icon" />
               <span>Facebook</span>
             </a>
-            <a href="https://www.tiktok.com/@jay_tattoo69?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noreferrer" className="home-page__81b09137">
+            <a href="https://www.tiktok.com/@jay_tattoo69?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noreferrer" className="home-page__footer-social-link">
               <img src={tiktokLogo} alt="" aria-hidden="true" className="home-page__social-icon" />
               <span>TikTok</span>
             </a>
-            <a href="tel:+639068216233" className="home-page__81b09137">
+            <a href="tel:+639068216233" className="home-page__footer-social-link">
               <Phone size={16} aria-hidden="true" />
               <span>0906 821 6233</span>
             </a>
           </div>
-          <p className="home-page__12d31289">© 2026 AirWizard Tattoo. All rights reserved.</p>
+          <p className="home-page__copyright">© 2026 AirWizard Tattoo. All rights reserved.</p>
         </div>
       </footer>
 

@@ -1,174 +1,174 @@
 @reference "tailwindcss";
 
 /* fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto */
-.appointment-manager__c57be499 {
+.appointment-manager__modal-backdrop {
   @apply fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto;
 }
 /* bg-[#121216] border border-white/10 rounded-3xl w-full max-w-5xl p-6 sm:p-8 relative shadow-2xl my-8 */
-.appointment-manager__303e9e49 {
+.appointment-manager__modal {
   @apply bg-[#121216] border border-white/10 rounded-3xl w-full max-w-5xl p-6 relative shadow-2xl my-8;
 }
 @media (width >= 40rem) {
-  .appointment-manager__303e9e49 {
+  .appointment-manager__modal {
     @apply p-8;
   }
 }
 /* absolute top-6 right-6 text-gray-400 hover:text-white p-1 */
-.appointment-manager__404bb319 {
+.appointment-manager__close-button {
   @apply absolute top-6 right-6 text-gray-400 p-1;
 }
-.appointment-manager__404bb319:hover {
+.appointment-manager__close-button:hover {
   @apply text-white;
 }
 /* w-5 h-5 */
-.appointment-manager__a8600f1b {
+.appointment-manager__close-icon {
   @apply w-5 h-5;
 }
 /* flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 */
-.appointment-manager__e0ae5739 {
+.appointment-manager__header {
   @apply flex flex-col items-start justify-between gap-4 mb-8;
 }
 @media (width >= 40rem) {
-  .appointment-manager__e0ae5739 {
+  .appointment-manager__header {
     @apply flex-row;
   }
 }
 @media (width >= 40rem) {
-  .appointment-manager__e0ae5739 {
+  .appointment-manager__header {
     @apply items-center;
   }
 }
 /* text-amber-400 text-xs font-bold uppercase tracking-widest */
-.appointment-manager__90cbbb9d {
+.appointment-manager__eyebrow {
   @apply text-amber-400 text-xs font-bold uppercase tracking-widest;
 }
 /* text-2xl font-black uppercase tracking-tight text-white mt-1 */
-.appointment-manager__a8f3173f {
+.appointment-manager__title {
   @apply text-2xl font-black uppercase tracking-tight text-white mt-1;
 }
 /* flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto */
-.appointment-manager__7c8c9395 {
+.appointment-manager__toolbar {
   @apply flex flex-col items-stretch gap-3 w-full;
 }
 @media (width >= 40rem) {
-  .appointment-manager__7c8c9395 {
+  .appointment-manager__toolbar {
     @apply flex-row;
   }
 }
 @media (width >= 40rem) {
-  .appointment-manager__7c8c9395 {
+  .appointment-manager__toolbar {
     @apply items-center;
   }
 }
 @media (width >= 40rem) {
-  .appointment-manager__7c8c9395 {
+  .appointment-manager__toolbar {
     @apply w-auto;
   }
 }
 /* bg-white/5 border border-white/10 rounded-xl px-3 py-2 flex items-center space-x-2 */
-.appointment-manager__6211b4b1 {
+.appointment-manager__search-field {
   @apply bg-white/5 border border-white/10 rounded-xl px-3 py-2 flex items-center space-x-2;
 }
 /* w-4 h-4 text-gray-400 */
-.appointment-manager__9c7ef073 {
+.appointment-manager__search-icon {
   @apply w-4 h-4 text-gray-400;
 }
 /* bg-transparent text-xs text-white focus:outline-none */
-.appointment-manager__10e5843a {
+.appointment-manager__search-input {
   @apply bg-transparent text-xs text-white;
 }
-.appointment-manager__10e5843a:focus {
+.appointment-manager__search-input:focus {
   @apply outline-none;
 }
 /* bg-[#1c1c24] border border-white/10 rounded-xl px-3 py-2 text-xs text-white */
-.appointment-manager__4dac4630 {
+.appointment-manager__status-filter {
   @apply bg-[#1c1c24] border border-white/10 rounded-xl px-3 py-2 text-xs text-white;
 }
 /* mb-4 text-sm text-rose-400 */
-.appointment-manager__0272786a {
+.appointment-manager__error-message {
   @apply mb-4 text-sm text-rose-400;
 }
 /* overflow-x-auto */
-.appointment-manager__1384f66f {
+.appointment-manager__table-scroll {
   @apply overflow-x-auto;
 }
 /* w-full text-left border-collapse */
-.appointment-manager__2c311775 {
+.appointment-manager__appointments-table {
   @apply w-full text-left border-collapse;
 }
 /* border-b border-white/10 text-xs uppercase text-gray-400 font-mono */
-.appointment-manager__720c968f {
+.appointment-manager__table-header-row {
   @apply border-b border-white/10 text-xs uppercase text-gray-400 font-mono;
 }
 /* py-3 px-4 */
-.appointment-manager__bb5afedd {
+.appointment-manager__table-heading {
   @apply py-3 px-4;
 }
 /* py-3 px-4 text-right */
-.appointment-manager__50e8b884 {
+.appointment-manager__action-heading {
   @apply py-3 px-4 text-right;
 }
 /* divide-y divide-white/5 text-sm */
-.appointment-manager__ae938a9d {
+.appointment-manager__table-body {
   @apply divide-y divide-white/5 text-sm;
 }
 /* py-8 text-center text-sm text-gray-400 */
-.appointment-manager__d77ec0de {
+.appointment-manager__empty-state {
   @apply py-8 text-center text-sm text-gray-400;
 }
 /* hover:bg-white/[0.02] */
-.appointment-manager__58fb1251 {
+.appointment-manager__appointment-row {
 }
-.appointment-manager__58fb1251:hover {
+.appointment-manager__appointment-row:hover {
   @apply bg-white/[0.02];
 }
 /* py-4 px-4 */
-.appointment-manager__6416d1b5 {
+.appointment-manager__standard-cell {
   @apply py-4 px-4;
 }
 /* font-bold text-white */
-.appointment-manager__06f00992 {
+.appointment-manager__client-name {
   @apply font-bold text-white;
 }
 /* text-xs text-gray-400 */
-.appointment-manager__3dc37db2 {
+.appointment-manager__secondary-text {
   @apply text-xs text-gray-400;
 }
 /* mt-1 text-xs text-amber-400 hover:text-amber-300 */
-.appointment-manager__1770d52d {
+.appointment-manager__reference-link {
   @apply mt-1 text-xs text-amber-400;
 }
-.appointment-manager__1770d52d:hover {
+.appointment-manager__reference-link:hover {
   @apply text-amber-300;
 }
 /* font-medium text-amber-400 */
-.appointment-manager__1c29bae3 {
+.appointment-manager__appointment-style {
   @apply font-medium text-amber-400;
 }
 /* py-4 px-4 text-gray-300 */
-.appointment-manager__08e62c7b {
+.appointment-manager__placement-cell {
   @apply py-4 px-4 text-gray-300;
 }
 /* py-4 px-4 text-gray-300 font-mono text-xs */
-.appointment-manager__6fb5a8f3 {
+.appointment-manager__date-cell {
   @apply py-4 px-4 text-gray-300 font-mono text-xs;
 }
 /* py-4 px-4 text-right space-x-2 */
-.appointment-manager__83279d67 {
+.appointment-manager__action-cell {
   @apply py-4 px-4 text-right space-x-2;
 }
 /* px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-black rounded-lg text-xs font-bold transition-all */
-.appointment-manager__013ebe91 {
+.appointment-manager__approve-button {
   @apply px-3 py-1 bg-emerald-500 text-black rounded-lg text-xs font-bold transition-all;
 }
-.appointment-manager__013ebe91:hover {
+.appointment-manager__approve-button:hover {
   @apply bg-emerald-400;
 }
 /* px-3 py-1 bg-blue-500 hover:bg-blue-400 text-black rounded-lg text-xs font-bold transition-all */
-.appointment-manager__9df77220 {
+.appointment-manager__reject-button {
   @apply px-3 py-1 bg-blue-500 text-black rounded-lg text-xs font-bold transition-all;
 }
-.appointment-manager__9df77220:hover {
+.appointment-manager__reject-button:hover {
   @apply bg-blue-400;
 }
 
@@ -183,4 +183,536 @@
 }
 .appointment-status:not(.appointment-status--approved):not(.appointment-status--completed) {
   @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
+}
+
+.flash-manager__open-button {
+  @apply rounded-lg bg-amber-500 px-4 py-2.5 text-xs font-bold text-black transition-colors;
+}
+.flash-manager__open-button:hover {
+  @apply bg-amber-400;
+}
+.flash-manager__backdrop {
+  @apply fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm;
+}
+.flash-manager__modal {
+  @apply relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-white/10 bg-[#121216] p-5 shadow-2xl;
+}
+@media (width >= 40rem) {
+  .flash-manager__modal {
+    @apply p-8;
+  }
+}
+.flash-manager__heading {
+  @apply flex items-start justify-between gap-4;
+}
+.flash-manager__close {
+  @apply rounded-lg p-2 text-gray-400;
+}
+.flash-manager__close:hover {
+  @apply text-white;
+}
+.flash-manager__title {
+  @apply mt-1 text-xl font-bold text-white;
+}
+.flash-manager__form {
+  @apply mt-5 grid grid-cols-1 gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4;
+}
+@media (width >= 40rem) {
+  .flash-manager__form {
+    @apply grid-cols-2 p-5;
+  }
+}
+.flash-manager__field {
+  @apply flex flex-col gap-2 text-xs font-semibold text-gray-300;
+}
+.flash-manager__field--wide {
+  @apply col-span-1;
+}
+@media (width >= 40rem) {
+  .flash-manager__field--wide {
+    @apply col-span-2;
+  }
+}
+.flash-manager__field input,
+.flash-manager__field textarea {
+  @apply w-full rounded-lg border border-white/10 bg-[#1c1c24] px-3 py-2 text-sm text-white;
+}
+.flash-manager__field input:focus,
+.flash-manager__field textarea:focus {
+  @apply border-amber-400 outline-none;
+}
+.flash-manager__field input[type='file'] {
+  @apply text-xs;
+}
+.flash-manager__field small {
+  @apply text-[10px] font-normal text-gray-500;
+}
+.flash-manager__submit {
+  @apply rounded-lg bg-amber-500 px-4 py-3 text-xs font-bold text-black transition-colors;
+}
+.flash-manager__submit:hover:not(:disabled) {
+  @apply bg-amber-400;
+}
+.flash-manager__submit:disabled {
+  @apply cursor-wait opacity-60;
+}
+.flash-manager__list {
+  @apply mt-4 grid grid-cols-1 gap-3;
+}
+.flash-manager__item {
+  @apply flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3;
+}
+.flash-manager__item img {
+  @apply h-14 w-14 rounded-lg object-cover;
+}
+.flash-manager__item-copy {
+  @apply flex min-w-0 flex-1 flex-col gap-1 text-xs text-gray-400;
+}
+.flash-manager__item-copy strong {
+  @apply truncate text-sm text-white;
+}
+.flash-manager__available {
+  @apply text-emerald-400;
+}
+.flash-manager__taken {
+  @apply text-amber-400;
+}
+.flash-manager__toggle {
+  @apply rounded-lg border border-white/10 px-3 py-2 text-[10px] font-semibold text-gray-200;
+}
+.flash-manager__toggle:hover {
+  @apply border-amber-400 text-amber-300;
+}
+.flash-manager__delete {
+  @apply rounded-lg p-2 text-gray-500;
+}
+.flash-manager__delete:hover {
+  @apply text-rose-400;
+}
+.flash-manager__empty {
+  @apply py-4 text-center text-xs text-gray-500;
+}
+
+/* Responsive admin workspace */
+.appointment-manager__modal-backdrop {
+  padding: 1rem;
+  background: rgb(3 3 5 / 78%);
+  backdrop-filter: blur(14px);
+}
+
+.appointment-manager__modal {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  width: min(100%, 76rem);
+  max-height: min(56rem, calc(100dvh - 2rem));
+  overflow: hidden;
+  border-color: rgb(255 255 255 / 9%);
+  background: radial-gradient(ellipse at top left, rgb(245 158 11 / 7%), transparent 34%), #101014;
+  box-shadow: 0 28px 100px rgb(0 0 0 / 65%);
+}
+
+.appointment-manager__header {
+  flex: 0 0 auto;
+  padding-right: 2.5rem;
+}
+
+.appointment-manager__close-button {
+  top: max(0.8rem, env(safe-area-inset-top));
+  right: 1rem;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 0.85rem;
+  background: rgb(255 255 255 / 3%);
+}
+
+.appointment-manager__close-button:hover {
+  border-color: rgb(245 158 11 / 30%);
+  background: rgb(245 158 11 / 8%);
+}
+
+.appointment-manager__title {
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  letter-spacing: -0.035em;
+}
+
+.appointment-manager__toolbar {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) auto auto;
+  align-items: center;
+}
+
+.appointment-manager__search-field {
+  min-width: 0;
+  min-height: 2.75rem;
+  border-radius: 0.85rem;
+}
+
+.appointment-manager__search-input {
+  min-width: 0;
+  width: 100%;
+  min-height: 2.25rem;
+}
+
+.appointment-manager__status-filter,
+.flash-manager__open-button {
+  min-height: 2.75rem;
+  border-radius: 0.85rem;
+}
+
+.appointment-manager__table-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 1rem;
+  scrollbar-color: rgb(245 158 11 / 45%) transparent;
+}
+
+.appointment-manager__appointments-table {
+  min-width: 48rem;
+}
+
+.appointment-manager__table-header-row {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #17171d;
+}
+
+.appointment-manager__table-heading,
+.appointment-manager__action-heading {
+  white-space: nowrap;
+}
+
+.appointment-manager__standard-cell,
+.appointment-manager__placement-cell,
+.appointment-manager__date-cell,
+.appointment-manager__action-cell {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.appointment-manager__approve-button,
+.appointment-manager__reject-button,
+.flash-manager__toggle,
+.flash-manager__delete,
+.flash-manager__close {
+  min-height: 2.75rem;
+}
+
+.flash-manager__backdrop {
+  padding: 1rem;
+  background: rgb(3 3 5 / 82%);
+  backdrop-filter: blur(16px);
+}
+
+.flash-manager__modal {
+  max-width: 42rem;
+  border-radius: 1.5rem;
+  border-color: rgb(255 255 255 / 10%);
+  background: #121216;
+  box-shadow: 0 28px 70px rgb(0 0 0 / 55%);
+}
+
+.flash-manager__form {
+  border-radius: 1.25rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.flash-manager__field input,
+.flash-manager__field textarea {
+  min-height: 2.9rem;
+  border-radius: 0.75rem;
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 5%);
+  padding: 0.65rem 1rem;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.flash-manager__field textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.flash-manager__field input[type='file'] {
+  min-height: auto;
+  padding: 0.7rem;
+}
+
+.flash-manager__submit,
+.flash-manager__open-button {
+  min-height: 2.9rem;
+  box-shadow: 0 8px 24px rgb(245 158 11 / 13%);
+}
+
+.flash-manager__subtitle {
+  margin-top: 0.35rem;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.flash-manager__submit {
+  width: 100%;
+  background: linear-gradient(to right, #f59e0b, #fbbf24);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.flash-manager__submit:hover:not(:disabled) {
+  background: linear-gradient(to right, #fbbf24, #fcd34d);
+}
+
+.flash-manager__item {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr) auto auto;
+  min-width: 0;
+  border-color: rgb(255 255 255 / 8%);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.flash-manager__item:hover {
+  border-color: rgb(245 158 11 / 30%);
+  background: rgb(255 255 255 / 4%);
+}
+
+.flash-manager__item img {
+  width: 3.5rem;
+  height: 3.5rem;
+  grid-row: span 2;
+  border: 1px solid rgb(255 255 255 / 10%);
+}
+
+.flash-manager__item-copy {
+  overflow: hidden;
+}
+
+.flash-manager__toggle,
+.flash-manager__delete {
+  align-self: center;
+  border-radius: 0.75rem;
+}
+
+.flash-manager__toggle {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .appointment-manager__modal-backdrop {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .appointment-manager__modal {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    padding: max(1.25rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+  }
+
+  .appointment-manager__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.1rem;
+    margin-bottom: 1.25rem;
+    padding-right: 2rem;
+  }
+
+  .appointment-manager__toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  .appointment-manager__search-field {
+    grid-column: 1 / -1;
+  }
+
+  .appointment-manager__status-filter,
+  .flash-manager__open-button {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 0.65rem;
+  }
+
+  .appointment-manager__table-scroll {
+    width: 100%;
+    border-radius: 0.8rem;
+    overflow: visible;
+  }
+
+  .appointment-manager__appointments-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .appointment-manager__table-header-row {
+    display: none;
+  }
+
+  .appointment-manager__table-body {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .appointment-manager__table-body > tr:not(.appointment-manager__appointment-row) {
+    display: block;
+  }
+
+  .appointment-manager__appointment-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 0.9rem;
+    background: rgb(255 255 255 / 2%);
+  }
+
+  .appointment-manager__standard-cell,
+  .appointment-manager__placement-cell,
+  .appointment-manager__date-cell,
+  .appointment-manager__action-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 0.8rem;
+    border: 0;
+  }
+
+  .appointment-manager__appointment-row > :first-child,
+  .appointment-manager__action-cell {
+    grid-column: 1 / -1;
+  }
+
+  .appointment-manager__standard-cell::before,
+  .appointment-manager__placement-cell::before,
+  .appointment-manager__date-cell::before,
+  .appointment-manager__action-cell::before {
+    color: #8b8b95;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+
+  .appointment-manager__appointment-row > :first-child::before {
+    content: 'Client';
+  }
+
+  .appointment-manager__appointment-row > :nth-child(2)::before {
+    content: 'Style and size';
+  }
+
+  .appointment-manager__placement-cell::before {
+    content: 'Placement';
+  }
+
+  .appointment-manager__date-cell::before {
+    content: 'Appointment';
+  }
+
+  .appointment-manager__appointment-row > :nth-child(5)::before {
+    content: 'Status';
+  }
+
+  .appointment-manager__action-cell::before {
+    content: 'Actions';
+  }
+
+  .appointment-manager__empty-state::before {
+    content: none;
+  }
+
+  .appointment-manager__table-heading,
+  .appointment-manager__action-heading,
+  .appointment-manager__standard-cell,
+  .appointment-manager__placement-cell,
+  .appointment-manager__date-cell,
+  .appointment-manager__action-cell {
+    padding-right: 0.8rem;
+    padding-left: 0.8rem;
+  }
+
+  .flash-manager__backdrop {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .flash-manager__modal {
+    width: 100%;
+    max-width: none;
+    max-height: 100dvh;
+    height: 100dvh;
+    padding: max(1.25rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .flash-manager__form {
+    margin-top: 1.25rem;
+  }
+
+  .flash-manager__list {
+    padding-bottom: 1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .appointment-manager__title {
+    font-size: 1.25rem;
+  }
+
+  .appointment-manager__toolbar {
+    gap: 0.5rem;
+  }
+
+  .appointment-manager__status-filter,
+  .flash-manager__open-button {
+    font-size: 0.65rem;
+  }
+
+  .flash-manager__item {
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    gap: 0.55rem;
+    padding: 0.65rem;
+  }
+
+  .flash-manager__item img {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .flash-manager__toggle {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    min-height: 2.4rem;
+  }
+
+  .flash-manager__delete {
+    grid-column: 3;
+    grid-row: 2;
+    min-height: 2.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash-manager__field input,
+  .flash-manager__field textarea,
+  .flash-manager__item {
+    transition: none;
+  }
 }
