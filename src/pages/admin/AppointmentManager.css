@@ -1009,3 +1009,31 @@
     grid-column: 1 / -1;
   }
 }
+/* Allow the admin dashboard to scroll on mobile */
+@media (max-width: 760px) {
+  .appointment-manager__modal {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+/* Use the full-screen overlay as the mobile scroll area */
+@media (max-width: 760px) {
+  .appointment-manager__modal-backdrop {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
+  .appointment-manager__modal {
+    display: block;
+    height: auto;
+    min-height: 100dvh;
+    max-height: none;
+    overflow: visible;
+  }
+}
