@@ -164,11 +164,16 @@
 .appointment-manager__approve-button:hover {
   @apply bg-emerald-400;
 }
-/* px-3 py-1 bg-blue-500 hover:bg-blue-400 text-black rounded-lg text-xs font-bold transition-all */
 .appointment-manager__reject-button {
-  @apply px-3 py-1 bg-blue-500 text-black rounded-lg text-xs font-bold transition-all;
+  @apply px-3 py-1 rounded-lg bg-rose-600 text-white text-xs font-bold transition-all;
 }
 .appointment-manager__reject-button:hover {
+  @apply bg-rose-500;
+}
+.appointment-manager__complete-button {
+  @apply px-3 py-1 rounded-lg bg-blue-500 text-black text-xs font-bold transition-all;
+}
+.appointment-manager__complete-button:hover {
   @apply bg-blue-400;
 }
 
@@ -777,3 +782,230 @@
 .admin-dashboard-nav .admin-dashboard-nav__add { margin-left: auto; border-color: rgb(245 158 11 / 40%); color: #17120a; background: #fbbf24; }
 .admin-dashboard-nav .admin-dashboard-nav__add:hover { color: #17120a; background: #fcd34d; }
 @media (max-width: 560px) { .admin-dashboard-nav { display: grid; grid-template-columns: 1fr 1fr; } .admin-dashboard-nav button { padding: .6rem .45rem; font-size: .68rem; } .admin-dashboard-nav .admin-dashboard-nav__add { grid-column: 1 / -1; margin-left: 0; } }
+
+/* Appointment dashboard visual polish */
+.appointment-manager__modal {
+  border-color: rgb(255 255 255 / 11%);
+  border-radius: 1.5rem;
+  background: radial-gradient(ellipse at top left, rgb(245 158 11 / 8%), transparent 38%), linear-gradient(145deg, #17171b, #101014 58%);
+  box-shadow: 0 32px 100px rgb(0 0 0 / 68%), 0 0 0 1px rgb(255 255 255 / 2%);
+}
+
+.appointment-manager__header {
+  margin-bottom: 1.35rem;
+  gap: 1.25rem;
+}
+
+.appointment-manager__title {
+  margin-top: .4rem;
+  color: #fafafa;
+  font-size: clamp(1.45rem, 2.2vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+.appointment-manager__eyebrow {
+  color: #fbbf24;
+  font-size: .72rem;
+  letter-spacing: .14em;
+}
+
+.appointment-manager__search-field,
+.appointment-manager__status-filter {
+  border-color: rgb(255 255 255 / 9%);
+  background-color: rgb(255 255 255 / 4%);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.appointment-manager__search-field:focus-within,
+.appointment-manager__status-filter {
+  color-scheme: dark;
+}
+
+.appointment-manager__status-filter option {
+  color: #f4f4f5;
+  background-color: #18181d;
+}
+.appointment-manager__status-filter:focus-visible {
+  border-color: rgb(251 191 36 / 55%);
+  background-color: rgb(255 255 255 / 6%);
+  outline: none;
+}
+
+.appointment-manager__search-input,
+.appointment-manager__status-filter {
+  font-size: .85rem;
+}
+
+.admin-dashboard-nav {
+  margin-bottom: 1.15rem;
+  padding: .75rem 0;
+  background: transparent;
+}
+
+.admin-dashboard-nav button {
+  min-height: 2.8rem;
+  border-radius: .8rem;
+  font-size: .82rem;
+}
+
+.appointment-manager__table-scroll {
+  border-color: rgb(255 255 255 / 9%);
+  border-radius: 1.1rem;
+  background: rgb(12 12 15 / 55%);
+}
+
+.appointment-manager__table-header-row {
+  background: linear-gradient(180deg, #1c1c22, #17171c);
+  color: #a1a1aa;
+  letter-spacing: .08em;
+}
+
+.appointment-manager__table-heading,
+.appointment-manager__action-heading {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.appointment-manager__appointment-row {
+  background: rgb(255 255 255 / 1%);
+  transition: background-color 160ms ease;
+}
+
+.appointment-manager__appointment-row:nth-child(even) {
+  background: rgb(255 255 255 / 2.5%);
+}
+
+.appointment-manager__appointment-row:hover {
+  background: rgb(245 158 11 / 5%);
+}
+
+.appointment-manager__client-name {
+  font-size: .95rem;
+  font-weight: 650;
+  letter-spacing: -.015em;
+}
+
+.appointment-manager__secondary-text {
+  margin-top: .2rem;
+  color: #a1a1aa;
+  font-size: .8rem;
+  line-height: 1.45;
+}
+
+.appointment-manager__appointment-style {
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.appointment-manager__placement-cell {
+  color: #d4d4d8;
+  font-size: .88rem;
+}
+
+.appointment-manager__date-cell {
+  color: #d4d4d8;
+  font-family: var(--font-sans);
+  font-size: .8rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.55;
+}
+
+.appointment-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  padding: .3rem .7rem;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 650;
+  letter-spacing: .01em;
+}
+
+.appointment-status.appointment-status--pending {
+  border-color: rgb(251 191 36 / 25%);
+  color: #fbbf24;
+  background: rgb(251 191 36 / 9%);
+}
+
+.appointment-status.appointment-status--rejected {
+  border-color: rgb(251 113 133 / 25%);
+  color: #fda4af;
+  background: rgb(251 113 133 / 9%);
+}
+
+.appointment-status.appointment-status--cancelled {
+  border-color: rgb(161 161 170 / 20%);
+  color: #c4c4c8;
+  background: rgb(161 161 170 / 8%);
+}
+
+.appointment-manager__action-cell {
+  white-space: nowrap;
+}
+
+.appointment-manager__approve-button,
+.appointment-manager__reject-button,
+.appointment-manager__complete-button {
+  min-height: 2.5rem;
+  padding: .55rem .85rem;
+  border-radius: .75rem;
+  transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.appointment-manager__approve-button:hover,
+.appointment-manager__reject-button:hover,
+.appointment-manager__complete-button:hover {
+  transform: translateY(-1px);
+}
+
+.appointment-manager__approve-button:focus-visible,
+.appointment-manager__reject-button:focus-visible,
+.appointment-manager__complete-button:focus-visible,
+.admin-dashboard-nav button:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .appointment-manager__modal {
+    border-radius: 1.25rem;
+  }
+
+  .appointment-manager__title {
+    max-width: 15ch;
+    font-size: 1.45rem;
+  }
+
+  .appointment-manager__table-scroll {
+    border: 0;
+    background: transparent;
+  }
+
+  .appointment-manager__appointment-row {
+    border-color: rgb(255 255 255 / 9%);
+    border-radius: 1rem;
+    background: #151519;
+  }
+
+  .appointment-manager__appointment-row:nth-child(even) {
+    background: #17171b;
+  }
+
+  .appointment-manager__appointment-row:hover {
+    background: #1c1a16;
+  }
+
+  .appointment-manager__action-cell {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    justify-content: start;
+    gap: .6rem;
+  }
+
+  .appointment-manager__action-cell::before {
+    grid-column: 1 / -1;
+  }
+}

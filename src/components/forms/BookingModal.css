@@ -204,3 +204,20 @@
 .booking-calendar__legend .is-green { background: #4ade80; }
 .booking-calendar__legend .is-red { background: #f87171; }
 .booking-modal__schedule-note { margin: -.5rem 0 0; color: #a1a1aa; font-size: .75rem; line-height: 1.5; }
+
+@media (max-width: 39.999rem) {
+  .booking-modal__modal-backdrop {
+    align-items: flex-start;
+    padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .booking-modal__modal {
+    width: 100%;
+    max-height: calc(100vh - 1.5rem);
+    max-height: calc(100dvh - max(1.5rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+    margin: 0 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}

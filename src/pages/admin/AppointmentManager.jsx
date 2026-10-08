@@ -164,23 +164,35 @@ export default function AppointmentManager(props) {
                         </td>
                         <td className="appointment-manager__action-cell">
                           {app.status === 'pending' && (
-                            <button 
-                              onClick={() => updateAppointmentStatus(app.id, 'approved')}
-                              
-                              className="appointment-manager__approve-button"
-                            >
-                              Confirm
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => updateAppointmentStatus(app.id, 'approved')}
+                                className="appointment-manager__approve-button"
+                                aria-label={`Confirm appointment for ${app.clientName}`}
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateAppointmentStatus(app.id, 'rejected')}
+                                className="appointment-manager__reject-button"
+                                aria-label={`Reject appointment for ${app.clientName}`}
+                              >
+                                Reject
+                              </button>
+                            </>
                           )}
                           {app.status === 'approved' && (
-                            <button 
+                            <button
+                              type="button"
                               onClick={() => updateAppointmentStatus(app.id, 'completed')}
-                              
-                              className="appointment-manager__reject-button"
+                              className="appointment-manager__complete-button"
                             >
                               Complete
                             </button>
                           )}
+
                         </td>
                       </tr>
                   ))}
