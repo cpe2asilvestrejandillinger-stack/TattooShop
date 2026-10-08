@@ -279,7 +279,7 @@
 
 /* absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-950/20 via-[#0b0b0e] to-[#0b0b0e] pointer-events-none */
 .home-page__hero-background {
-  @apply absolute inset-0 bg-[radial-gradient(ellipse_at_top, _var(--tw-gradient-stops))] from-amber-950/20 via-[#0b0b0e] to-[#0b0b0e] pointer-events-none;
+  @apply absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-950/20 via-[#0b0b0e] to-[#0b0b0e] pointer-events-none;
 }
 
 /* max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10 */
