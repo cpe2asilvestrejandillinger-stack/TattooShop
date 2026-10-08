@@ -9,6 +9,7 @@ export const toCurrentUser = (authUser, profile) => ({
 export const toAppointment = (row) => ({
   id: row.id,
   customerId: row.customer_id,
+  flashDesignId: row.flash_design_id,
   clientName: row.profiles?.full_name || 'Customer',
   phone: row.profiles?.phone || '',
   style: row.tattoo_style,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 import { APPOINTMENT_SELECT } from './lib/appointmentFields'
 import HomePage from './pages/public/HomePage'
@@ -9,6 +9,14 @@ const ALLOWED_REFERENCE_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image
 const MAX_REFERENCE_IMAGE_SIZE = 10 * 1024 * 1024
 const FLASH_IMAGE_BUCKET = 'flash-designs'
 
+const localDateKey = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+
+async function fetchUnavailableDates() {
+  const { data, error } = await supabase.rpc('get_unavailable_booking_dates', { p_start_date: localDateKey() })
+  if (error) throw error
+  return (data || []).map((row) => row.appointment_date)
+}
+
 
 
 
@@ -16,11 +24,15 @@ export default function App() {
   const [authUser, setAuthUser] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
   const [appointments, setAppointments] = useState([])
+  const [unavailableDates, setUnavailableDates] = useState([])
+  const [availabilityLoading, setAvailabilityLoading] = useState(false)
+  const [availabilityError, setAvailabilityError] = useState('')
   const [flashDesigns, setFlashDesigns] = useState([])
   const [flashLoaded, setFlashLoaded] = useState(false)
   const [flashError, setFlashError] = useState('')
   const [flashSubmitting, setFlashSubmitting] = useState(false)
   const [pendingFlash, setPendingFlash] = useState(null)
+  const [pendingEstimate, setPendingEstimate] = useState(null)
   const [bookingFlashId, setBookingFlashId] = useState(null)
   const [appointmentError, setAppointmentError] = useState('')
   const [bookingError, setBookingError] = useState('')
@@ -140,6 +152,25 @@ export default function App() {
   }, [currentUser?.id])
 
   useEffect(() => {
+    if (!isAdminModalOpen && !isBookingOpen) return
+    if (isBookingOpen && currentUser?.role !== 'customer') return
+
+    let isActive = true
+    setAvailabilityLoading(true)
+    fetchUnavailableDates().then((dates) => {
+      if (!isActive) return
+      setUnavailableDates(dates)
+      setAvailabilityError('')
+    }).catch((error) => {
+      if (!isActive) return
+      setAvailabilityError(`Could not load booking availability: ${error.message}`)
+    }).finally(() => {
+      if (isActive) setAvailabilityLoading(false)
+    })
+    return () => { isActive = false }
+  }, [currentUser?.role, isAdminModalOpen, isBookingOpen])
+
+  useEffect(() => {
     let isActive = true
     const loadFlashDesigns = async () => {
       const { data, error } = await supabase
@@ -167,7 +198,10 @@ export default function App() {
     if (currentUser?.role !== 'customer' || !pendingFlash) return
 
     setBookStyle(`Flash: ${pendingFlash.title}`)
+    setBookDate('')
+    setBookTime('')
     setBookSize(pendingFlash.size || 'Small (5-10cm)')
+    setBookPlacement('')
     setBookNotes(`1/1 Flash claim: ${pendingFlash.title}`)
     setBookingFlashId(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(pendingFlash.id || '') ? pendingFlash.id : null)
     setBookingError('')
@@ -176,19 +210,38 @@ export default function App() {
     setPendingFlash(null)
   }, [currentUser, pendingFlash])
 
-  const openBooking = () => {
+  const beginBooking = useCallback((estimate) => {
     if (currentUser?.role !== 'customer') {
       setAuthError('Sign in with a customer account to request an appointment.')
       setAuthModal('login')
       return
     }
-    setBookStyle('Fine Line')
-    setBookSize('Small (5-10cm)')
+    setBookStyle(estimate?.style || 'Fine Line')
+    setBookDate('')
+    setBookTime('')
+    setBookSize(estimate?.size || 'Small (5-10cm)')
+    setBookPlacement(estimate?.placement || '')
     setBookNotes('')
     setBookingFlashId(null)
     setBookingError('')
     setIsBookingOpen(true)
+  }, [currentUser])
+  const openBooking = () => beginBooking()
+  const openBookingWithEstimate = (estimate) => {
+    if (currentUser?.role !== 'customer') {
+      setPendingEstimate(estimate)
+      beginBooking()
+      return
+    }
+    setPendingEstimate(null)
+    beginBooking(estimate)
   }
+
+  useEffect(() => {
+    if (currentUser?.role !== 'customer' || !pendingEstimate) return
+    beginBooking(pendingEstimate)
+    setPendingEstimate(null)
+  }, [beginBooking, currentUser, pendingEstimate])
 
   const handleClaimFlash = (flash) => {
     if (currentUser?.role === 'customer') {
@@ -359,6 +412,7 @@ export default function App() {
 
   const closeAuthModal = () => {
     setAuthModal(null)
+    setPendingEstimate(null)
     setPendingFlash(null)
   }
 
@@ -401,6 +455,11 @@ export default function App() {
       if (!currentUser?.id || currentUser.role !== 'customer') {
         throw new Error('Sign in with a customer account before booking.')
       }
+      if (availabilityLoading) throw new Error('Wait for booking availability to finish loading.')
+      if (availabilityError) throw new Error('Booking availability could not be checked. Please try again.')
+      if (!bookDate) throw new Error('Choose an available date on the calendar.')
+      if (bookDate < localDateKey()) throw new Error('Choose a future date.')
+      if (unavailableDates.includes(bookDate)) throw new Error('That date has just been confirmed for another appointment. Choose another date.')
 
       if (bookImageFile && !ALLOWED_REFERENCE_IMAGE_TYPES.has(bookImageFile.type)) {
         throw new Error('Choose a JPG, PNG, or WebP reference image.')
@@ -442,12 +501,7 @@ export default function App() {
         .single()
       if (error) throw error
 
-      if (bookingFlashId) {
-        setFlashDesigns((items) => items.map((item) => (
-          item.id === bookingFlashId ? { ...item, is_available: false } : item
-        )))
-        setBookingFlashId(null)
-      }
+      if (bookingFlashId) setBookingFlashId(null)
       setAppointments((currentAppointments) => [...currentAppointments, toAppointment(data)])
       setBookingSuccess(true)
       window.setTimeout(() => {
@@ -478,6 +532,7 @@ export default function App() {
     setSelectedImage({ img: data.signedUrl, title: 'Booking Reference', description: '' })
   }
   const updateAppointmentStatus = async (appointmentId, status) => {
+    const appointment = appointments.find((item) => item.id === appointmentId)
     const { error } = await supabase
       .from('appointments')
       .update({ status })
@@ -491,14 +546,32 @@ export default function App() {
     setAppointments((currentAppointments) => currentAppointments.map((appointment) => (
       appointment.id === appointmentId ? { ...appointment, status } : appointment
     )))
+    if (appointment?.flashDesignId) {
+      if (status === 'approved') {
+        setFlashDesigns((items) => items.map((item) => (
+          item.id === appointment.flashDesignId ? { ...item, is_available: false } : item
+        )))
+      } else if (['rejected', 'cancelled'].includes(status) && ['approved', 'completed'].includes(appointment.status)) {
+        setFlashDesigns((items) => items.map((item) => (
+          item.id === appointment.flashDesignId ? { ...item, is_available: true } : item
+        )))
+      }
+    }
+    try {
+      setUnavailableDates(await fetchUnavailableDates())
+      setAvailabilityError('')
+    } catch (refreshError) {
+      setAvailabilityError(`Booking status changed, but availability could not refresh: ${refreshError.message}`)
+    }
   }
-  const modalProps = { authModal, setAuthModal, closeAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, isBookingOpen, setIsBookingOpen, closeBookingModal, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns, flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability, selectedImage, setSelectedImage }
+  const modalProps = { unavailableDates, availabilityLoading, availabilityError, authModal, setAuthModal, closeAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, isBookingOpen, setIsBookingOpen, closeBookingModal, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookPlacement, setBookPlacement, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns, flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability, selectedImage, setSelectedImage }
 
   return (
     <>
       <HomePage
         currentUser={currentUser}
         openBooking={openBooking}
+        openBookingWithEstimate={openBookingWithEstimate}
         handleLogout={handleLogout}
         setAuthModal={(modal) => { setPendingFlash(null); setAuthModal(modal) }}
         setIsAdminModalOpen={setIsAdminModalOpen}

@@ -1,8 +1,84 @@
 import './BookingModal.css'
-import { Camera, Check, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { CalendarDays, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react'
+
+const toDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
 export default function BookingModal(props) {
-  const { isBookingOpen, setIsBookingOpen, closeBookingModal = () => setIsBookingOpen(false), bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookDate, setBookDate, bookTime, setBookTime, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, currentUser } = props
+  const { isBookingOpen, setIsBookingOpen, closeBookingModal = () => setIsBookingOpen(false), bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookPlacement, setBookPlacement, bookDate, setBookDate, bookTime, setBookTime, unavailableDates = [], availabilityLoading = false, availabilityError = '', handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, currentUser } = props
+  const [calendarMonth, setCalendarMonth] = useState(() => { const today = new Date(); return new Date(today.getFullYear(), today.getMonth(), 1) })
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [timeHour, setTimeHour] = useState('')
+  const [timeMinute, setTimeMinute] = useState('00')
+  const [timePeriod, setTimePeriod] = useState('AM')
+  const calendarPickerRef = useRef(null)
+  const todayKey = toDateKey(new Date())
+  const monthLabel = calendarMonth.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' })
+  const calendarCells = useMemo(() => {
+    const year = calendarMonth.getFullYear()
+    const month = calendarMonth.getMonth()
+    const offset = new Date(year, month, 1).getDay()
+    const count = new Date(year, month + 1, 0).getDate()
+    return [...Array(offset).fill(null), ...Array.from({ length: count }, (_, index) => toDateKey(new Date(year, month, index + 1)))]
+  }, [calendarMonth])
+
+  useEffect(() => {
+    if (!bookDate) return
+    const [year, month] = bookDate.split('-').map(Number)
+    setCalendarMonth(new Date(year, month - 1, 1))
+  }, [bookDate])
+
+  useEffect(() => {
+    if (!isBookingOpen) return
+    if (!bookTime) {
+      setTimeHour('')
+      setTimeMinute('00')
+      setTimePeriod('AM')
+      return
+    }
+    const [hour24, minute] = bookTime.split(':').map(Number)
+    setTimeHour(String(hour24 % 12 || 12))
+    setTimeMinute(String(minute).padStart(2, '0'))
+    setTimePeriod(hour24 >= 12 ? 'PM' : 'AM')
+  }, [isBookingOpen])
+
+  useEffect(() => {
+    if (!isCalendarOpen) return undefined
+    const closeOnOutsideClick = (event) => {
+      if (!calendarPickerRef.current?.contains(event.target)) setIsCalendarOpen(false)
+    }
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setIsCalendarOpen(false)
+    }
+    document.addEventListener('pointerdown', closeOnOutsideClick)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [isCalendarOpen])
+
+  const chooseDate = (date) => {
+    if (date < todayKey || unavailableDates.includes(date)) return
+    setBookDate(date)
+    setIsCalendarOpen(false)
+  }
+
+  const selectedDateLabel = bookDate
+    ? new Date(`${bookDate}T12:00:00`).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    : 'Choose a date'
+
+  const updateBookingTime = (hourValue, minuteValue, periodValue) => {
+    const hour = Number(hourValue)
+    const minute = Number(minuteValue)
+    if (!hourValue || !minuteValue || hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+      setBookTime('')
+      return
+    }
+    const hour24 = (hour % 12) + (periodValue === 'PM' ? 12 : 0)
+    setBookTime(`${String(hour24).padStart(2, '0')}:${String(minute).padStart(2, '0')}`)
+  }
+
   return (
     <>
       {/* BOOKING SESSION MODAL */}
@@ -100,29 +176,128 @@ export default function BookingModal(props) {
                     </div>
                   </div>
 
-                  <div className="booking-modal__field-row">
-                    <div>
-                      <label className="booking-modal__field-label">Target Date</label>
-                      <input
-                        type="date"
-                        required
-                        min={new Date().toISOString().split('T')[0]}
-                        value={bookDate}
-                        onChange={(event) => setBookDate(event.target.value)}
-                        className="booking-modal__text-input"
-                      />
+                  <div>
+                    <label className="booking-modal__field-label" htmlFor="booking-placement">Tattoo Placement</label>
+                    <input
+                      id="booking-placement"
+                      type="text"
+                      required
+                      maxLength={120}
+                      value={bookPlacement}
+                      onChange={(event) => setBookPlacement(event.target.value)}
+                      placeholder="e.g. left forearm"
+                      className="booking-modal__text-input"
+                    />
+                  </div>
+
+                  <div className="booking-modal__field">
+                    <span className="booking-modal__field-label">Choose an Available Date</span>
+                    <div className="booking-date-picker" ref={calendarPickerRef}>
+                      <button
+                        type="button"
+                        className="booking-date-picker__trigger"
+                        aria-haspopup="dialog"
+                        aria-expanded={isCalendarOpen}
+                        onClick={() => setIsCalendarOpen((open) => !open)}
+                      >
+                        <span className={bookDate ? '' : 'booking-date-picker__placeholder'}>{selectedDateLabel}</span>
+                        <span className="booking-date-picker__icons">
+                          <CalendarDays size={18} aria-hidden="true" />
+                          <ChevronDown size={16} aria-hidden="true" className={isCalendarOpen ? 'is-open' : ''} />
+                        </span>
+                      </button>
+                      {isCalendarOpen && <div className="booking-date-picker__dropdown">
+                      <div className="booking-calendar" role="dialog" aria-label="Appointment availability calendar">
+                      <div className="booking-calendar__header">
+                        <button type="button" aria-label="Previous month" onClick={() => setCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() - 1, 1))} disabled={calendarMonth.getFullYear() === new Date().getFullYear() && calendarMonth.getMonth() === new Date().getMonth()}>
+                          <ChevronLeft size={18} />
+                        </button>
+                        <strong>{monthLabel}</strong>
+                        <button type="button" aria-label="Next month" onClick={() => setCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() + 1, 1))}>
+                          <ChevronRight size={18} />
+                        </button>
+                      </div>
+                      <div className="booking-calendar__grid" role="grid">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((weekday) => <span className="booking-calendar__weekday" role="columnheader" key={weekday}>{weekday}</span>)}
+                        {calendarCells.map((date, index) => {
+                          if (!date) return <span className="booking-calendar__blank" aria-hidden="true" key={`blank-${index}`} />
+                          const isUnavailable = unavailableDates.includes(date)
+                          const isAvailable = !isUnavailable && !availabilityError
+                          const isPast = date < todayKey
+                          const stateClass = isUnavailable ? 'unavailable' : isPast ? 'past' : availabilityError ? 'empty' : 'available'
+                          const selected = bookDate === date
+                          return <button
+                            type="button"
+                            role="gridcell"
+                            key={date}
+                            disabled={!isAvailable || isPast || availabilityLoading || Boolean(availabilityError)}
+                            aria-pressed={selected}
+                            aria-label={`${new Date(`${date}T12:00:00`).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' })}: ${availabilityError ? 'Availability could not be loaded' : isUnavailable ? 'Confirmed booking' : isPast ? 'Past date' : 'Available to request'}`}
+                            className={`booking-calendar__day booking-calendar__day--${stateClass}${selected ? ' is-selected' : ''}`}
+                            onClick={() => chooseDate(date)}
+                          >{Number(date.slice(-2))}</button>
+                        })}
+                      </div>
+                      <div className="booking-calendar__legend" aria-label="Calendar legend">
+                        <span><i className="is-green" /> Available</span>
+                        <span><i className="is-red" /> Unavailable</span>
+                      </div>
                     </div>
-                    <div>
-                      <label className="booking-modal__field-label">Target Time</label>
-                      <input
-                        type="time"
-                        required
-                        value={bookTime}
-                        onChange={(event) => setBookTime(event.target.value)}
-                        className="booking-modal__text-input"
-                      />
+                      </div>}
                     </div>
                   </div>
+                  <div>
+                    <span className="booking-modal__field-label">Preferred Time</span>
+                    <div className="booking-time-inputs">
+                      <input
+                        id="requested-time-hour"
+                        type="number"
+                        min="1"
+                        max="12"
+                        required
+                        inputMode="numeric"
+                        aria-label="Hour"
+                        placeholder="Hour"
+                        value={timeHour}
+                        onChange={(event) => {
+                          setTimeHour(event.target.value)
+                          updateBookingTime(event.target.value, timeMinute, timePeriod)
+                        }}
+                        className="booking-modal__text-input booking-time-number"
+                      />
+                      <span className="booking-time-colon" aria-hidden="true">:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        required
+                        inputMode="numeric"
+                        aria-label="Minutes"
+                        placeholder="00"
+                        value={timeMinute}
+                        onChange={(event) => {
+                          setTimeMinute(event.target.value)
+                          updateBookingTime(timeHour, event.target.value, timePeriod)
+                        }}
+                        className="booking-modal__text-input booking-time-number"
+                      />
+                      <select
+                        aria-label="AM or PM"
+                        value={timePeriod}
+                        onChange={(event) => {
+                          setTimePeriod(event.target.value)
+                          updateBookingTime(timeHour, timeMinute, event.target.value)
+                        }}
+                        className="booking-modal__select-input booking-time-period"
+                      >
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                      </select>
+                    </div>
+                  </div>
+                  {availabilityError && <p className="booking-modal__error-message" role="alert">{availabilityError}</p>}
+                  {availabilityLoading && <p className="booking-modal__schedule-note">Loading confirmed booking dates...</p>}
+                  <p className="booking-modal__schedule-note">All future dates are available to request. A date becomes unavailable after the artist confirms a booking.</p>
                   <div>
                     <label className="booking-modal__field-label">Reference Image (Optional)</label>
                     <div className="booking-modal__upload-field">
@@ -166,3 +341,4 @@ export default function BookingModal(props) {
     </>
   )
 }
+

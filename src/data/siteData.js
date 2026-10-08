@@ -4,10 +4,6 @@ import design3 from '../assets/design3.jpg'
 import design4 from '../assets/design4.png'
 import design5 from '../assets/design5.jpg'
 import design6 from '../assets/design6.jpg'
-import tattoo1 from '../assets/Tattoo1.jpg'
-import tattoo2 from '../assets/Tattoo2.jpg'
-import tattoo3 from '../assets/Tattoo3.jpg'
-import tattoo4 from '../assets/Tattoo4.jpg'
 
 export const PORTFOLIO_ITEMS = [
   {
@@ -51,44 +47,5 @@ export const PORTFOLIO_ITEMS = [
     category: 'Color',
     img: design6,
     description: 'A vibrant red rose with flowing green leaves and stem.',
-  },
-]
-
-export const FLASH_ITEMS = [
-  {
-    id: 'f1',
-    title: 'Hannya & Peony',
-    description: 'A bold Japanese mask framed by soft peonies and flowing leaves.',
-    size: '15cm x 8cm',
-    price: '₱4,500',
-    available: true,
-    img: tattoo1,
-  },
-  {
-    id: 'f2',
-    title: 'Dove of Faith',
-    description: 'A soaring dove, radiant sunburst, and gothic cross in crisp blackwork.',
-    size: '15cm x 8cm',
-    price: '₱3,800',
-    available: true,
-    img: tattoo2,
-  },
-  {
-    id: 'f3',
-    title: 'Cosmic Character',
-    description: 'A playful cartoon portrait with a spiked silhouette and sketch shading.',
-    size: '12cm x 10cm',
-    price: '₱5,200',
-    available: false,
-    img: tattoo3,
-  },
-  {
-    id: 'f4',
-    title: 'Blue Serpent Bloom',
-    description: 'A vivid blue serpent winding through layered blossoms and leaves.',
-    size: '18cm x 12cm',
-    price: '₱6,500',
-    available: true,
-    img: tattoo4,
   },
 ]

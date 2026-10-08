@@ -5,11 +5,30 @@ import instagramLogo from '../../assets/iglogo.jpg'
 import facebookLogo from '../../assets/fblogo.jpg'
 import tiktokLogo from '../../assets/tiktoklogo.jpg'
 import { Sparkles, Clock, MapPin, Calendar, ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Menu, X, Phone } from 'lucide-react'
-import { FLASH_ITEMS, PORTFOLIO_ITEMS } from '../../data/siteData'
+import { PORTFOLIO_ITEMS } from '../../data/siteData'
 
-export default function HomePage({ currentUser, openBooking, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, flashDesigns = [], flashLoaded = false, onClaimFlash }) {
+const ESTIMATOR_STYLES = [
+  { name: 'Fine Line', price: 3000 },
+  { name: 'Cyberwork', price: 4500 },
+  { name: 'Japanese', price: 5000 },
+  { name: 'Ornamental', price: 3500 },
+  { name: 'Blackwork', price: 4000 },
+]
+const ESTIMATOR_SIZES = [
+  { name: 'Small (5-10cm)', price: 2000 },
+  { name: 'Medium (10-15cm)', price: 4500 },
+  { name: 'Large (Sleeve/Thigh)', price: 8500 },
+]
+const ESTIMATOR_PLACEMENTS = [
+  { name: 'Arm / Leg', price: 500 },
+  { name: 'Torso', price: 1000 },
+  { name: 'Ribs / Neck', price: 1500 },
+]
+
+export default function HomePage({ currentUser, openBooking, openBookingWithEstimate, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, flashDesigns = [], flashLoaded = false, onClaimFlash }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [activeNavId, setActiveNavId] = useState('home')
   const pageRef = useRef(null)
   const flashCarouselRef = useRef(null)
   const [canScrollFlashLeft, setCanScrollFlashLeft] = useState(false)
@@ -22,7 +41,14 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
     price: new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(Number(design.price || 0)),
     available: design.is_available,
     img: design.image_url,
-  })) : FLASH_ITEMS
+  })) : []
+  const selectedEstimate = {
+    style: ESTIMATOR_STYLES.find((option) => option.price === estStyle)?.name || ESTIMATOR_STYLES[0].name,
+    size: ESTIMATOR_SIZES.find((option) => option.price === estSize)?.name || ESTIMATOR_SIZES[0].name,
+    placement: ESTIMATOR_PLACEMENTS.find((option) => option.price === estPlacement)?.name || ESTIMATOR_PLACEMENTS[0].name,
+  }
+  const estimateTotal = estStyle + estSize + estPlacement
+  const estimateCurrency = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(estimateTotal)
 
   useEffect(() => {
     const carousel = flashCarouselRef.current
@@ -99,12 +125,12 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
         </div>
 
         <div className="home-page__desktop-nav">
-          <a href="#home" className="home-page__nav-link">Home</a>
-          <a href="#portfolio" className="home-page__nav-link">Portfolio</a>
-          <a href="#estimator" className="home-page__nav-link">Estimator</a>
-          <a href="#flash" className="home-page__nav-link">1/1 Flash</a>
-          <a href="#location" className="home-page__nav-link">Location</a>
-          <a href="#contact" className="home-page__nav-link">Contact</a>
+          <a href="#home" className={activeNavId === 'home' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('home')}>Home</a>
+          <a href="#portfolio" className={activeNavId === 'portfolio' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('portfolio')}>Portfolio</a>
+          <a href="#estimator" className={activeNavId === 'estimator' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('estimator')}>Estimator</a>
+          <a href="#flash" className={activeNavId === 'flash' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('flash')}>1/1 Flash</a>
+          <a href="#location" className={activeNavId === 'location' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('location')}>Location</a>
+          <a href="#contact" className={activeNavId === 'contact' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('contact')}>Contact</a>
         </div>
 
         <div className="home-page__nav-actions">
@@ -249,12 +275,12 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
                 </div>
               </div>
             )}
-            <a href="#home" onClick={() => setIsMobileMenuOpen(false)}>Home</a>
-            <a href="#portfolio" onClick={() => setIsMobileMenuOpen(false)}>Portfolio</a>
-            <a href="#estimator" onClick={() => setIsMobileMenuOpen(false)}>Estimator</a>
-            <a href="#flash" onClick={() => setIsMobileMenuOpen(false)}>1/1 Flash</a>
-            <a href="#location" onClick={() => setIsMobileMenuOpen(false)}>Location</a>
-            <a href="#contact" onClick={() => setIsMobileMenuOpen(false)}>Contact</a>
+            <a href="#home" className={activeNavId === 'home' ? 'is-active' : ''} onClick={() => { setActiveNavId('home'); setIsMobileMenuOpen(false) }}>Home</a>
+            <a href="#portfolio" className={activeNavId === 'portfolio' ? 'is-active' : ''} onClick={() => { setActiveNavId('portfolio'); setIsMobileMenuOpen(false) }}>Portfolio</a>
+            <a href="#estimator" className={activeNavId === 'estimator' ? 'is-active' : ''} onClick={() => { setActiveNavId('estimator'); setIsMobileMenuOpen(false) }}>Estimator</a>
+            <a href="#flash" className={activeNavId === 'flash' ? 'is-active' : ''} onClick={() => { setActiveNavId('flash'); setIsMobileMenuOpen(false) }}>1/1 Flash</a>
+            <a href="#location" className={activeNavId === 'location' ? 'is-active' : ''} onClick={() => { setActiveNavId('location'); setIsMobileMenuOpen(false) }}>Location</a>
+            <a href="#contact" className={activeNavId === 'contact' ? 'is-active' : ''} onClick={() => { setActiveNavId('contact'); setIsMobileMenuOpen(false) }}>Contact</a>
             {!currentUser && (
               <div className="mobile-nav-auth">
                 <button type="button" onClick={() => { setAuthModal('login'); setIsMobileMenuOpen(false) }}>Log In</button>
@@ -391,13 +417,7 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
             <div>
               <label className="home-page__option-label">1. Select Tattoo Style</label>
               <div className="home-page__style-options">
-                {[
-                  { name: 'Fine Line', price: 3000 },
-                  { name: 'Cyberwork', price: 4500 },
-                  { name: 'Japanese', price: 5000 },
-                  { name: 'Ornamental', price: 3500 },
-                  { name: 'Blackwork', price: 4000 }
-                ].map((s) => (
+                {ESTIMATOR_STYLES.map((s) => (
                   <button
                     key={s.name}
                     onClick={() => setEstStyle(s.price)}
@@ -413,11 +433,7 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
             <div>
               <label className="home-page__option-label">2. Choose Approximate Size</label>
               <div className="home-page__size-options">
-                {[
-                  { name: 'Small (5-10cm)', price: 2000 },
-                  { name: 'Medium (10-15cm)', price: 4500 },
-                  { name: 'Large (Sleeve/Thigh)', price: 8500 }
-                ].map((sz) => (
+                {ESTIMATOR_SIZES.map((sz) => (
                   <button
                     key={sz.name}
                     onClick={() => setEstSize(sz.price)}
@@ -433,11 +449,7 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
             <div>
               <label className="home-page__option-label">3. Select Placement</label>
               <div className="home-page__placement-options">
-                {[
-                  { name: 'Arm / Leg', price: 500 },
-                  { name: 'Torso', price: 1000 },
-                  { name: 'Ribs / Neck', price: 1500 },
-                ].map((placement) => (
+                {ESTIMATOR_PLACEMENTS.map((placement) => (
                   <button
                     key={placement.name}
                     type="button"
@@ -454,11 +466,11 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
           <div className="home-page__estimate-summary">
             <span className="home-page__estimate-label">Estimated Investment</span>
             <div className="home-page__estimate-price">
-              ₱{(estStyle + estSize + estPlacement).toLocaleString()}
+              {estimateCurrency}
             </div>
             <p className="home-page__muted-text">Includes consultation, sterile single-use supplies, and aftercare kit.</p>
             <button 
-              onClick={openBooking}
+              onClick={() => openBookingWithEstimate(selectedEstimate)}
               className="home-page__estimate-button"
             >
               Lock in Estimate & Book
@@ -482,7 +494,9 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
             <ChevronLeft size={20} aria-hidden="true" />
           </button>
           <div className="home-page__flash-grid" ref={flashCarouselRef} role="region" aria-label="1/1 flash designs" tabIndex={0}>
-          {flashLoaded && flashItems.length === 0 ? (
+          {!flashLoaded ? (
+            <p className="home-page__flash-empty">Loading flash designs...</p>
+          ) : flashItems.length === 0 ? (
             <p className="home-page__flash-empty">No flash designs are available right now. Check back soon.</p>
           ) : flashItems.map((flash) => (
             <div key={flash.id} className="home-page__flash-card">

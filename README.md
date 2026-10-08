@@ -63,9 +63,10 @@ Use only the Supabase publishable key in this Vite frontend. Never place a Supab
 
 ### Week 1 - Current: Scheduling and booking reliability
 
-- [ ] Show customers available dates and time slots from the schedules table.
-- [ ] Prevent booking a time slot that is unavailable or already booked.
-- [ ] Add admin controls to create, edit, and close schedule slots.
+- [x] Show all future dates as available; mark a date unavailable after an admin confirms a booking.
+- [x] Prevent new requests or confirmations on a date that already has a confirmed appointment.
+- [x] Show the same confirmed-date calendar to the admin without requiring manual schedule setup.
+- [ ] Apply the updated `supabase/schema.sql` to Supabase and verify date availability with customer and admin accounts.
 - [ ] Verify booking requests and reference-image access with customer and admin accounts.
 
 ### Week 2 - Customer follow-up

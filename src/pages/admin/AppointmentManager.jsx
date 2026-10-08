@@ -1,12 +1,24 @@
 import './AppointmentManager.css'
-import { useState } from 'react'
-import { Search, X, Trash2, Camera } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Search, X, Trash2, Camera, ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Plus } from 'lucide-react'
+import { formatTime } from '../../utils/formatTime'
+
+const localDateString = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
 export default function AppointmentManager(props) {
-  const { isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns = [], flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability } = props
+  const { isAdminModalOpen, setIsAdminModalOpen, currentUser, unavailableDates = [], availabilityLoading = false, availabilityError = '', adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns = [], flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability } = props
   const [flashDraft, setFlashDraft] = useState({ title: '', size: '', price: '', description: '', imageFile: null })
   const [isFlashManagerOpen, setIsFlashManagerOpen] = useState(false)
-
+  const [adminTab, setAdminTab] = useState('appointments')
+  const [selectedScheduleDate, setSelectedScheduleDate] = useState(localDateString())
+  const [scheduleCalendarMonth, setScheduleCalendarMonth] = useState(() => { const today = new Date(); return new Date(today.getFullYear(), today.getMonth(), 1) })
+  const scheduleCalendarDays = useMemo(() => {
+    const year = scheduleCalendarMonth.getFullYear()
+    const month = scheduleCalendarMonth.getMonth()
+    const blanks = new Date(year, month, 1).getDay()
+    const count = new Date(year, month + 1, 0).getDate()
+    return [...Array(blanks).fill(null), ...Array.from({ length: count }, (_, index) => `${year}-${String(month + 1).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`)]
+  }, [scheduleCalendarMonth])
   const submitFlash = async (event) => {
     const saved = await handleFlashSubmit(event, flashDraft)
     if (saved) setFlashDraft({ title: '', size: '', price: '', description: '', imageFile: null })
@@ -53,11 +65,55 @@ export default function AppointmentManager(props) {
                   <option value="rejected">Rejected</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
-                <button type="button" className="flash-manager__open-button" onClick={() => setIsFlashManagerOpen(true)}>
-                  Add 1/1 Design
-                </button>
               </div>
             </div>
+            <nav className="admin-dashboard-nav" aria-label="Admin dashboard sections">
+              <button type="button" className={adminTab === 'appointments' ? 'is-active' : ''} aria-current={adminTab === 'appointments' ? 'page' : undefined} onClick={() => setAdminTab('appointments')}>
+                <ClipboardList size={16} /> Appointments
+              </button>
+              <button type="button" className={adminTab === 'schedule' ? 'is-active' : ''} aria-current={adminTab === 'schedule' ? 'page' : undefined} onClick={() => setAdminTab('schedule')}>
+                <CalendarDays size={16} /> Available Schedule
+              </button>
+              <button type="button" className="admin-dashboard-nav__add" onClick={() => setIsFlashManagerOpen(true)}>
+                <Plus size={16} /> Add 1/1 Design
+              </button>
+            </nav>
+            {adminTab === 'schedule' && <section className="schedule-manager" aria-labelledby="schedule-manager-title">
+              <div className="schedule-manager__heading">
+                <div>
+                  <span className="appointment-manager__eyebrow">Booking availability</span>
+                  <h4 id="schedule-manager-title">Confirmed dates are unavailable</h4>
+                </div>
+                <div className="schedule-manager__legend" aria-label="Calendar legend">
+                  <span><i className="is-green" /> Available</span>
+                  <span><i className="is-red" /> Confirmed booking</span>
+                </div>
+              </div>
+              <div className="schedule-admin-calendar">
+                <div className="schedule-admin-calendar__header">
+                  <button type="button" aria-label="Previous month" onClick={() => setScheduleCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() - 1, 1))} disabled={scheduleCalendarMonth.getFullYear() === new Date().getFullYear() && scheduleCalendarMonth.getMonth() === new Date().getMonth()}><ChevronLeft size={18} /></button>
+                  <strong>{scheduleCalendarMonth.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' })}</strong>
+                  <button type="button" aria-label="Next month" onClick={() => setScheduleCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() + 1, 1))}><ChevronRight size={18} /></button>
+                </div>
+                <div className="schedule-admin-calendar__grid" role="grid" aria-label="Confirmed booking dates">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((weekday) => <span className="schedule-admin-calendar__weekday" role="columnheader" key={weekday}>{weekday}</span>)}
+                  {scheduleCalendarDays.map((date, index) => {
+                    if (!date) return <span className="schedule-admin-calendar__blank" aria-hidden="true" key={`blank-${index}`} />
+                    const isUnavailable = unavailableDates.includes(date)
+                    const past = date < localDateString()
+                    const state = isUnavailable ? 'unavailable' : past ? 'past' : availabilityError ? 'empty' : 'open'
+                    return <button type="button" role="gridcell" key={date} disabled={past} aria-pressed={selectedScheduleDate === date} aria-label={`${date}: ${availabilityError ? 'availability could not be loaded' : isUnavailable ? 'confirmed booking' : past ? 'past date' : 'available'}`} className={`schedule-admin-calendar__day schedule-admin-calendar__day--${state}${selectedScheduleDate === date ? ' is-selected' : ''}`} onClick={() => setSelectedScheduleDate(date)}>{Number(date.slice(-2))}</button>
+                  })}
+                </div>
+              </div>
+              <div className="schedule-manager__selected-date">
+                <strong>{new Date(`${selectedScheduleDate}T12:00:00`).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong>
+                <span>{availabilityError ? 'Availability could not be loaded' : unavailableDates.includes(selectedScheduleDate) ? 'Confirmed appointment - unavailable to new requests' : selectedScheduleDate < localDateString() ? 'Past date' : 'Available for booking requests'}</span>
+              </div>
+              {availabilityLoading && <p className="schedule-manager__loading">Refreshing confirmed dates?</p>}
+              {availabilityError && <p className="appointment-manager__error-message" role="alert">{availabilityError}</p>}
+            </section>}
+            {adminTab === 'appointments' && <>
             {appointmentError && <p className="appointment-manager__error-message" role="alert">{appointmentError}</p>}
             <div className="appointment-manager__table-scroll">
               <table className="appointment-manager__appointments-table">
@@ -100,7 +156,7 @@ export default function AppointmentManager(props) {
                           <p className="appointment-manager__secondary-text">{app.size}</p>
                         </td>
                         <td className="appointment-manager__placement-cell">{app.placement}</td>
-                        <td className="appointment-manager__date-cell">{app.date}<br />{app.time}</td>
+                        <td className="appointment-manager__date-cell">{app.date}<br />{formatTime(app.time)}</td>
                         <td className="appointment-manager__standard-cell">
                           <span className={`appointment-status appointment-status--${app.status}`}>
                             {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
@@ -131,6 +187,7 @@ export default function AppointmentManager(props) {
                 </tbody>
               </table>
             </div>
+            </>}
 
             {isFlashManagerOpen && <div className="flash-manager__backdrop" onMouseDown={(event) => {
               if (event.target === event.currentTarget) setIsFlashManagerOpen(false)
