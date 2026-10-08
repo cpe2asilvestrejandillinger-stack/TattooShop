@@ -1,6 +1,7 @@
 import './AppointmentManager.css'
-import { useMemo, useState } from 'react'
-import { Search, X, Trash2, Camera, ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Plus } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { Search, X, Trash2, Camera, ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Plus, Images } from 'lucide-react'
 import { formatTime } from '../../utils/formatTime'
 
 const localDateString = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -9,9 +10,18 @@ export default function AppointmentManager(props) {
   const { isAdminModalOpen, setIsAdminModalOpen, currentUser, unavailableDates = [], availabilityLoading = false, availabilityError = '', adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns = [], flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability } = props
   const [flashDraft, setFlashDraft] = useState({ title: '', size: '', price: '', description: '', imageFile: null })
   const [isFlashManagerOpen, setIsFlashManagerOpen] = useState(false)
+  const [isFlashDesignListOpen, setIsFlashDesignListOpen] = useState(false)
   const [adminTab, setAdminTab] = useState('appointments')
   const [selectedScheduleDate, setSelectedScheduleDate] = useState(localDateString())
   const [scheduleCalendarMonth, setScheduleCalendarMonth] = useState(() => { const today = new Date(); return new Date(today.getFullYear(), today.getMonth(), 1) })
+  useEffect(() => {
+    if (!isFlashDesignListOpen) return undefined
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setIsFlashDesignListOpen(false)
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [isFlashDesignListOpen])
   const scheduleCalendarDays = useMemo(() => {
     const year = scheduleCalendarMonth.getFullYear()
     const month = scheduleCalendarMonth.getMonth()
@@ -21,7 +31,10 @@ export default function AppointmentManager(props) {
   }, [scheduleCalendarMonth])
   const submitFlash = async (event) => {
     const saved = await handleFlashSubmit(event, flashDraft)
-    if (saved) setFlashDraft({ title: '', size: '', price: '', description: '', imageFile: null })
+    if (saved) {
+      setFlashDraft({ title: '', size: '', price: '', description: '', imageFile: null })
+      setIsFlashDesignListOpen(true)
+    }
   }
   return (
     <>
@@ -201,7 +214,8 @@ export default function AppointmentManager(props) {
             </div>
             </>}
 
-            {isFlashManagerOpen && <div className="flash-manager__backdrop" onMouseDown={(event) => {
+            {isFlashManagerOpen && createPortal(
+              <div className="flash-manager__backdrop" onMouseDown={(event) => {
               if (event.target === event.currentTarget) setIsFlashManagerOpen(false)
             }}>
             <section className="flash-manager__modal" role="dialog" aria-modal="true" aria-labelledby="flash-manager-title">
@@ -236,13 +250,24 @@ export default function AppointmentManager(props) {
                   </span>
                   <small>JPG, PNG, or WebP. Maximum 10 MB.</small>
                 </label>
-                <button className="flash-manager__submit booking-modal__submit-button" disabled={flashSubmitting} type="submit">
-                  {flashSubmitting ? 'Uploading...' : 'Add 1/1 Design'}
-                </button>
+                <div className="flash-manager__actions">
+                  <button className="flash-manager__submit" disabled={flashSubmitting} type="submit">
+                    {flashSubmitting ? 'Uploading...' : 'Add 1/1 Design'}
+                  </button>
+                  <button
+                    type="button"
+                    className="flash-manager__list-toggle"
+                    aria-haspopup="dialog"
+                    onClick={() => setIsFlashDesignListOpen(true)}
+                  >
+                    <span>View uploaded designs ({flashDesigns.length})</span>
+                    <Images size={18} aria-hidden="true" />
+                  </button>
+                </div>
               </form>
 
               {flashError && <p className="appointment-manager__error-message" role="alert">{flashError}</p>}
-              <div className="flash-manager__list">
+              {isFlashDesignListOpen && <div className="flash-manager__list" id="flash-manager-design-list">
                 {flashDesigns.length === 0 ? (
                   <p className="flash-manager__empty">No admin-managed flash designs yet.</p>
                 ) : flashDesigns.map((flash) => (
@@ -263,9 +288,52 @@ export default function AppointmentManager(props) {
                     </button>
                   </article>
                 ))}
-              </div>
+              </div>}
             </section>
-            </div>}
+              </div>,
+              document.body,
+            )}
+            {isFlashDesignListOpen && createPortal(
+              <div className="flash-designs-modal__backdrop" onMouseDown={(event) => {
+                if (event.target === event.currentTarget) setIsFlashDesignListOpen(false)
+              }}>
+                <section className="flash-designs-modal" role="dialog" aria-modal="true" aria-labelledby="flash-designs-modal-title">
+                  <header className="flash-designs-modal__header">
+                    <div>
+                      <span className="booking-modal__eyebrow">1/1 Collection</span>
+                      <h3 id="flash-designs-modal-title">Uploaded Flash Designs</h3>
+                      <p>Manage availability and remove designs from your collection.</p>
+                    </div>
+                    <button type="button" className="flash-manager__close" onClick={() => setIsFlashDesignListOpen(false)} aria-label="Close uploaded designs">
+                      <X size={20} />
+                    </button>
+                  </header>
+                  <div className="flash-manager__list flash-designs-modal__list">
+                    {flashDesigns.length === 0 ? (
+                      <p className="flash-manager__empty">No admin-managed flash designs yet.</p>
+                    ) : flashDesigns.map((flash) => (
+                      <article className="flash-manager__item" key={flash.id}>
+                        <img src={flash.image_url} alt="" />
+                        <div className="flash-manager__item-copy">
+                          <strong>{flash.title}</strong>
+                          <span>{flash.size} · PHP {Number(flash.price || 0).toLocaleString('en-PH')}</span>
+                          <span className={flash.is_available ? 'flash-manager__available' : 'flash-manager__taken'}>
+                            {flash.is_available ? 'Available' : 'Claimed'}
+                          </span>
+                        </div>
+                        <button type="button" className="flash-manager__toggle" onClick={() => toggleFlashAvailability(flash)}>
+                          Mark {flash.is_available ? 'claimed' : 'available'}
+                        </button>
+                        <button type="button" className="flash-manager__delete" aria-label={`Delete ${flash.title}`} onClick={() => deleteFlashDesign(flash)}>
+                          <Trash2 size={16} />
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              </div>,
+              document.body,
+            )}
           </div>
         </div>
       )}
