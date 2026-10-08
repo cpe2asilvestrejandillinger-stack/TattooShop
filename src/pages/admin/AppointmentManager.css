@@ -458,7 +458,9 @@
 }
 
 .flash-manager__submit {
-  width: 100%;
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: min(100%, 20rem);
   background: linear-gradient(to right, #f59e0b, #fbbf24);
   letter-spacing: 0.08em;
   text-transform: uppercase;
