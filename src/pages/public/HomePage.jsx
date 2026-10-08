@@ -4,13 +4,57 @@ import artistImage from '../../assets/artist.jpg'
 import instagramLogo from '../../assets/iglogo.jpg'
 import facebookLogo from '../../assets/fblogo.jpg'
 import tiktokLogo from '../../assets/tiktoklogo.jpg'
-import { Sparkles, Clock, MapPin, Calendar, ChevronRight, LogOut, LayoutDashboard, Menu, X, Phone } from 'lucide-react'
+import { Sparkles, Clock, MapPin, Calendar, ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Menu, X, Phone } from 'lucide-react'
 import { FLASH_ITEMS, PORTFOLIO_ITEMS } from '../../data/siteData'
 
 export default function HomePage({ currentUser, openBooking, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, flashDesigns = [], flashLoaded = false, onClaimFlash }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const pageRef = useRef(null)
+  const flashCarouselRef = useRef(null)
+  const [canScrollFlashLeft, setCanScrollFlashLeft] = useState(false)
+  const [canScrollFlashRight, setCanScrollFlashRight] = useState(false)
+  const flashItems = flashLoaded ? flashDesigns.map((design) => ({
+    id: design.id,
+    title: design.title,
+    description: design.description,
+    size: design.size,
+    price: new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(Number(design.price || 0)),
+    available: design.is_available,
+    img: design.image_url,
+  })) : FLASH_ITEMS
+
+  useEffect(() => {
+    const carousel = flashCarouselRef.current
+    if (!carousel) return undefined
+
+    const updateArrows = () => {
+      const maxScroll = carousel.scrollWidth - carousel.clientWidth
+      setCanScrollFlashLeft(carousel.scrollLeft > 2)
+      setCanScrollFlashRight(maxScroll - carousel.scrollLeft > 2)
+    }
+
+    updateArrows()
+    carousel.addEventListener('scroll', updateArrows, { passive: true })
+    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateArrows) : null
+    resizeObserver?.observe(carousel)
+    if (!resizeObserver) window.addEventListener('resize', updateArrows)
+    return () => {
+      carousel.removeEventListener('scroll', updateArrows)
+      resizeObserver?.disconnect()
+      if (!resizeObserver) window.removeEventListener('resize', updateArrows)
+    }
+  }, [flashItems.length, flashLoaded])
+
+  const scrollFlashCarousel = (direction) => {
+    const carousel = flashCarouselRef.current
+    if (!carousel) return
+
+    const card = carousel.querySelector('.home-page__flash-card')
+    if (!card) return
+    const gap = Number.parseFloat(window.getComputedStyle(carousel).columnGap) || 0
+    carousel.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: 'smooth' })
+  }
 
   useEffect(() => {
     const revealElements = pageRef.current?.querySelectorAll('.scroll-reveal')
@@ -425,28 +469,34 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
 
       {/* 1/1 CLAIMABLE FLASH DESIGNS */}
       <section id="flash" className="home-page__flash-section scroll-reveal">
-        <div className="home-page__section-heading">
-          <span className="home-page__eyebrow">Available Flash</span>
-          <h2 className="home-page__section-title">1/1 Claimable Designs</h2>
-          <p className="home-page__section-subtitle">Original hand-drawn flash pieces tattooed only once. Claim yours before it's gone.</p>
+        <div className="home-page__flash-header">
+          <div className="home-page__section-heading">
+            <span className="home-page__eyebrow">Available Flash</span>
+            <h2 className="home-page__section-title">1/1 Claimable Designs</h2>
+            <p className="home-page__section-subtitle">Original hand-drawn flash pieces tattooed only once. Claim yours before it's gone.</p>
+          </div>
         </div>
 
-        <div className="home-page__flash-grid">
-          {flashLoaded && flashDesigns.length === 0 ? (
+        <div className="home-page__flash-carousel-shell" role="group" aria-label="Flash design carousel">
+          <button className="home-page__flash-arrow" type="button" aria-label="Previous flash designs" onClick={() => scrollFlashCarousel(-1)} disabled={!canScrollFlashLeft}>
+            <ChevronLeft size={20} aria-hidden="true" />
+          </button>
+          <div className="home-page__flash-grid" ref={flashCarouselRef} role="region" aria-label="1/1 flash designs" tabIndex={0}>
+          {flashLoaded && flashItems.length === 0 ? (
             <p className="home-page__flash-empty">No flash designs are available right now. Check back soon.</p>
-          ) : (flashLoaded ? flashDesigns.map((design) => ({
-            id: design.id,
-            title: design.title,
-            description: design.description,
-            size: design.size,
-            price: new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(Number(design.price || 0)),
-            available: design.is_available,
-            img: design.image_url,
-          })) : FLASH_ITEMS).map((flash) => (
+          ) : flashItems.map((flash) => (
             <div key={flash.id} className="home-page__flash-card">
               <div>
                 <div className="home-page__flash-image-wrap">
-                  <img src={flash.img} alt={flash.title} className="home-page__flash-image" />
+                  <button
+                    type="button"
+                    className="home-page__flash-image-button"
+                    aria-label={`View ${flash.title} image`}
+                    aria-haspopup="dialog"
+                    onClick={() => setSelectedImage(flash)}
+                  >
+                    <img src={flash.img} alt="" className="home-page__flash-image" />
+                  </button>
                   <div className="home-page__flash-status">
                     {flash.available ? (
                       <span className="home-page__available-badge">Available</span>
@@ -472,6 +522,10 @@ export default function HomePage({ currentUser, openBooking, handleLogout, setAu
               </div>
             </div>
           ))}
+          </div>
+          <button className="home-page__flash-arrow" type="button" aria-label="Next flash designs" onClick={() => scrollFlashCarousel(1)} disabled={!canScrollFlashRight}>
+            <ChevronRight size={20} aria-hidden="true" />
+          </button>
         </div>
       </section>
 
