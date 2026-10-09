@@ -297,7 +297,6 @@ export default function BookingModal(props) {
                   </div>
                   {availabilityError && <p className="booking-modal__error-message" role="alert">{availabilityError}</p>}
                   {availabilityLoading && <p className="booking-modal__schedule-note">Loading confirmed booking dates...</p>}
-                  <p className="booking-modal__schedule-note">All future dates are available to request. A date becomes unavailable after the artist confirms a booking.</p>
                   <div>
                     <label className="booking-modal__field-label">Reference Image (Optional)</label>
                     <div className="booking-modal__upload-field">
