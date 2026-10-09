@@ -1477,7 +1477,7 @@
   }
 }
 
-@media (max-width: 1099px) {
+@media (max-width: 1299px) {
   .mobile-menu-toggle {
     display: inline-flex;
   }
@@ -1494,7 +1494,7 @@
   }
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 1300px) {
   .mobile-nav-menu {
     display: none;
   }
