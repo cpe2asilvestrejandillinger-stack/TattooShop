@@ -1301,7 +1301,12 @@
   border-radius: 14px;
   background: #0b0b0e;
   box-shadow: 0 22px 60px rgb(0 0 0 / 55%);
-  animation: mobile-nav-drawer-in 220ms ease-out both;
+  animation: mobile-nav-drawer-in 260ms ease-out both;
+}
+
+.mobile-nav-menu.is-closing {
+  pointer-events: none;
+  animation: mobile-nav-drawer-out 260ms ease-in both;
 }
 
 .mobile-nav-header {
@@ -1398,9 +1403,42 @@
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
-  transition:
-    color 160ms ease,
-    background-color 160ms ease;
+  transition-property:
+    color,
+    background-color,
+    border-color,
+    outline-color,
+    text-decoration-color,
+    fill,
+    stroke,
+    --tw-gradient-from,
+    --tw-gradient-via,
+    --tw-gradient-to;
+  transition-timing-function: var(
+    --tw-ease,
+    var(--default-transition-timing-function, ease)
+  );
+  transition-duration: var(--tw-duration, var(--default-transition-duration, 160ms));
+  animation: mobile-nav-link-in 260ms ease-out both;
+}
+
+.mobile-nav-menu > a:nth-of-type(1) { animation-delay: 50ms; }
+.mobile-nav-menu > a:nth-of-type(2) { animation-delay: 115ms; }
+.mobile-nav-menu > a:nth-of-type(3) { animation-delay: 180ms; }
+.mobile-nav-menu > a:nth-of-type(4) { animation-delay: 245ms; }
+.mobile-nav-menu > a:nth-of-type(5) { animation-delay: 310ms; }
+.mobile-nav-menu > a:nth-of-type(6) { animation-delay: 375ms; }
+
+@keyframes mobile-nav-link-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mobile-nav-menu > a:hover {
@@ -1462,7 +1500,7 @@
 @keyframes mobile-nav-drawer-in {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(100%);
   }
 
   to {
@@ -1471,8 +1509,28 @@
   }
 }
 
+@keyframes mobile-nav-drawer-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mobile-nav-menu {
+    animation: none;
+  }
+
+  .mobile-nav-menu.is-closing {
+    animation: none;
+  }
+
+  .mobile-nav-menu > a {
     animation: none;
   }
 }

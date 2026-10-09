@@ -27,12 +27,22 @@ const ESTIMATOR_PLACEMENTS = [
 
 export default function HomePage({ currentUser, openBooking, openBookingWithEstimate, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, flashDesigns = [], flashLoaded = false, onClaimFlash }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileMenuMounted, setIsMobileMenuMounted] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [activeNavId, setActiveNavId] = useState('home')
   const pageRef = useRef(null)
   const flashCarouselRef = useRef(null)
   const [canScrollFlashLeft, setCanScrollFlashLeft] = useState(false)
   const [canScrollFlashRight, setCanScrollFlashRight] = useState(false)
+
+  useEffect(() => {
+    if (isMobileMenuOpen || !isMobileMenuMounted) return undefined
+
+    const closeDelay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 260
+    const closeTimer = window.setTimeout(() => setIsMobileMenuMounted(false), closeDelay)
+    return () => window.clearTimeout(closeTimer)
+  }, [isMobileMenuOpen, isMobileMenuMounted])
+
   const flashItems = flashLoaded ? flashDesigns.map((design) => ({
     id: design.id,
     title: design.title,
@@ -212,6 +222,7 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
           aria-controls="mobile-navigation"
           onClick={() => {
             setIsProfileMenuOpen(false)
+            if (!isMobileMenuOpen) setIsMobileMenuMounted(true)
             setIsMobileMenuOpen((isOpen) => !isOpen)
           }}
         >
@@ -222,8 +233,13 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
           <div className="mobile-nav-bar-blur" aria-hidden="true" />
         )}
 
-        {isMobileMenuOpen && (
-          <div id="mobile-navigation" className="mobile-nav-menu">
+        {isMobileMenuMounted && (
+          <div
+            id="mobile-navigation"
+            className={`mobile-nav-menu${isMobileMenuOpen ? '' : ' is-closing'}`}
+            aria-hidden={!isMobileMenuOpen}
+            inert={!isMobileMenuOpen}
+          >
             <div className="mobile-nav-header">
               <div className="mobile-nav-brand">
                 <img src={artistImage} alt="" />
