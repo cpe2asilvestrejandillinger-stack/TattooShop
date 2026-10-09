@@ -190,9 +190,10 @@ export default function BookingModal(props) {
                     />
                   </div>
 
-                  <div className="booking-modal__field">
-                    <span className="booking-modal__field-label">Choose an Available Date</span>
-                    <div className="booking-date-picker" ref={calendarPickerRef}>
+                  <div className="booking-modal__date-time-row">
+                    <div className="booking-modal__field">
+                      <span className="booking-modal__field-label">Choose Date</span>
+                      <div className="booking-date-picker" ref={calendarPickerRef}>
                       <button
                         type="button"
                         className="booking-date-picker__trigger"
@@ -244,43 +245,45 @@ export default function BookingModal(props) {
                       </div>
                     </div>
                       </div>}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <span className="booking-modal__field-label">Preferred Time</span>
-                    <div className="booking-time-inputs">
-                      <input
-                        id="requested-time-hour"
-                        type="number"
-                        min="1"
-                        max="12"
-                        required
-                        inputMode="numeric"
-                        aria-label="Hour"
-                        placeholder="Hour"
-                        value={timeHour}
-                        onChange={(event) => {
-                          setTimeHour(event.target.value)
-                          updateBookingTime(event.target.value, timeMinute, timePeriod)
-                        }}
-                        className="booking-modal__text-input booking-time-number"
-                      />
-                      <span className="booking-time-colon" aria-hidden="true">:</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        required
-                        inputMode="numeric"
-                        aria-label="Minutes"
-                        placeholder="00"
-                        value={timeMinute}
-                        onChange={(event) => {
-                          setTimeMinute(event.target.value)
-                          updateBookingTime(timeHour, event.target.value, timePeriod)
-                        }}
-                        className="booking-modal__text-input booking-time-number"
-                      />
+                    <div className="booking-modal__field">
+                      <span className="booking-modal__field-label">Preferred Time</span>
+                      <div className="booking-time-inputs">
+                        <div className="booking-time-values">
+                          <input
+                            id="requested-time-hour"
+                            type="number"
+                            min="1"
+                            max="12"
+                            required
+                            inputMode="numeric"
+                            aria-label="Hour"
+                            placeholder="HH"
+                            value={timeHour}
+                            onChange={(event) => {
+                              setTimeHour(event.target.value)
+                              updateBookingTime(event.target.value, timeMinute, timePeriod)
+                            }}
+                            className="booking-modal__text-input booking-time-number"
+                          />
+                          <span className="booking-time-colon" aria-hidden="true">:</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max="59"
+                            required
+                            inputMode="numeric"
+                            aria-label="Minutes"
+                            placeholder="00"
+                            value={timeMinute}
+                            onChange={(event) => {
+                              setTimeMinute(event.target.value)
+                              updateBookingTime(timeHour, event.target.value, timePeriod)
+                            }}
+                            className="booking-modal__text-input booking-time-number"
+                          />
+                        </div>
                       <select
                         aria-label="AM or PM"
                         value={timePeriod}
@@ -293,6 +296,7 @@ export default function BookingModal(props) {
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
                       </select>
+                      </div>
                     </div>
                   </div>
                   {availabilityError && <p className="booking-modal__error-message" role="alert">{availabilityError}</p>}
