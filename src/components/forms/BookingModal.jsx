@@ -121,15 +121,24 @@ export default function BookingModal(props) {
                       />
                     </div>
                     <div>
-                      <label className="booking-modal__field-label">Phone Number</label>
-                      <input 
-                        type="text" 
+                      <label className="booking-modal__field-label" htmlFor="booking-phone">Phone Number</label>
+                      <div className="booking-modal__phone-input">
+                        <span className="booking-modal__phone-prefix" aria-hidden="true">+63</span>
+                        <input
+                        id="booking-phone"
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        pattern="[0-9]{10}"
+                        maxLength={10}
                         required
                         value={bookPhone}
-                        onChange={(e) => setBookPhone(e.target.value)}
-                        placeholder="+63 917..." 
-                        className="booking-modal__text-input"
-                      />
+                        onChange={(e) => setBookPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        placeholder="9171234567"
+                        aria-label="10-digit phone number"
+                        className="booking-modal__phone-number"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -253,33 +262,37 @@ export default function BookingModal(props) {
                         <div className="booking-time-values">
                           <input
                             id="requested-time-hour"
-                            type="number"
-                            min="1"
-                            max="12"
-                            required
+                            type="text"
                             inputMode="numeric"
+                            maxLength={2}
+                            pattern="[1-9]|1[0-2]"
+                            required
                             aria-label="Hour"
                             placeholder="HH"
                             value={timeHour}
                             onChange={(event) => {
-                              setTimeHour(event.target.value)
-                              updateBookingTime(event.target.value, timeMinute, timePeriod)
+                              const value = event.target.value.replace(/\D/g, '').slice(0, 2)
+                              if (value && (Number(value) < 1 || Number(value) > 12)) return
+                              setTimeHour(value)
+                              updateBookingTime(value, timeMinute, timePeriod)
                             }}
                             className="booking-modal__text-input booking-time-number"
                           />
                           <span className="booking-time-colon" aria-hidden="true">:</span>
                           <input
-                            type="number"
-                            min="0"
-                            max="59"
-                            required
+                            type="text"
                             inputMode="numeric"
+                            maxLength={2}
+                            pattern="[0-9]{1,2}"
+                            required
                             aria-label="Minutes"
                             placeholder="00"
                             value={timeMinute}
                             onChange={(event) => {
-                              setTimeMinute(event.target.value)
-                              updateBookingTime(timeHour, event.target.value, timePeriod)
+                              const value = event.target.value.replace(/\D/g, '').slice(0, 2)
+                              if (value && Number(value) > 59) return
+                              setTimeMinute(value)
+                              updateBookingTime(timeHour, value, timePeriod)
                             }}
                             className="booking-modal__text-input booking-time-number"
                           />

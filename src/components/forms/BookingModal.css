@@ -83,6 +83,22 @@
 .booking-modal__text-input:focus {
   @apply border-amber-400;
 }
+.booking-modal__phone-input {
+  @apply flex w-full items-center rounded-xl border border-white/10 bg-white/5 text-sm text-white;
+  min-height: 2.75rem;
+}
+.booking-modal__phone-input:focus-within {
+  @apply border-amber-400;
+}
+.booking-modal__phone-prefix {
+  @apply border-r border-white/10 px-3 py-2.5 text-gray-300;
+}
+.booking-modal__phone-number {
+  @apply min-w-0 flex-1 bg-transparent px-3 py-2.5 text-white outline-none;
+}
+.booking-modal__phone-number::placeholder {
+  @apply text-gray-500;
+}
 /* w-full bg-[#1c1c24] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 */
 .booking-modal__select-input {
   @apply w-full bg-[#1c1c24] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white;
