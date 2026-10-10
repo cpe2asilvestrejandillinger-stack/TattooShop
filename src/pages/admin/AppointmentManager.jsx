@@ -281,41 +281,10 @@ export default function AppointmentManager(props) {
                   <button className="flash-manager__submit" disabled={flashSubmitting} type="submit">
                     {flashSubmitting ? 'Uploading...' : 'Add 1/1 Design'}
                   </button>
-                  <button
-                    type="button"
-                    className="flash-manager__list-toggle"
-                    aria-haspopup="dialog"
-                    onClick={() => setIsFlashDesignListOpen(true)}
-                  >
-                    <span>View uploaded designs ({flashDesigns.length})</span>
-                    <Images size={18} aria-hidden="true" />
-                  </button>
                 </div>
               </form>
 
               {flashError && <p className="appointment-manager__error-message" role="alert">{flashError}</p>}
-              {isFlashDesignListOpen && <div className="flash-manager__list" id="flash-manager-design-list">
-                {flashDesigns.length === 0 ? (
-                  <p className="flash-manager__empty">No admin-managed flash designs yet.</p>
-                ) : flashDesigns.map((flash) => (
-                  <article className="flash-manager__item" key={flash.id}>
-                    <img src={flash.image_url} alt="" />
-                    <div className="flash-manager__item-copy">
-                      <strong>{flash.title}</strong>
-                      <span>{flash.size} · PHP {Number(flash.price || 0).toLocaleString('en-PH')}</span>
-                      <span className={flash.is_available ? 'flash-manager__available' : 'flash-manager__taken'}>
-                        {flash.is_available ? 'Available' : 'Claimed'}
-                      </span>
-                    </div>
-                    <button type="button" className="flash-manager__toggle" onClick={() => toggleFlashAvailability(flash)}>
-                      Mark {flash.is_available ? 'claimed' : 'available'}
-                    </button>
-                    <button type="button" className="flash-manager__delete" aria-label={`Delete ${flash.title}`} onClick={() => deleteFlashDesign(flash)}>
-                      <Trash2 size={16} />
-                    </button>
-                  </article>
-                ))}
-              </div>}
             </section>
               </div>,
               document.body,

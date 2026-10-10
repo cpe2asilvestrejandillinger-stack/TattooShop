@@ -270,41 +270,6 @@
 .flash-manager__list {
   @apply mt-4 grid grid-cols-1 gap-3;
 }
-.flash-manager__modal > #flash-manager-design-list {
-  display: none;
-}
-.flash-manager__list-toggle {
-  display: flex;
-  width: 100%;
-  min-height: 46px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 14px;
-  padding: 0 14px;
-  border: 1px solid rgb(255 255 255 / 11%);
-  border-radius: 12px;
-  color: #e4e4e7;
-  background: rgb(255 255 255 / 4%);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 650;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
-}
-.flash-manager__list-toggle:hover {
-  border-color: rgb(251 191 36 / 40%);
-  color: #fbbf24;
-  background: rgb(245 158 11 / 8%);
-}
-.flash-manager__list-toggle:focus-visible {
-  outline: 2px solid #fbbf24;
-  outline-offset: 2px;
-}
-.flash-manager__list-toggle svg {
-  flex: 0 0 auto;
-}
 .flash-designs-modal__backdrop {
   position: fixed;
   inset: 0;
@@ -526,25 +491,15 @@
 .flash-manager__actions {
   display: grid;
   grid-column: 1 / -1;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
-  gap: .75rem;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
 }
 
 .flash-manager__actions .flash-manager__submit {
-  width: 100%;
+  width: min(100%, 20rem);
   min-width: 0;
-  grid-column: auto;
-  justify-self: stretch;
-}
-
-.flash-manager__actions .flash-manager__list-toggle {
-  min-width: 0;
-  min-height: 3rem;
-  height: 3rem;
-  margin-top: 0;
-  padding-inline: .75rem;
-  font-size: .8rem;
+  grid-column: 1;
+  justify-self: center;
 }
 
 .flash-manager__actions > button {
@@ -557,13 +512,6 @@
 
 .flash-manager__actions > .flash-manager__submit {
   padding-block: 0;
-}
-
-.flash-manager__list-toggle > span:first-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .flash-manager__field input,
