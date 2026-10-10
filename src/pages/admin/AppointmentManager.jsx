@@ -242,7 +242,7 @@ export default function AppointmentManager(props) {
                   <span className="booking-modal__field-label">Price (PHP)</span>
                   <input required type="number" min="0" step="1" placeholder="4500" className="booking-modal__text-input" value={flashDraft.price} onChange={(event) => setFlashDraft({ ...flashDraft, price: event.target.value })} />
                 </label>
-                <label className="flash-manager__field flash-manager__field--wide">
+                <label className="flash-manager__field">
                   <span className="booking-modal__field-label">Flash Image</span>
                   <span className="booking-modal__upload-field">
                     <Camera className="booking-modal__upload-icon" aria-hidden="true" />

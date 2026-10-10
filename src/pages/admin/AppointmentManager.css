@@ -586,6 +586,26 @@
   padding: 0.7rem;
 }
 
+.flash-manager__field .booking-modal__upload-field {
+  box-sizing: border-box;
+  height: 2.9rem;
+  min-height: 2.9rem;
+  border-radius: 0.75rem;
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 5%);
+  padding: 0.65rem 1rem;
+}
+
+.flash-manager__field input[type='file'] {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
 .flash-manager__field input[type='number'] {
   appearance: textfield;
   -moz-appearance: textfield;
