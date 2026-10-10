@@ -205,7 +205,7 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
                       <LayoutDashboard size={15} /> Admin Panel
                     </button>
                   )}
-                  <button type="button" onClick={() => { handleLogout(); setIsProfileMenuOpen(false) }}>
+                  <button type="button" className="home-page__logout-button" onClick={() => { handleLogout(); setIsProfileMenuOpen(false) }}>
                     <LogOut size={15} /> Log Out
                   </button>
                 </div>
@@ -285,7 +285,7 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
                       <LayoutDashboard size={15} /> Admin Panel
                     </button>
                   )}
-                  <button type="button" onClick={() => { handleLogout(); setIsMobileMenuOpen(false); setIsProfileMenuOpen(false) }}>
+                  <button type="button" className="home-page__logout-button" onClick={() => { handleLogout(); setIsMobileMenuOpen(false); setIsProfileMenuOpen(false) }}>
                     <LogOut size={15} /> Log Out
                   </button>
                 </div>

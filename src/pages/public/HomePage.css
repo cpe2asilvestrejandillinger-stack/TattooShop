@@ -121,11 +121,20 @@
 
 /* text-gray-400 hover:text-white p-1 transition-colors */
 .home-page__logout-button {
-  @apply text-gray-400 p-1 transition-colors;
+  @apply text-red-400 p-1 transition-colors;
 }
 
 .home-page__logout-button:hover {
-  @apply text-white;
+  @apply text-red-300;
+}
+
+.desktop-profile-menu > .home-page__logout-button {
+  color: #f87171;
+}
+
+.desktop-profile-menu > .home-page__logout-button:hover {
+  color: #fca5a5;
+  background: rgb(239 68 68 / 10%);
 }
 
 /* w-4 h-4 */
@@ -1940,6 +1949,19 @@
   border-color: #fbbf24;
   color: #111;
   background: #fbbf24;
+}
+
+.mobile-nav-account-actions button.home-page__logout-button,
+.mobile-nav-account-actions button.home-page__logout-button:first-child {
+  border-color: rgb(248 113 113 / 35%);
+  color: #fca5a5;
+  background: rgb(239 68 68 / 8%);
+}
+
+.mobile-nav-account-actions button.home-page__logout-button:hover {
+  border-color: rgb(248 113 113 / 60%);
+  color: #fecaca;
+  background: rgb(239 68 68 / 14%);
 }
 
 /* Keep footer contacts readable at tablet and mobile widths. */
