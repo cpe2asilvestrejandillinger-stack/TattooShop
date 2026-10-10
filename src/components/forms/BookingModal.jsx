@@ -123,19 +123,19 @@ export default function BookingModal(props) {
                     <div>
                       <label className="booking-modal__field-label" htmlFor="booking-phone">Phone Number</label>
                       <div className="booking-modal__phone-input">
-                        <span className="booking-modal__phone-prefix" aria-hidden="true">+63</span>
+                        
                         <input
                         id="booking-phone"
                         type="tel"
                         inputMode="numeric"
                         autoComplete="tel-national"
-                        pattern="[0-9]{10}"
-                        maxLength={10}
+                        pattern="[0-9]{11}"
+                        maxLength={11}
                         required
                         value={bookPhone}
-                        onChange={(e) => setBookPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                        placeholder="9171234567"
-                        aria-label="10-digit phone number"
+                        onChange={(e) => setBookPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                        placeholder="09123456789"
+                        aria-label="11-digit phone number"
                         className="booking-modal__phone-number"
                         />
                       </div>
