@@ -359,7 +359,7 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
 
             <div className="home-page__hero-stats">
               <div>
-                <p className="home-page__stat-value">8+</p>
+                <p className="home-page__stat-value">25+</p>
                 <p className="home-page__muted-text">Years Experience</p>
               </div>
               <div>
@@ -367,7 +367,7 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
                 <p className="home-page__muted-text">Custom Pieces</p>
               </div>
               <div>
-                <p className="home-page__stat-value">100%</p>
+                <p className="home-page__stat-value">99.99%</p>
                 <p className="home-page__muted-text">Sterile & Safe</p>
               </div>
             </div>
