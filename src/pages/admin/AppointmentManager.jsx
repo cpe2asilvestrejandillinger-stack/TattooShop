@@ -1,7 +1,7 @@
 import './AppointmentManager.css'
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Search, X, Trash2, Camera, ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Plus, Images } from 'lucide-react'
+import { Search, X, Trash2, Camera, ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Images, Clock3, CheckCircle2 } from 'lucide-react'
 import { formatTime } from '../../utils/formatTime'
 
 const localDateString = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -36,6 +36,9 @@ export default function AppointmentManager(props) {
       setIsFlashDesignListOpen(true)
     }
   }
+  const pendingAppointments = appointments.filter((appointment) => appointment.status === 'pending').length
+  const approvedAppointments = appointments.filter((appointment) => appointment.status === 'approved').length
+  const availableFlashDesigns = flashDesigns.filter((design) => design.is_available).length
   return (
     <>
       {/* ADMIN DASHBOARD MODAL (PROTECTED) */}
@@ -49,48 +52,70 @@ export default function AppointmentManager(props) {
               <X className="appointment-manager__close-icon" />
             </button>
 
-            <div className="appointment-manager__header">
-              <div>
-                <span className="appointment-manager__eyebrow">Artist Management</span>
-                <h3 className="appointment-manager__title">Appointments Dashboard</h3>
-              </div>
-              <div className="appointment-manager__toolbar">
-                <div className="appointment-manager__search-field">
-                  <Search className="appointment-manager__search-icon" />
-                  <input
-                    type="text"
-                    placeholder="Search client..."
-                    value={adminSearch}
-                    onChange={(event) => setAdminSearch(event.target.value)}
-                    className="appointment-manager__search-input"
-                  />
+            <div className="appointment-manager__dashboard">
+              <aside className="appointment-manager__sidebar">
+                <div className="appointment-manager__brand">
+                  <span className="appointment-manager__brand-mark"><CalendarDays size={20} /></span>
+                  <span><strong>AirWizard</strong><small>TATTOO STUDIO</small></span>
                 </div>
-                <select
-                  value={adminStatusFilter}
-                  onChange={(event) => setAdminStatusFilter(event.target.value)}
-                  className="appointment-manager__status-filter"
-                  aria-label="Filter appointments by status"
-                >
-                  <option value="All">All statuses</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="completed">Completed</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-            </div>
-            <nav className="admin-dashboard-nav" aria-label="Admin dashboard sections">
-              <button type="button" className={adminTab === 'appointments' ? 'is-active' : ''} aria-current={adminTab === 'appointments' ? 'page' : undefined} onClick={() => setAdminTab('appointments')}>
-                <ClipboardList size={16} /> Appointments
-              </button>
-              <button type="button" className={adminTab === 'schedule' ? 'is-active' : ''} aria-current={adminTab === 'schedule' ? 'page' : undefined} onClick={() => setAdminTab('schedule')}>
-                <CalendarDays size={16} /> Available Schedule
-              </button>
-              <button type="button" className="admin-dashboard-nav__add" onClick={() => setIsFlashManagerOpen(true)}>
-                <Plus size={16} /> Add 1/1 Design
-              </button>
-            </nav>
+                <span className="appointment-manager__sidebar-label">WORKSPACE</span>
+                <nav className="appointment-manager__sidebar-nav" aria-label="Admin dashboard sections">
+                  <button type="button" className={adminTab === 'appointments' ? 'is-active' : ''} aria-current={adminTab === 'appointments' ? 'page' : undefined} onClick={() => setAdminTab('appointments')}>
+                    <ClipboardList size={17} /> Appointments
+                  </button>
+                  <button type="button" className={adminTab === 'schedule' ? 'is-active' : ''} aria-current={adminTab === 'schedule' ? 'page' : undefined} onClick={() => setAdminTab('schedule')}>
+                    <CalendarDays size={17} /> Availability
+                  </button>
+                  <button type="button" onClick={() => setIsFlashManagerOpen(true)}>
+                    <Images size={17} /> Flash designs
+                  </button>
+                </nav>
+                <div className="appointment-manager__sidebar-account">
+                  <span className="appointment-manager__account-avatar">{(currentUser.name || 'A').charAt(0).toUpperCase()}</span>
+                  <span><strong>{currentUser.name || 'Studio admin'}</strong><small>Administrator</small></span>
+                </div>
+              </aside>
+              <main className="appointment-manager__workspace">
+                <header className="appointment-manager__header">
+                  <div>
+                    <span className="appointment-manager__eyebrow">Studio workspace</span>
+                    <h3 className="appointment-manager__title">{adminTab === 'appointments' ? 'Appointments' : 'Availability'}</h3>
+                  </div>
+                  {adminTab === 'appointments' && <div className="appointment-manager__toolbar">
+                    <div className="appointment-manager__search-field">
+                      <Search className="appointment-manager__search-icon" />
+                      <input
+                        type="text"
+                        placeholder="Search client..."
+                        value={adminSearch}
+                        onChange={(event) => setAdminSearch(event.target.value)}
+                        className="appointment-manager__search-input"
+                      />
+                    </div>
+                    <select
+                      value={adminStatusFilter}
+                      onChange={(event) => setAdminStatusFilter(event.target.value)}
+                      className="appointment-manager__status-filter"
+                      aria-label="Filter appointments by status"
+                    >
+                      <option value="All">All statuses</option>
+                      <option value="pending">Pending</option>
+                      <option value="approved">Approved</option>
+                      <option value="completed">Completed</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>}
+                </header>
+                <section className="appointment-manager__welcome" aria-label="Admin dashboard overview">
+                  <div><span>ADMIN DASHBOARD</span><h4>Welcome back, {(currentUser.name || 'Artist').split(' ')[0]}.</h4><p>Manage bookings, availability, and your 1/1 flash collection.</p></div>
+                </section>
+                <div className="appointment-manager__stats" aria-label="Studio summary">
+                  <article><span className="appointment-manager__stat-icon"><ClipboardList size={17} /></span><div><small>Total bookings</small><strong>{appointments.length}</strong></div></article>
+                  <article><span className="appointment-manager__stat-icon"><Clock3 size={17} /></span><div><small>Pending</small><strong>{pendingAppointments}</strong></div></article>
+                  <article><span className="appointment-manager__stat-icon"><CheckCircle2 size={17} /></span><div><small>Confirmed</small><strong>{approvedAppointments}</strong></div></article>
+                  <button type="button" className="appointment-manager__stat-card" aria-label={`View uploaded flash designs; ${availableFlashDesigns} available`} onClick={() => setIsFlashDesignListOpen(true)}><span className="appointment-manager__stat-icon"><Images size={17} /></span><div><small>Available flash</small><strong>{availableFlashDesigns}</strong></div></button>
+                </div>
             {adminTab === 'schedule' && <section className="schedule-manager" aria-labelledby="schedule-manager-title">
               <div className="schedule-manager__heading">
                 <div>
@@ -213,6 +238,8 @@ export default function AppointmentManager(props) {
               </table>
             </div>
             </>}
+              </main>
+            </div>
 
             {isFlashManagerOpen && createPortal(
               <div className="flash-manager__backdrop" onMouseDown={(event) => {
