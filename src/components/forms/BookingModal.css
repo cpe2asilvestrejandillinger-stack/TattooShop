@@ -90,9 +90,6 @@
 .booking-modal__phone-input:focus-within {
   @apply border-amber-400;
 }
-.booking-modal__phone-prefix {
-  @apply border-r border-white/10 px-3 py-2.5 text-gray-300;
-}
 .booking-modal__phone-number {
   @apply min-w-0 flex-1 bg-transparent px-3 py-2.5 text-white outline-none;
 }

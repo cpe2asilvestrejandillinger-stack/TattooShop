@@ -12,9 +12,9 @@ const FLASH_IMAGE_BUCKET = 'flash-designs'
 const localDateKey = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 const toPhoneDigits = (phone = '') => {
   let digits = String(phone).replace(/\D/g, '')
-  if (digits.startsWith('63')) digits = digits.slice(2)
-  if (digits.startsWith('0') && digits.length === 11) digits = digits.slice(1)
-  return digits.slice(0, 10)
+  if (digits.startsWith('63')) digits = `0${digits.slice(2)}`
+  else if (digits.startsWith('9') && digits.length === 10) digits = `0${digits}`
+  return digits.slice(0, 11)
 }
 
 async function fetchUnavailableDates() {
@@ -483,7 +483,7 @@ export default function App() {
       if (!bookDate) throw new Error('Choose an available date on the calendar.')
       if (bookDate < localDateKey()) throw new Error('Choose a future date.')
       if (unavailableDates.includes(bookDate)) throw new Error('That date has just been confirmed for another appointment. Choose another date.')
-      if (!/^\d{10}$/.test(bookPhone)) throw new Error('Enter exactly 10 digits for your phone number.')
+      if (!/^09\d{9}$/.test(bookPhone)) throw new Error('Enter an 11-digit phone number starting with 09.')
 
       if (bookImageFile && !ALLOWED_REFERENCE_IMAGE_TYPES.has(bookImageFile.type)) {
         throw new Error('Choose a JPG, PNG, or WebP reference image.')
@@ -494,7 +494,7 @@ export default function App() {
 
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ full_name: bookName.trim(), phone: `+63${bookPhone}` })
+        .update({ full_name: bookName.trim(), phone: `+63${bookPhone.slice(1)}` })
         .eq('id', currentUser.id)
       if (profileError) throw profileError
 
