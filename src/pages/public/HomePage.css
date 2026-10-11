@@ -1473,7 +1473,8 @@
 }
 
 .mobile-nav-auth button,
-.mobile-nav-book {
+.mobile-nav-book,
+.mobile-nav-chat {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1502,6 +1503,21 @@
   min-height: 42px;
   margin: 2px 0 0;
   border-color: rgb(251 191 36 / 45%);
+  color: #fbbf24;
+  background: rgb(251 191 36 / 8%);
+}
+
+.mobile-nav-chat {
+  grid-column: 1 / -1;
+  min-height: 42px;
+  margin: 0;
+  border-color: rgb(255 255 255 / 12%);
+  color: #f9fafb;
+  background: rgb(255 255 255 / 5%);
+}
+
+.mobile-nav-chat:hover {
+  border-color: rgb(251 191 36 / 55%);
   color: #fbbf24;
   background: rgb(251 191 36 / 8%);
 }

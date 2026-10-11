@@ -1,8 +1,9 @@
 import './AppointmentManager.css'
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Search, X, Trash2, Camera, ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Images, Clock3, CheckCircle2 } from 'lucide-react'
+import { Search, X, Trash2, Camera, ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Images, Clock3, CheckCircle2, MessageCircle } from 'lucide-react'
 import { formatTime } from '../../utils/formatTime'
+import CustomerAdminChat from '../../components/CustomerAdminChat'
 
 const localDateString = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
@@ -66,6 +67,9 @@ export default function AppointmentManager(props) {
                   <button type="button" className={adminTab === 'schedule' ? 'is-active' : ''} aria-current={adminTab === 'schedule' ? 'page' : undefined} onClick={() => setAdminTab('schedule')}>
                     <CalendarDays size={17} /> Availability
                   </button>
+                  <button type="button" className={adminTab === 'messages' ? 'is-active' : ''} aria-current={adminTab === 'messages' ? 'page' : undefined} onClick={() => setAdminTab('messages')}>
+                    <MessageCircle size={17} /> Conversations
+                  </button>
                   <button type="button" onClick={() => setIsFlashManagerOpen(true)}>
                     <Images size={17} /> Flash designs
                   </button>
@@ -79,7 +83,7 @@ export default function AppointmentManager(props) {
                 <header className="appointment-manager__header">
                   <div>
                     <span className="appointment-manager__eyebrow">Studio workspace</span>
-                    <h3 className="appointment-manager__title">{adminTab === 'appointments' ? 'Appointments' : 'Availability'}</h3>
+                    <h3 className="appointment-manager__title">{adminTab === 'appointments' ? 'Appointments' : adminTab === 'schedule' ? 'Availability' : 'Conversations'}</h3>
                   </div>
                   {adminTab === 'appointments' && <div className="appointment-manager__toolbar">
                     <div className="appointment-manager__search-field">
@@ -107,7 +111,7 @@ export default function AppointmentManager(props) {
                     </select>
                   </div>}
                 </header>
-                <section className="appointment-manager__welcome" aria-label="Admin dashboard overview">
+                {adminTab !== 'messages' && <><section className="appointment-manager__welcome" aria-label="Admin dashboard overview">
                   <div><span>ADMIN DASHBOARD</span><h4>Welcome back, {(currentUser.name || 'Artist').split(' ')[0]}.</h4><p>Manage bookings, availability, and your 1/1 flash collection.</p></div>
                 </section>
                 <div className="appointment-manager__stats" aria-label="Studio summary">
@@ -115,7 +119,8 @@ export default function AppointmentManager(props) {
                   <article><span className="appointment-manager__stat-icon"><Clock3 size={17} /></span><div><small>Pending</small><strong>{pendingAppointments}</strong></div></article>
                   <article><span className="appointment-manager__stat-icon"><CheckCircle2 size={17} /></span><div><small>Confirmed</small><strong>{approvedAppointments}</strong></div></article>
                   <button type="button" className="appointment-manager__stat-card" aria-label={`View uploaded flash designs; ${availableFlashDesigns} available`} onClick={() => setIsFlashDesignListOpen(true)}><span className="appointment-manager__stat-icon"><Images size={17} /></span><div><small>Available flash</small><strong>{availableFlashDesigns}</strong></div></button>
-                </div>
+                </div></>}
+            {adminTab === 'messages' && <CustomerAdminChat currentUser={currentUser} isAdmin onClose={() => setAdminTab('appointments')} />}
             {adminTab === 'schedule' && <section className="schedule-manager" aria-labelledby="schedule-manager-title">
               <div className="schedule-manager__heading">
                 <div>

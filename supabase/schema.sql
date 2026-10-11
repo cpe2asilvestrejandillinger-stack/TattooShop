@@ -391,6 +391,72 @@ for all to authenticated
 using ((select public.is_admin()))
 with check ((select public.is_admin()));
 
+-- A direct, account-level customer to admin conversation.
+create table if not exists public.customer_messages (
+  id uuid primary key default gen_random_uuid(),
+  customer_id uuid not null references public.profiles(id) on delete cascade,
+  sender_id uuid not null references public.profiles(id) on delete cascade,
+  body text,
+  attachment_path text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.customer_messages add column if not exists attachment_path text;
+alter table public.customer_messages alter column body drop not null;
+alter table public.customer_messages drop constraint if exists customer_messages_body_check;
+alter table public.customer_messages drop constraint if exists customer_messages_body_or_attachment_check;
+alter table public.customer_messages add constraint customer_messages_body_or_attachment_check
+  check (
+    (body is null or char_length(btrim(body)) between 1 and 2000)
+    and (body is not null or attachment_path is not null)
+  );
+
+create index if not exists customer_messages_thread_idx
+  on public.customer_messages (customer_id, created_at);
+
+-- Carry over messages from the earlier appointment-specific chat, if it was already used.
+do $$
+begin
+  if to_regclass('public.appointment_messages') is not null then
+    execute 'insert into public.customer_messages (id, customer_id, sender_id, body, created_at)
+      select old_message.id, appointment.customer_id, old_message.sender_id, old_message.body, old_message.created_at
+      from public.appointment_messages old_message
+      join public.appointments appointment on appointment.id = old_message.appointment_id
+      on conflict (id) do nothing';
+  end if;
+end;
+$$;
+
+alter table public.customer_messages enable row level security;
+grant select, insert on public.customer_messages to authenticated;
+
+drop policy if exists "Customers and admins can read customer conversations" on public.customer_messages;
+create policy "Customers and admins can read customer conversations" on public.customer_messages
+for select to authenticated
+using (customer_id = (select auth.uid()) or (select public.is_admin()));
+
+drop policy if exists "Customers and admins can send customer messages" on public.customer_messages;
+create policy "Customers and admins can send customer messages" on public.customer_messages
+for insert to authenticated
+with check (
+  sender_id = (select auth.uid())
+  and (customer_id = (select auth.uid()) or (select public.is_admin()))
+);
+
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+    and not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime'
+        and schemaname = 'public'
+        and tablename = 'customer_messages'
+    ) then
+    alter publication supabase_realtime add table public.customer_messages;
+  end if;
+end;
+$$;
+
 -- Schedules
 drop policy if exists "Anyone can view available schedules" on public.schedules;
 drop policy if exists "Anyone can view schedule availability" on public.schedules;
@@ -403,6 +469,37 @@ create policy "Admins can manage schedules" on public.schedules
 for all to authenticated
 using ((select public.is_admin()))
 with check ((select public.is_admin()));
+-- Private storage for customer and admin conversation images.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('customer-chat-attachments', 'customer-chat-attachments', false, 10485760, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Chat participants can upload conversation images" on storage.objects;
+create policy "Chat participants can upload conversation images" on storage.objects
+for insert to authenticated
+with check (
+  bucket_id = 'customer-chat-attachments'
+  and (storage.foldername(name))[2] = (select auth.uid())::text
+  and (
+    (storage.foldername(name))[1] = (select auth.uid())::text
+    or (select public.is_admin())
+  )
+);
+
+drop policy if exists "Chat participants can view conversation images" on storage.objects;
+create policy "Chat participants can view conversation images" on storage.objects
+for select to authenticated
+using (
+  bucket_id = 'customer-chat-attachments'
+  and (
+    (storage.foldername(name))[1] = (select auth.uid())::text
+    or (select public.is_admin())
+  )
+);
+
 -- Private storage for booking reference images.
 insert into storage.buckets (id, name, public)
 values ('appointment-references', 'appointment-references', false)

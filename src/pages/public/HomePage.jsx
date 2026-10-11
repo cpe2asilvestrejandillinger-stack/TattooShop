@@ -4,7 +4,7 @@ import artistImage from '../../assets/artist.jpg'
 import instagramLogo from '../../assets/iglogo.jpg'
 import facebookLogo from '../../assets/fblogo.jpg'
 import tiktokLogo from '../../assets/tiktoklogo.jpg'
-import { Sparkles, Clock, MapPin, Calendar, ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Menu, X, Phone } from 'lucide-react'
+import { Sparkles, Clock, MapPin, Calendar, ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Menu, X, Phone, MessageCircle } from 'lucide-react'
 import { PORTFOLIO_ITEMS } from '../../data/siteData'
 
 const ESTIMATOR_STYLES = [
@@ -25,7 +25,7 @@ const ESTIMATOR_PLACEMENTS = [
   { name: 'Ribs / Neck', price: 1500 },
 ]
 
-export default function HomePage({ currentUser, openBooking, openBookingWithEstimate, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, flashDesigns = [], flashLoaded = false, onClaimFlash }) {
+export default function HomePage({ currentUser, openBooking, openBookingWithEstimate, openConversations, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, flashDesigns = [], flashLoaded = false, onClaimFlash }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileMenuMounted, setIsMobileMenuMounted] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
@@ -205,6 +205,11 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
                       <LayoutDashboard size={15} /> Admin Panel
                     </button>
                   )}
+                  {currentUser.role === 'customer' && (
+                    <button type="button" onClick={() => { openConversations(); setIsProfileMenuOpen(false) }}>
+                      <MessageCircle size={15} /> Chat with admin
+                    </button>
+                  )}
                   <button type="button" className="home-page__logout-button" onClick={() => { handleLogout(); setIsProfileMenuOpen(false) }}>
                     <LogOut size={15} /> Log Out
                   </button>
@@ -306,6 +311,16 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
             {currentUser?.role !== 'admin' && (
               <button type="button" className="mobile-nav-book" onClick={() => { openBooking(); setIsMobileMenuOpen(false) }}>
                 <Calendar size={16} /> Book Session
+              </button>
+            )}
+            {currentUser?.role !== 'admin' && (
+              <button type="button" className="mobile-nav-chat" onClick={() => {
+                if (currentUser?.role === 'customer') openConversations()
+                else setAuthModal('login')
+                setIsMobileMenuOpen(false)
+                setIsProfileMenuOpen(false)
+              }}>
+                <MessageCircle size={16} /> Chat with admin
               </button>
             )}
           </div>

@@ -3,6 +3,7 @@ import { supabase } from './lib/supabase'
 import { APPOINTMENT_SELECT } from './lib/appointmentFields'
 import HomePage from './pages/public/HomePage'
 import AppModals from './components/forms/AppModals'
+import CustomerAdminChat from './components/CustomerAdminChat'
 import { toAppointment, toCurrentUser } from './utils/appointmentMappers'
 
 const ALLOWED_REFERENCE_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
@@ -43,6 +44,7 @@ export default function App() {
   const [appointmentError, setAppointmentError] = useState('')
   const [bookingError, setBookingError] = useState('')
   const [bookingSubmitting, setBookingSubmitting] = useState(false)
+  const [isCustomerConversationsOpen, setIsCustomerConversationsOpen] = useState(false)
 
   // Modals
   const [authModal, setAuthModal] = useState(null); // 'login' | 'register' | null
@@ -429,6 +431,8 @@ export default function App() {
       return
     }
     setCurrentUser(null)
+    setIsCustomerConversationsOpen(false)
+    setAppointments([])
     setIsAdminModalOpen(false)
     setBookName('')
   }
@@ -597,6 +601,7 @@ export default function App() {
         openBooking={openBooking}
         openBookingWithEstimate={openBookingWithEstimate}
         handleLogout={handleLogout}
+        openConversations={() => setIsCustomerConversationsOpen(true)}
         setAuthModal={(modal) => { setPendingFlash(null); setAuthModal(modal) }}
         setIsAdminModalOpen={setIsAdminModalOpen}
         setSelectedImage={setSelectedImage}
@@ -611,6 +616,9 @@ export default function App() {
         onClaimFlash={handleClaimFlash}
       />
       <AppModals {...modalProps} />
+      {isCustomerConversationsOpen && currentUser?.role === 'customer' && (
+        <CustomerAdminChat currentUser={currentUser} onClose={() => setIsCustomerConversationsOpen(false)} />
+      )}
     </>
   )
 }

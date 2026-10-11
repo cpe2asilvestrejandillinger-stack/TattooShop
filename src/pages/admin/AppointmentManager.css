@@ -384,6 +384,7 @@
 .appointment-manager__close-button {
   top: max(0.8rem, env(safe-area-inset-top));
   right: 1rem;
+  z-index: 5;
   display: grid;
   width: 2.75rem;
   height: 2.75rem;
@@ -391,11 +392,25 @@
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 0.85rem;
   background: rgb(255 255 255 / 3%);
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .appointment-manager__close-button:hover {
-  border-color: rgb(245 158 11 / 30%);
-  background: rgb(245 158 11 / 8%);
+  color: #fbbf24;
+  border-color: rgb(245 158 11 / 65%);
+  background: rgb(245 158 11 / 18%);
+  box-shadow: 0 0 0 3px rgb(245 158 11 / 10%);
+  transform: translateY(-1px);
+}
+
+.appointment-manager__close-button:hover .appointment-manager__close-icon {
+  color: #fbbf24;
+}
+
+.appointment-manager__close-button:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 3px;
 }
 
 .appointment-manager__title {
@@ -1561,5 +1576,25 @@
   .appointment-manager__modal {
     height: auto;
     min-height: 100dvh;
+  }
+}
+
+/* Smoothly reveal admin sections and nested admin dialogs. */
+.appointment-manager__workspace > *,
+.appointment-manager__modal > .flash-manager__modal,
+.appointment-manager__modal > .flash-designs-modal {
+  animation: admin-panel-enter 220ms cubic-bezier(.2, .7, .2, 1) both;
+}
+
+@keyframes admin-panel-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appointment-manager__workspace > *,
+  .appointment-manager__modal > .flash-manager__modal,
+  .appointment-manager__modal > .flash-designs-modal {
+    animation: none;
   }
 }
