@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronLeft, MessageCircle, Paperclip, QrCode, Search, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -43,7 +43,7 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
   const [error, setError] = useState('')
   const [chatSetupRequired, setChatSetupRequired] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
-  const messagesEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
   const composerRef = useRef(null)
   const qrInputRef = useRef(null)
   const activeClient = isAdmin
@@ -138,9 +138,15 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
     onConversationRead?.(activeClientId)
   }, [activeClientId, isThreadVisible, latestMessage?.id, onConversationRead])
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [messages])
+  useLayoutEffect(() => {
+    if (loadingMessages) return undefined
+    const messageList = messagesContainerRef.current
+    if (!messageList) return undefined
+    const frameId = window.requestAnimationFrame(() => {
+      messageList.scrollTop = messageList.scrollHeight
+    })
+    return () => window.cancelAnimationFrame(frameId)
+  }, [activeClientId, loadingMessages, messages.length])
 
   useEffect(() => {
     const textarea = composerRef.current
@@ -274,7 +280,7 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
                 <span className="customer-chat__avatar">{(isAdmin ? activeClient.name : 'S').charAt(0).toUpperCase()}</span>
                 <div><strong>{isAdmin ? activeClient.name : 'Studio admin'}</strong><span>{isAdmin ? 'Private customer conversation' : 'Send a message to the studio admin'}</span></div>
               </div>
-              <div className="customer-chat__messages" aria-live="polite">
+              <div ref={messagesContainerRef} className="customer-chat__messages" aria-live="polite">
                 {loadingMessages ? <p className="customer-chat__hint">Loading conversation…</p> : chatSetupRequired ? <div className="customer-chat__setup-state"><span className="customer-chat__setup-icon"><MessageCircle size={22} /></span><strong>{isAdmin ? 'Chat setup is incomplete' : 'Messaging is unavailable'}</strong><p>{isAdmin ? 'Run the updated supabase/schema.sql in the Supabase SQL Editor, then retry.' : 'The studio chat is being set up. Please contact the studio directly for now.'}</p>{isAdmin && <small>{error}</small>}<button type="button" onClick={() => setRetryCount((count) => count + 1)}>Retry connection</button></div> : error && visibleMessages.length === 0 ? <div className="customer-chat__empty"><MessageCircle size={28} /><strong>Conversation unavailable</strong><p>Please retry in a moment.</p><span className="customer-chat__error" role="alert">{error}</span><button type="button" className="customer-chat__retry" onClick={() => setRetryCount((count) => count + 1)}>Try again</button></div> : visibleMessages.length === 0 ? <div className="customer-chat__empty"><MessageCircle size={28} /><strong>Start a conversation</strong><p>{isAdmin ? 'Send a message to this client.' : 'Ask a question about your tattoo or booking. The admin will reply here.'}</p></div> : visibleMessages.map((message) => {
                   const mine = message.sender_id === currentUser.id
                   return <article key={message.id} className={'customer-chat__message' + (mine ? ' is-mine' : '')}>
@@ -282,13 +288,12 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
                     {message.message_type === 'payment_qr' && <strong className="customer-chat__payment-label">Studio payment QR</strong>}
                     {message.message_type === 'payment_proof' && <strong className="customer-chat__payment-label">Payment receipt</strong>}
                     {message.attachment_path && (message.attachmentUrl
-                      ? <a className="customer-chat__message-image-link" href={message.attachmentUrl} target="_blank" rel="noreferrer"><img className="customer-chat__message-image" src={message.attachmentUrl} alt="Image attachment" loading="lazy" /></a>
+                      ? <a className="customer-chat__message-image-link" href={message.attachmentUrl} target="_blank" rel="noreferrer"><img className="customer-chat__message-image" src={message.attachmentUrl} alt="Image attachment" loading="lazy" onLoad={() => { const messageList = messagesContainerRef.current; if (messageList && messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight < 120) messageList.scrollTop = messageList.scrollHeight }} /></a>
                       : <div className="customer-chat__message-image-unavailable">Image unavailable</div>)}
                     {message.body && <p>{formatConversationMessage(message.body)}</p>}
                     <time dateTime={message.created_at}>{formatMessageDate(message.created_at)}</time>
                   </article>
                 })}
-                <div ref={messagesEndRef} />
               </div>
               {error && visibleMessages.length > 0 && <p className="customer-chat__error" role="alert">{error}</p>}
               {!chatSetupRequired && <>{attachmentFile && <div className="customer-chat__attachment-preview" role="status">

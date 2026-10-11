@@ -155,34 +155,6 @@ export default function AppointmentManager(props) {
                     <span className="appointment-manager__eyebrow">Studio workspace</span>
                     <h3 className="appointment-manager__title">{adminTab === 'appointments' ? 'Appointments' : adminTab === 'schedule' ? 'Availability' : 'Conversations'}</h3>
                   </div>
-                  {adminTab === 'appointments' && <div className="appointment-manager__toolbar">
-                    <div className="appointment-manager__search-field">
-                      <Search className="appointment-manager__search-icon" />
-                      <input
-                        type="text"
-                        placeholder="Search client..."
-                        value={adminSearch}
-                        onChange={(event) => setAdminSearch(event.target.value)}
-                        className="appointment-manager__search-input"
-                      />
-                    </div>
-                    <select
-                      value={adminStatusFilter}
-                      onChange={(event) => setAdminStatusFilter(event.target.value)}
-                      className="appointment-manager__status-filter"
-                      aria-label="Filter appointments by status"
-                    >
-                      <option value="All">All statuses</option>
-                      <option value="pending">Pending</option>
-                      <option value="awaiting_payment">Awaiting deposit</option>
-                      <option value="expired">Hold expired</option>
-                      <option value="awaiting_payment_expired">Deposit deadline passed</option>
-                      <option value="approved">Approved</option>
-                      <option value="completed">Completed</option>
-                      <option value="rejected">Rejected</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                  </div>}
                 </header>
                 {adminTab !== 'messages' && <><section className="appointment-manager__welcome" aria-label="Admin dashboard overview">
                   <div><span>ADMIN DASHBOARD</span><h4>Welcome back, {(currentUser.name || 'Artist').split(' ')[0]}.</h4><p>Manage bookings, availability, and your 1/1 flash collection.</p></div>
@@ -230,6 +202,34 @@ export default function AppointmentManager(props) {
               {availabilityError && <p className="appointment-manager__error-message" role="alert">{availabilityError}</p>}
             </section>}
             {adminTab === 'appointments' && <>
+            <div className="appointment-manager__toolbar">
+                    <div className="appointment-manager__search-field">
+                      <Search className="appointment-manager__search-icon" />
+                      <input
+                        type="text"
+                        placeholder="Search client..."
+                        value={adminSearch}
+                        onChange={(event) => setAdminSearch(event.target.value)}
+                        className="appointment-manager__search-input"
+                      />
+                    </div>
+                    <select
+                      value={adminStatusFilter}
+                      onChange={(event) => setAdminStatusFilter(event.target.value)}
+                      className="appointment-manager__status-filter"
+                      aria-label="Filter appointments by status"
+                    >
+                      <option value="All">All statuses</option>
+                      <option value="pending">Pending</option>
+                      <option value="awaiting_payment">Awaiting deposit</option>
+                      <option value="expired">Hold expired</option>
+                      <option value="awaiting_payment_expired">Deposit deadline passed</option>
+                      <option value="approved">Approved</option>
+                      <option value="completed">Completed</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+            </div>
             {appointmentError && <p className="appointment-manager__error-message" role="alert">{appointmentError}</p>}
             <div className="appointment-manager__table-scroll">
               <table className="appointment-manager__appointments-table">
