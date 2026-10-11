@@ -124,7 +124,7 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
       
       {/* STICKY NAVIGATION BAR */}
       <nav className="home-page__navbar">
-        <div className="home-page__brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        <button type="button" className="home-page__brand" aria-label="AirWizard Tattoo home" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <div className="home-page__brand-mark">
             <img src={artistImage} alt="AirWizard Tattoo logo" className="home-page__brand-image" />
           </div>
@@ -132,7 +132,7 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
             <span className="home-page__brand-name">AirWizard Tattoo</span>
             <span className="home-page__brand-location">Guiguinto, Bulacan</span>
           </div>
-        </div>
+        </button>
 
         <div className="home-page__desktop-nav">
           <a href="#home" className={activeNavId === 'home' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('home')}>Home</a>

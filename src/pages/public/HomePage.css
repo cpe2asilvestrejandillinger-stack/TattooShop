@@ -27,6 +27,12 @@
 /* flex items-center space-x-3 cursor-pointer */
 .home-page__brand {
   @apply flex items-center space-x-3 cursor-pointer;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
 }
 
 /* w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/20 */

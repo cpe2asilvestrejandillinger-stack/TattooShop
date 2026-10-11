@@ -43,6 +43,15 @@ export default function BookingModal(props) {
   }, [isBookingOpen])
 
   useEffect(() => {
+    if (!isBookingOpen) return undefined
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape' && !isCalendarOpen) closeBookingModal()
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [isBookingOpen, isCalendarOpen, closeBookingModal])
+
+  useEffect(() => {
     if (!isCalendarOpen) return undefined
     const closeOnOutsideClick = (event) => {
       if (!calendarPickerRef.current?.contains(event.target)) setIsCalendarOpen(false)
@@ -84,10 +93,12 @@ export default function BookingModal(props) {
       {/* BOOKING SESSION MODAL */}
       {isBookingOpen && (
         <div className="booking-modal__modal-backdrop">
-          <div className="booking-modal__modal">
+          <div className="booking-modal__modal" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
             <button 
+              type="button"
               onClick={closeBookingModal} 
               className="booking-modal__close-button"
+              aria-label="Close booking dialog"
             >
               <X className="booking-modal__close-icon" />
             </button>
@@ -97,13 +108,13 @@ export default function BookingModal(props) {
                 <div className="booking-modal__success-icon-wrapper">
                   <Check className="booking-modal__success-icon" />
                 </div>
-                <h3 className="booking-modal__success-title">Booking Request Received!</h3>
+                <h3 id="booking-modal-title" className="booking-modal__success-title">Booking Request Received!</h3>
                 <p className="booking-modal__success-message">Your date is held for 2 hours while AirWizard reviews your request. If it is not approved before then, the date will reopen.</p>
               </div>
             ) : bookingLocationStep ? (
-              <section className="booking-location-step" aria-labelledby="booking-location-title">
+              <section className="booking-location-step" aria-labelledby="booking-modal-title">
                 <span className="booking-modal__eyebrow">Start your booking</span>
-                <h3 id="booking-location-title" className="booking-modal__title">Where would you like your session?</h3>
+                <h3 id="booking-modal-title" className="booking-modal__title">Where would you like your session?</h3>
                 <p className="booking-location-step__description">Choose a location to continue to the booking details.</p>
                 <div className="booking-location-step__choices">
                   <button type="button" className="booking-location-step__choice" onClick={() => { setBookLocation('studio'); setBookAddress(''); setBookingLocationStep(false) }}>
@@ -120,14 +131,15 @@ export default function BookingModal(props) {
               <>
                 <div className="booking-modal__form-heading">
                   <span className="booking-modal__eyebrow">Consultation Request · {bookLocation === 'home' ? 'Home service' : 'At the studio'}</span>
-                  <h3 className="booking-modal__title">Book Your Session</h3>
+                  <h3 id="booking-modal-title" className="booking-modal__title">Book Your Session</h3>
                 </div>
 
                 <form onSubmit={handleBookingSubmit} className="booking-modal__form">
                   <div className="booking-modal__field-row">
                     <div>
-                      <label className="booking-modal__field-label">Your Name</label>
+                      <label className="booking-modal__field-label" htmlFor="booking-name">Your Name</label>
                       <input 
+                        id="booking-name"
                         type="text" 
                         required
                         value={bookName}
@@ -159,8 +171,9 @@ export default function BookingModal(props) {
 
                   <div className={bookLocation === 'home' ? 'booking-modal__field-row' : undefined}>
                     <div>
-                      <label className="booking-modal__field-label">Email Address</label>
+                      <label className="booking-modal__field-label" htmlFor="booking-email">Email Address</label>
                       <input
+                        id="booking-email"
                         type="email"
                         required
                         value={currentUser?.email || ''}
@@ -180,8 +193,9 @@ export default function BookingModal(props) {
 
                   <div className="booking-modal__field-row">
                     <div>
-                      <label className="booking-modal__field-label">Preferred Style</label>
+                      <label className="booking-modal__field-label" htmlFor="booking-style">Preferred Style</label>
                       <select 
+                        id="booking-style"
                         value={bookStyle}
                         onChange={(e) => setBookStyle(e.target.value)}
                         className="booking-modal__select-input"
@@ -195,8 +209,9 @@ export default function BookingModal(props) {
                       </select>
                     </div>
                     <div>
-                      <label className="booking-modal__field-label">{bookStyle.startsWith('Flash:') ? 'Flash Size' : 'Estimated Size'}</label>
+                      <label className="booking-modal__field-label" htmlFor="booking-size">{bookStyle.startsWith('Flash:') ? 'Flash Size' : 'Estimated Size'}</label>
                       <select 
+                        id="booking-size"
                         value={bookSize}
                         onChange={(e) => setBookSize(e.target.value)}
                         className="booking-modal__select-input"
@@ -339,10 +354,11 @@ export default function BookingModal(props) {
                   {availabilityError && <p className="booking-modal__error-message" role="alert">{availabilityError}</p>}
                   {availabilityLoading && <p className="booking-modal__schedule-note">Loading pending holds and confirmed booking dates...</p>}
                   <div>
-                    <label className="booking-modal__field-label">Reference Image (Optional)</label>
+                    <label className="booking-modal__field-label" htmlFor="booking-reference">Reference Image (Optional)</label>
                     <div className="booking-modal__upload-field">
                       <Camera className="booking-modal__upload-icon" />
                       <input 
+                        id="booking-reference"
                         type="file" 
                         accept="image/jpeg,image/png,image/webp"
                         onChange={handleReferenceImageChange}
@@ -353,8 +369,9 @@ export default function BookingModal(props) {
                   </div>
 
                   <div>
-                    <label className="booking-modal__field-label">Design Concept Notes</label>
+                    <label className="booking-modal__field-label" htmlFor="booking-notes">Design Concept Notes</label>
                     <textarea 
+                      id="booking-notes"
                       rows={3}
                       value={bookNotes}
                       onChange={(e) => setBookNotes(e.target.value)}

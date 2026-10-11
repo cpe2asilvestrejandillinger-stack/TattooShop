@@ -24,6 +24,10 @@
 /* absolute top-6 right-6 text-gray-400 hover:text-white p-1 */
 .booking-modal__close-button {
   @apply absolute top-6 right-6 text-gray-400 p-1;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
 }
 .booking-modal__close-button:hover {
   @apply text-white;
@@ -213,7 +217,7 @@
 .booking-date-picker__placeholder { color: #a1a1aa; }
 .booking-date-picker__icons { display: inline-flex; flex-shrink: 0; align-items: center; gap: .6rem; color: #fbbf24; }
 .booking-date-picker__icons .is-open { transform: rotate(180deg); }
-.booking-date-picker__dropdown { position: absolute; z-index: 30; top: calc(100% + .45rem); left: 0; width: min(calc(200% + 1rem), 25rem); min-width: 0; filter: drop-shadow(0 14px 28px rgb(0 0 0 / 45%)); }
+.booking-date-picker__dropdown { position: absolute; z-index: 30; top: calc(100% + .45rem); left: 0; width: min(25rem, calc(100vw - 4.5rem)); min-width: 0; filter: drop-shadow(0 14px 28px rgb(0 0 0 / 45%)); }
 .booking-time-inputs { display: flex; min-width: 0; align-items: center; gap: .3rem; }
 .booking-time-values { display: flex; min-width: 0; height: 2.75rem; flex: 1 1 0; align-items: center; overflow: hidden; border: 1px solid rgb(255 255 255 / 10%); border-radius: .75rem; background: rgb(255 255 255 / 5%); }
 .booking-time-values:focus-within { border-color: #fbbf24; }
@@ -266,6 +270,11 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  .booking-modal__form-heading,
+  .booking-location-step {
+    padding-right: 2.75rem;
+  }
+
   .booking-modal__date-time-row {
     gap: 0.6rem;
   }
@@ -306,4 +315,12 @@
     padding-inline: 0.2rem;
     font-size: var(--type-caption);
   }
+
+  .booking-modal__modal :where(.booking-modal__text-input, .booking-modal__select-input, .booking-modal__notes-input, .booking-modal__phone-number) {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .booking-modal__date-time-row { grid-template-columns: 1fr; }
 }

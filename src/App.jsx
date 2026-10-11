@@ -85,6 +85,19 @@ export default function App() {
   const [adminSearch, setAdminSearch] = useState('');
   const [adminStatusFilter, setAdminStatusFilter] = useState('All');
 
+  const hasOpenModal = Boolean(authModal || isAdminModalOpen || isBookingOpen || selectedImage || isCustomerConversationsOpen);
+  useEffect(() => {
+    if (!hasOpenModal) return undefined;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
+    };
+  }, [hasOpenModal]);
+
   // Restore Supabase auth state, then load the user's database profile.
   useEffect(() => {
     let isMounted = true
