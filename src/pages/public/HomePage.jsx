@@ -374,7 +374,7 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
 
             <div className="home-page__hero-stats">
               <div>
-                <p className="home-page__stat-value">25+</p>
+                <p className="home-page__stat-value">15+</p>
                 <p className="home-page__muted-text">Years Experience</p>
               </div>
               <div>
