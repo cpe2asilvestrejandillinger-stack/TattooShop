@@ -210,6 +210,33 @@
 .appointment-rejection__actions button[type='submit'] { border-color: #be123c; color: #fff; background: #be123c; }
 .appointment-rejection__actions button:disabled { opacity: .55; cursor: not-allowed; }
 
+.appointment-quote__backdrop { position: fixed; inset: 0; z-index: 90; display: grid; place-items: start center; overflow-y: auto; padding: max(1rem, env(safe-area-inset-top)) 1rem 1rem; background: rgb(3 3 5 / 82%); backdrop-filter: blur(12px); }
+.appointment-quote__dialog { display: grid; width: min(100%, 38rem); max-height: calc(100dvh - 2rem); gap: 1rem; overflow-y: auto; margin: 0 auto; padding: 1.4rem; border: 1px solid rgb(255 255 255 / 12%); border-radius: 1.2rem; color: #f4f2ee; background: #141418; box-shadow: 0 24px 70px #000b; }
+.appointment-quote__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.appointment-quote__header > div > span { color: #fbbf24; font-size: var(--type-caption); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.appointment-quote__header h3 { margin: .35rem 0; font-size: var(--type-lead); }
+.appointment-quote__header p { margin: 0; color: #aaa7b0; font-size: var(--type-small); line-height: 1.5; }
+.appointment-quote__fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; }
+.appointment-quote__field { display: grid; min-width: 0; gap: .45rem; color: #e8e5ec; font-size: var(--type-caption); font-weight: 700; }
+.appointment-quote__field > span small { color: #aaa7b0; font-size: inherit; font-weight: 500; }
+.appointment-quote__field input { width: 100%; min-width: 0; min-height: 2.9rem; box-sizing: border-box; padding: .7rem .8rem; border: 1px solid #3a3840; border-radius: .7rem; color: #f4f2ee; background: #1b1a20; font: inherit; font-size: var(--type-small); }
+.appointment-quote__field input:focus { outline: 2px solid #fbbf24; outline-offset: 1px; }
+.appointment-quote__summary { display: grid; gap: .65rem; padding: .9rem 1rem; border: 1px solid #34323a; border-radius: .8rem; background: #1b1a20; }
+.appointment-quote__summary > div { display: flex; justify-content: space-between; gap: 1rem; color: #aaa7b0; font-size: var(--type-small); }
+.appointment-quote__summary strong { color: #f4f2ee; font-variant-numeric: tabular-nums; }
+.appointment-quote__summary .appointment-quote__total { padding-top: .65rem; border-top: 1px solid #34323a; color: #f4f2ee; font-weight: 800; }
+.appointment-quote__summary .appointment-quote__total strong { color: #fbbf24; }
+.appointment-quote__balance { margin: -.55rem 0 0; color: #aaa7b0; font-size: var(--type-caption); }
+.appointment-quote__error { margin: 0; color: #fda4af; font-size: var(--type-small); }
+.appointment-quote__actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .6rem; margin-top: .2rem; }
+.appointment-quote__actions button { min-height: 2.6rem; padding: .6rem .9rem; border: 1px solid #3a3840; border-radius: .65rem; color: #e8e5ec; background: #242329; font-size: var(--type-caption); font-weight: 700; cursor: pointer; }
+.appointment-quote__actions button[type='submit'] { border-color: #fbbf24; color: #15120a; background: #fbbf24; }
+.appointment-quote__actions button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 560px) {
+  .appointment-quote__fields { grid-template-columns: 1fr; }
+  .appointment-quote__dialog { padding: 1.1rem; }
+}
+
 .flash-manager__backdrop {
   @apply fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm;
 }
@@ -867,6 +894,37 @@
   .flash-manager__item {
     transition: none;
   }
+}
+
+/* Keep admin dialogs reachable from the top when zoom reduces the viewport. */
+.appointment-manager__modal-backdrop,
+.flash-manager__backdrop,
+.flash-designs-modal__backdrop {
+  align-items: flex-start;
+  overflow-y: auto;
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+.appointment-rejection__backdrop {
+  place-items: start center;
+  overflow-y: auto;
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+.appointment-rejection__dialog {
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  margin: 0 auto;
+}
+
+.flash-manager__modal {
+  max-height: calc(100dvh - 2rem);
+  margin: 0 auto;
+}
+
+.flash-designs-modal {
+  max-height: calc(100dvh - 2rem);
+  margin: 0 auto;
 }
 
 

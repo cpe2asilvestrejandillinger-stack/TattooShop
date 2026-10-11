@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronLeft, MessageCircle, Paperclip, QrCode, Receipt, Search, Send, X } from 'lucide-react'
+import { ChevronLeft, MessageCircle, Paperclip, QrCode, Search, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { formatConversationMessage } from '../utils/formatConversationMessage'
 import './CustomerAdminChat.css'
@@ -46,7 +46,6 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
   const messagesEndRef = useRef(null)
   const composerRef = useRef(null)
   const qrInputRef = useRef(null)
-  const receiptInputRef = useRef(null)
   const activeClient = isAdmin
     ? clients.find((client) => client.id === selectedClientId)
     : { id: currentUser.id, name: currentUser.name || 'Client' }
@@ -300,10 +299,6 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
                 {isAdmin && <>
                   <button type="button" className="customer-chat__qr-button" onClick={() => qrInputRef.current?.click()} disabled={!activeClientId || sending} title="Send a payment QR image"><QrCode size={18} /><span>Send QR</span></button>
                   <input ref={qrInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="customer-chat__hidden-input" onChange={(event) => handleAttachmentSelection(event, 'payment_qr')} />
-                </>}
-                {!isAdmin && <>
-                  <button type="button" className="customer-chat__qr-button" onClick={() => receiptInputRef.current?.click()} disabled={sending} title="Send payment receipt"><Receipt size={18} /><span>Receipt</span></button>
-                  <input ref={receiptInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="customer-chat__hidden-input" onChange={(event) => handleAttachmentSelection(event, 'payment_proof')} />
                 </>}
                 <label className="customer-chat__attach-button" aria-label="Attach image" title="Attach image">
                   <Paperclip size={19} />

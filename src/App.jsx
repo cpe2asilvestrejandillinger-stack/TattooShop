@@ -51,6 +51,7 @@ export default function App() {
   const [authModal, setAuthModal] = useState(null); // 'login' | 'register' | null
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [bookingLocationStep, setBookingLocationStep] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
   // Auth Forms state
@@ -67,6 +68,8 @@ export default function App() {
   const [bookStyle, setBookStyle] = useState('Fine Line');
   const [bookSize, setBookSize] = useState('Small (5-10cm)');
   const [bookPlacement, setBookPlacement] = useState('');
+  const [bookLocation, setBookLocation] = useState('');
+  const [bookAddress, setBookAddress] = useState('');
   const [bookDate, setBookDate] = useState('');
   const [bookTime, setBookTime] = useState('');
   const [bookNotes, setBookNotes] = useState('');
@@ -269,6 +272,9 @@ export default function App() {
     setBookTime('')
     setBookSize(pendingFlash.size || 'Small (5-10cm)')
     setBookPlacement('')
+    setBookLocation('')
+    setBookAddress('')
+    setBookingLocationStep(true)
     setBookNotes(`1/1 Flash claim: ${pendingFlash.title}`)
     setBookingFlashId(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(pendingFlash.id || '') ? pendingFlash.id : null)
     setBookingError('')
@@ -288,6 +294,9 @@ export default function App() {
     setBookTime('')
     setBookSize(estimate?.size || 'Small (5-10cm)')
     setBookPlacement(estimate?.placement || '')
+    setBookLocation('')
+    setBookAddress('')
+    setBookingLocationStep(true)
     setBookNotes('')
     setBookingFlashId(null)
     setBookingError('')
@@ -504,6 +513,7 @@ export default function App() {
 
   const closeBookingModal = () => {
     setIsBookingOpen(false)
+    setBookingLocationStep(false)
     setBookingFlashId(null)
   }
   const handleReferenceImageChange = (event) => {
@@ -544,6 +554,8 @@ export default function App() {
       if (availabilityLoading) throw new Error('Wait for booking availability to finish loading.')
       if (availabilityError) throw new Error('Booking availability could not be checked. Please try again.')
       if (!bookDate) throw new Error('Choose an available date on the calendar.')
+      if (!['studio', 'home'].includes(bookLocation)) throw new Error('Choose whether the session will be at the studio or at home.')
+      if (bookLocation === 'home' && !bookAddress.trim()) throw new Error('Enter the home visit address.')
       if (bookDate < localDateKey()) throw new Error('Choose a future date.')
       if (unavailableDates.includes(bookDate)) throw new Error('That date has an active booking hold or a confirmed appointment. Choose another date.')
       if (!/^09\d{9}$/.test(bookPhone)) throw new Error('Enter an 11-digit phone number starting with 09.')
@@ -580,6 +592,8 @@ export default function App() {
           tattoo_style: bookStyle,
           tattoo_size: bookSize,
           body_placement: bookPlacement.trim(),
+          session_location: bookLocation,
+          home_service_address: bookLocation === 'home' ? bookAddress.trim() : null,
           description: bookNotes.trim() || null,
           reference_image_url: referenceImagePath,
           status: 'pending',
@@ -597,6 +611,8 @@ export default function App() {
         setIsBookingOpen(false)
         setBookNotes('')
         setBookPlacement('')
+        setBookLocation('')
+        setBookAddress('')
         setBookImageFile(null)
         setBookTime('')
       }, 2000)
@@ -623,6 +639,8 @@ export default function App() {
     const appointment = appointments.find((item) => item.id === appointmentId)
     const update = { status }
     if (status === 'awaiting_payment') {
+      update.base_amount = paymentDetails.baseAmount
+      update.home_service_fee = paymentDetails.homeServiceFee
       update.total_amount = paymentDetails.totalAmount
       update.deposit_amount = paymentDetails.depositAmount
       update.balance_amount = paymentDetails.totalAmount - paymentDetails.depositAmount
@@ -652,7 +670,7 @@ export default function App() {
       const { error: conversationError } = await supabase.from('customer_messages').insert({
         customer_id: appointment.customerId,
         sender_id: currentUser.id,
-        body: `Booking update: ${bookingUpdateMessages[status]}${status === 'rejected' && rejectionReason.trim() ? `\nReason: ${rejectionReason.trim()}` : ''}`,
+        body: `Booking update: ${bookingUpdateMessages[status]}${status === 'awaiting_payment' ? `\nQuote: tattoo PHP ${Number(paymentDetails.baseAmount).toLocaleString('en-PH', { minimumFractionDigits: 2 })}${paymentDetails.homeServiceFee > 0 ? ` + home-service travel PHP ${Number(paymentDetails.homeServiceFee).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : ''} = PHP ${Number(paymentDetails.totalAmount).toLocaleString('en-PH', { minimumFractionDigits: 2 })}.` : ''}${status === 'rejected' && rejectionReason.trim() ? `\nReason: ${rejectionReason.trim()}` : ''}`,
       })
       if (conversationError) {
         setAppointmentError(`Booking status changed, but the conversation update could not be sent: ${conversationError.message}`)
@@ -662,7 +680,7 @@ export default function App() {
     setAppointments((currentAppointments) => currentAppointments.map((appointment) => (
       appointment.id === appointmentId ? {
         ...appointment,
-        ...('total_amount' in update ? { totalAmount: update.total_amount, depositAmount: update.deposit_amount, balanceAmount: update.balance_amount, paymentStatus: update.payment_status } : {}),
+        ...('total_amount' in update ? { baseAmount: update.base_amount, homeServiceFee: update.home_service_fee, totalAmount: update.total_amount, depositAmount: update.deposit_amount, balanceAmount: update.balance_amount, paymentStatus: update.payment_status } : {}),
         ...('payment_status' in update ? { paymentStatus: update.payment_status, balanceAmount: update.balance_amount } : {}),
         status,
         holdExpiresAt: status === 'awaiting_payment' ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : '',
@@ -688,7 +706,7 @@ export default function App() {
     return true
   }
   const markConversationRead = useCallback((customerId) => setUnreadConversationIds((ids) => ids.filter((id) => id !== customerId)), [])
-  const modalProps = { unreadConversationIds, markConversationRead, unavailableDates, availabilityLoading, availabilityError, authModal, setAuthModal, closeAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, handleGoogleSignIn, isBookingOpen, setIsBookingOpen, closeBookingModal, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookPlacement, setBookPlacement, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns, flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability, selectedImage, setSelectedImage }
+  const modalProps = { unreadConversationIds, markConversationRead, unavailableDates, availabilityLoading, availabilityError, authModal, setAuthModal, closeAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, handleGoogleSignIn, isBookingOpen, setIsBookingOpen, bookingLocationStep, setBookingLocationStep, closeBookingModal, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookPlacement, setBookPlacement, bookLocation, setBookLocation, bookAddress, setBookAddress, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns, flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability, selectedImage, setSelectedImage }
 
   return (
     <>

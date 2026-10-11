@@ -1,11 +1,11 @@
 import './BookingModal.css'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CalendarDays, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { Building2, CalendarDays, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, MapPin, X } from 'lucide-react'
 
 const toDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
 export default function BookingModal(props) {
-  const { isBookingOpen, setIsBookingOpen, closeBookingModal = () => setIsBookingOpen(false), bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookPlacement, setBookPlacement, bookDate, setBookDate, bookTime, setBookTime, unavailableDates = [], availabilityLoading = false, availabilityError = '', handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, currentUser } = props
+  const { isBookingOpen, setIsBookingOpen, bookingLocationStep, setBookingLocationStep, closeBookingModal = () => setIsBookingOpen(false), bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookPlacement, setBookPlacement, bookLocation, setBookLocation, bookAddress, setBookAddress, bookDate, setBookDate, bookTime, setBookTime, unavailableDates = [], availabilityLoading = false, availabilityError = '', handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, currentUser } = props
   const [calendarMonth, setCalendarMonth] = useState(() => { const today = new Date(); return new Date(today.getFullYear(), today.getMonth(), 1) })
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [timeHour, setTimeHour] = useState('')
@@ -100,10 +100,26 @@ export default function BookingModal(props) {
                 <h3 className="booking-modal__success-title">Booking Request Received!</h3>
                 <p className="booking-modal__success-message">Your date is held for 2 hours while AirWizard reviews your request. If it is not approved before then, the date will reopen.</p>
               </div>
+            ) : bookingLocationStep ? (
+              <section className="booking-location-step" aria-labelledby="booking-location-title">
+                <span className="booking-modal__eyebrow">Start your booking</span>
+                <h3 id="booking-location-title" className="booking-modal__title">Where would you like your session?</h3>
+                <p className="booking-location-step__description">Choose a location to continue to the booking details.</p>
+                <div className="booking-location-step__choices">
+                  <button type="button" className="booking-location-step__choice" onClick={() => { setBookLocation('studio'); setBookAddress(''); setBookingLocationStep(false) }}>
+                    <Building2 size={24} aria-hidden="true" />
+                    <span><strong>At the studio</strong><small>Book your session at AirWizard</small></span>
+                  </button>
+                  <button type="button" className="booking-location-step__choice" onClick={() => { setBookLocation('home'); setBookAddress(''); setBookingLocationStep(false) }}>
+                    <MapPin size={24} aria-hidden="true" />
+                    <span><strong>Home service</strong><small>We’ll confirm the travel fee with your quote</small></span>
+                  </button>
+                </div>
+              </section>
             ) : (
               <>
                 <div className="booking-modal__form-heading">
-                  <span className="booking-modal__eyebrow">Consultation Request</span>
+                  <span className="booking-modal__eyebrow">Consultation Request · {bookLocation === 'home' ? 'Home service' : 'At the studio'}</span>
                   <h3 className="booking-modal__title">Book Your Session</h3>
                 </div>
 
@@ -141,16 +157,25 @@ export default function BookingModal(props) {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="booking-modal__field-label">Email Address</label>
-                    <input 
-                      type="email" 
-                      required
-                      value={currentUser?.email || ''}
-                      readOnly
-                      placeholder="name@example.com" 
-                      className="booking-modal__text-input"
-                    />
+                  <div className={bookLocation === 'home' ? 'booking-modal__field-row' : undefined}>
+                    <div>
+                      <label className="booking-modal__field-label">Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        value={currentUser?.email || ''}
+                        readOnly
+                        placeholder="name@example.com"
+                        className="booking-modal__text-input"
+                      />
+                    </div>
+                    {bookLocation === 'home' && <div>
+                      <div className="booking-home-address-field">
+                        <label className="booking-modal__field-label" htmlFor="booking-address">Home Visit Address</label>
+                        <input id="booking-address" type="text" required maxLength={300} value={bookAddress} onChange={(event) => setBookAddress(event.target.value)} placeholder="Street, barangay, city" className="booking-modal__text-input" aria-describedby="home-service-fee-note" />
+                        <p id="home-service-fee-note" role="tooltip" className="booking-modal__home-service-note">The home-service travel fee will be included in your quote before you pay the deposit.</p>
+                      </div>
+                    </div>}
                   </div>
 
                   <div className="booking-modal__field-row">

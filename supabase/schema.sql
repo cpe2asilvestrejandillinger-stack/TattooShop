@@ -39,6 +39,8 @@ create table if not exists public.appointments (
   appointment_date date not null,
   appointment_time time not null,
   booking_hold_expires_at timestamptz,
+  session_location text not null default 'studio' check (session_location in ('studio', 'home')),
+  home_service_address text,
   tattoo_style text not null default 'Fine Line',
   tattoo_size text not null default 'Small (5-10cm)',
   body_placement text not null default '',
@@ -47,6 +49,8 @@ create table if not exists public.appointments (
   status text not null default 'pending'
     check (status in ('pending', 'awaiting_payment', 'approved', 'rejected', 'completed', 'cancelled')),
   total_amount numeric(10,2) not null default 0 check (total_amount >= 0),
+  base_amount numeric(10,2) not null default 0 check (base_amount >= 0),
+  home_service_fee numeric(10,2) not null default 0 check (home_service_fee >= 0),
   deposit_amount numeric(10,2) not null default 0,
   balance_amount numeric(10,2) not null default 0,
   payment_status text not null default 'unpaid'
@@ -59,8 +63,25 @@ alter table public.appointments add column if not exists tattoo_style text not n
 alter table public.appointments add column if not exists tattoo_size text not null default 'Small (5-10cm)';
 alter table public.appointments add column if not exists body_placement text not null default '';
 alter table public.appointments add column if not exists booking_hold_expires_at timestamptz;
+alter table public.appointments add column if not exists session_location text not null default 'studio';
+alter table public.appointments add column if not exists home_service_address text;
 alter table public.appointments add column if not exists flash_design_id uuid references public.designs(id) on delete set null;
 alter table public.appointments add column if not exists total_amount numeric(10,2) not null default 0;
+alter table public.appointments add column if not exists base_amount numeric(10,2) not null default 0;
+alter table public.appointments add column if not exists home_service_fee numeric(10,2) not null default 0;
+
+alter table public.appointments drop constraint if exists appointments_session_location_check;
+alter table public.appointments add constraint appointments_session_location_check
+  check (session_location in ('studio', 'home'));
+alter table public.appointments drop constraint if exists appointments_home_address_check;
+alter table public.appointments add constraint appointments_home_address_check
+  check (
+    (session_location = 'studio' and home_service_address is null)
+    or (session_location = 'home' and nullif(btrim(home_service_address), '') is not null)
+  );
+alter table public.appointments drop constraint if exists appointments_amounts_nonnegative_check;
+alter table public.appointments add constraint appointments_amounts_nonnegative_check
+  check (total_amount >= 0 and base_amount >= 0 and home_service_fee >= 0);
 
 alter table public.appointments drop constraint if exists appointments_status_check;
 alter table public.appointments add constraint appointments_status_check
@@ -465,6 +486,8 @@ with check (
   and status = 'pending'
   and payment_status = 'unpaid'
   and total_amount = 0
+  and base_amount = 0
+  and home_service_fee = 0
   and deposit_amount = 0
   and balance_amount = 0
 );

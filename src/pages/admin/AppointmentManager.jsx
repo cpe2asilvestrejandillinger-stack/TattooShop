@@ -17,27 +17,58 @@ export default function AppointmentManager(props) {
   const [rejectingAppointment, setRejectingAppointment] = useState(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [isRejectingAppointment, setIsRejectingAppointment] = useState(false)
+  const [depositAppointment, setDepositAppointment] = useState(null)
+  const [quoteBaseAmount, setQuoteBaseAmount] = useState('')
+  const [quoteHomeServiceFee, setQuoteHomeServiceFee] = useState('0')
+  const [quoteDepositAmount, setQuoteDepositAmount] = useState('')
+  const [quoteDepositCustomized, setQuoteDepositCustomized] = useState(false)
+  const [quoteError, setQuoteError] = useState('')
+  const [isSavingQuote, setIsSavingQuote] = useState(false)
   const [selectedScheduleDate, setSelectedScheduleDate] = useState(localDateString())
   const [scheduleCalendarMonth, setScheduleCalendarMonth] = useState(() => { const today = new Date(); return new Date(today.getFullYear(), today.getMonth(), 1) })
-  const requestDeposit = async (appointment) => {
-    const totalValue = window.prompt(`Enter the total tattoo price for ${appointment.clientName} (PHP):`)
-    if (totalValue === null) return
-    const totalAmount = Number(totalValue.replaceAll(',', '').trim())
-    if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
-      window.alert('Enter a total price greater than ₱0.')
+  const requestDeposit = (appointment) => {
+    setDepositAppointment(appointment)
+    setQuoteBaseAmount('')
+    setQuoteHomeServiceFee('0')
+    setQuoteDepositAmount('')
+    setQuoteDepositCustomized(false)
+    setQuoteError('')
+  }
+  const quoteBase = Number(quoteBaseAmount)
+  const quoteTravelFee = depositAppointment?.sessionLocation === 'home' ? Number(quoteHomeServiceFee) : 0
+  const quoteTotal = (Number.isFinite(quoteBase) ? quoteBase : 0) + (Number.isFinite(quoteTravelFee) ? quoteTravelFee : 0)
+  const suggestedDeposit = Math.ceil(quoteTotal * 0.3)
+  const displayedDeposit = quoteDepositCustomized ? quoteDepositAmount : (quoteTotal > 0 ? String(suggestedDeposit) : '')
+  const submitDepositRequest = async (event) => {
+    event.preventDefault()
+    if (!depositAppointment || isSavingQuote) return
+    const baseAmount = Number(quoteBaseAmount)
+    const homeServiceFee = depositAppointment.sessionLocation === 'home' ? Number(quoteHomeServiceFee) : 0
+    const totalAmount = baseAmount + homeServiceFee
+    const depositAmount = Number(displayedDeposit)
+    if (!Number.isFinite(baseAmount) || baseAmount <= 0) {
+      setQuoteError('Enter a tattoo price greater than PHP 0.')
       return
     }
-    const depositValue = window.prompt('Enter the required downpayment amount (PHP):', String(Math.ceil(totalAmount * 0.3)))
-    if (depositValue === null) return
-    const depositAmount = Number(depositValue.replaceAll(',', '').trim())
+    if (!Number.isFinite(homeServiceFee) || homeServiceFee < 0) {
+      setQuoteError('Enter a valid home-service fee of PHP 0 or more.')
+      return
+    }
     if (!Number.isFinite(depositAmount) || depositAmount <= 0 || depositAmount > totalAmount) {
-      window.alert('The downpayment must be greater than ₱0 and no more than the total price.')
+      setQuoteError('The downpayment must be greater than PHP 0 and no more than the total price.')
       return
     }
-    const updated = await updateAppointmentStatus(appointment.id, 'awaiting_payment', '', { totalAmount, depositAmount })
-    if (updated) {
-      setChatClientId(appointment.customerId)
-      setAdminTab('messages')
+    setQuoteError('')
+    setIsSavingQuote(true)
+    try {
+      const updated = await updateAppointmentStatus(depositAppointment.id, 'awaiting_payment', '', { baseAmount, homeServiceFee, totalAmount, depositAmount })
+      if (updated) {
+        setChatClientId(depositAppointment.customerId)
+        setAdminTab('messages')
+        setDepositAppointment(null)
+      }
+    } finally {
+      setIsSavingQuote(false)
     }
   }
   useEffect(() => {
@@ -242,6 +273,10 @@ export default function AppointmentManager(props) {
                         </td>
                         <td className="appointment-manager__placement-cell">
                           {app.placement}
+                          <small className="appointment-manager__hold-expiry">
+                            {app.sessionLocation === 'home' ? 'Home visit' : 'At the studio'}
+                            {app.sessionLocation === 'home' && app.homeServiceAddress ? ` · ${app.homeServiceAddress}` : ''}
+                          </small>
                         </td>
                         <td className="appointment-manager__date-cell">{app.date}<br />{formatTime(app.time)}{['pending', 'awaiting_payment'].includes(app.status) && app.holdExpiresAt && <small className="appointment-manager__hold-expiry">Held until {new Date(app.holdExpiresAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' })}</small>}{app.status === 'expired' && <small className="appointment-manager__hold-expiry">Pending hold expired; this request cannot be confirmed.</small>}{app.status === 'awaiting_payment_expired' && <small className="appointment-manager__hold-expiry">Deposit deadline passed; request a new booking.</small>}</td>
                         <td className="appointment-manager__standard-cell">
@@ -329,6 +364,48 @@ export default function AppointmentManager(props) {
                   <div className="appointment-rejection__actions">
                     <button type="button" onClick={() => setRejectingAppointment(null)} disabled={isRejectingAppointment}>Cancel</button>
                     <button type="submit" disabled={!rejectionReason.trim() || isRejectingAppointment}>{isRejectingAppointment ? 'Rejecting...' : 'Reject appointment'}</button>
+                  </div>
+                </form>
+              </div>,
+              document.body,
+            )}
+            {depositAppointment && createPortal(
+              <div className="appointment-quote__backdrop" onMouseDown={(event) => {
+                if (event.target === event.currentTarget && !isSavingQuote) setDepositAppointment(null)
+              }}>
+                <form className="appointment-quote__dialog" role="dialog" aria-modal="true" aria-labelledby="appointment-quote-title" onSubmit={submitDepositRequest}>
+                  <header className="appointment-quote__header">
+                    <div>
+                      <span>Booking quote</span>
+                      <h3 id="appointment-quote-title">Request downpayment</h3>
+                      <p>Set the price for {depositAppointment.clientName}. The quote will be sent in your conversation.</p>
+                    </div>
+                    <button type="button" className="flash-manager__close" onClick={() => setDepositAppointment(null)} disabled={isSavingQuote} aria-label="Close quote dialog"><X size={20} /></button>
+                  </header>
+                  <div className="appointment-quote__fields">
+                    <label className="appointment-quote__field">
+                      <span>Tattoo price <small>(PHP)</small></span>
+                      <input autoFocus required type="number" min="0.01" step="0.01" inputMode="decimal" value={quoteBaseAmount} onChange={(event) => { setQuoteBaseAmount(event.target.value); setQuoteError('') }} placeholder="0.00" />
+                    </label>
+                    {depositAppointment.sessionLocation === 'home' && <label className="appointment-quote__field">
+                      <span>Home travel fee <small>(PHP)</small></span>
+                      <input required type="number" min="0" step="0.01" inputMode="decimal" value={quoteHomeServiceFee} onChange={(event) => { setQuoteHomeServiceFee(event.target.value); setQuoteError('') }} placeholder="0.00" />
+                    </label>}
+                  </div>
+                  <section className="appointment-quote__summary" aria-label="Quote total">
+                    <div><span>Tattoo price</span><strong>₱{(Number.isFinite(quoteBase) ? quoteBase : 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</strong></div>
+                    {depositAppointment.sessionLocation === 'home' && <div><span>Travel fee</span><strong>₱{(Number.isFinite(quoteTravelFee) ? quoteTravelFee : 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</strong></div>}
+                    <div className="appointment-quote__total"><span>Total quote</span><strong>₱{quoteTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</strong></div>
+                  </section>
+                  <label className="appointment-quote__field">
+                    <span>Downpayment <small>(PHP · suggested 30%)</small></span>
+                    <input required type="number" min="0.01" max={quoteTotal || undefined} step="0.01" inputMode="decimal" value={displayedDeposit} onChange={(event) => { setQuoteDepositCustomized(true); setQuoteDepositAmount(event.target.value); setQuoteError('') }} placeholder="Enter downpayment" />
+                  </label>
+                  <p className="appointment-quote__balance">Remaining balance: ₱{Math.max(0, quoteTotal - (Number(displayedDeposit) || 0)).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                  {quoteError && <p className="appointment-quote__error" role="alert">{quoteError}</p>}
+                  <div className="appointment-quote__actions">
+                    <button type="button" onClick={() => setDepositAppointment(null)} disabled={isSavingQuote}>Cancel</button>
+                    <button type="submit" disabled={isSavingQuote}>{isSavingQuote ? 'Saving quote…' : 'Save quote and open chat'}</button>
                   </div>
                 </form>
               </div>,
