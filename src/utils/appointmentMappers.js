@@ -18,6 +18,7 @@ export const toAppointment = (row) => ({
   date: row.appointment_date,
   time: row.appointment_time,
   notes: row.description || '',
-  status: row.status,
+  status: row.status === 'pending' && row.booking_hold_expires_at && new Date(row.booking_hold_expires_at).getTime() <= Date.now() ? 'expired' : row.status,
+  holdExpiresAt: row.booking_hold_expires_at || '',
   refImage: row.reference_image_url,
 })

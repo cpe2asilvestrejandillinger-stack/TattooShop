@@ -38,6 +38,7 @@ create table if not exists public.appointments (
   service_id uuid references public.services(id) on delete set null,
   appointment_date date not null,
   appointment_time time not null,
+  booking_hold_expires_at timestamptz,
   tattoo_style text not null default 'Fine Line',
   tattoo_size text not null default 'Small (5-10cm)',
   body_placement text not null default '',
@@ -56,7 +57,33 @@ create table if not exists public.appointments (
 alter table public.appointments add column if not exists tattoo_style text not null default 'Fine Line';
 alter table public.appointments add column if not exists tattoo_size text not null default 'Small (5-10cm)';
 alter table public.appointments add column if not exists body_placement text not null default '';
+alter table public.appointments add column if not exists booking_hold_expires_at timestamptz;
 alter table public.appointments add column if not exists flash_design_id uuid references public.designs(id) on delete set null;
+
+-- Keep only the earliest pending request as the hold when migrating duplicate requests.
+with ranked_pending as (
+  select a.id,
+    row_number() over (partition by a.appointment_date order by a.created_at, a.id) as request_rank,
+    exists (
+      select 1 from public.appointments confirmed
+      where confirmed.appointment_date = a.appointment_date
+        and confirmed.status in ('approved', 'completed')
+    ) as has_confirmed_booking
+  from public.appointments a
+  where a.status = 'pending' and a.booking_hold_expires_at is null
+)
+update public.appointments a
+set booking_hold_expires_at = case
+  when ranked_pending.request_rank = 1 and not ranked_pending.has_confirmed_booking
+    then a.created_at + interval '2 hours'
+  else now() - interval '1 second'
+end
+from ranked_pending
+where ranked_pending.id = a.id;
+
+update public.appointments
+set booking_hold_expires_at = null
+where status <> 'pending' and booking_hold_expires_at is not null;
 
 create or replace function public.reserve_flash_for_appointment()
 returns trigger
@@ -243,7 +270,10 @@ as $$
   select distinct a.appointment_date
   from public.appointments a
   where a.appointment_date >= coalesce(p_start_date, current_date)
-    and a.status in ('approved', 'completed')
+    and (
+      a.status in ('approved', 'completed')
+      or (a.status = 'pending' and a.booking_hold_expires_at > now())
+    )
   order by a.appointment_date;
 $$;
 
@@ -258,13 +288,32 @@ set search_path = ''
 as $$
 begin
   perform pg_advisory_xact_lock(hashtext(new.appointment_date::text));
+
+  if tg_op = 'INSERT' and new.status = 'pending' then
+    new.booking_hold_expires_at := now() + interval '2 hours';
+  elsif tg_op = 'UPDATE' and new.status = 'pending' and old.status <> 'pending' then
+    new.booking_hold_expires_at := now() + interval '2 hours';
+  elsif new.status in ('approved', 'completed', 'rejected', 'cancelled') then
+    new.booking_hold_expires_at := null;
+  end if;
+
+  if tg_op = 'UPDATE'
+     and old.status = 'pending'
+     and new.status in ('approved', 'completed')
+     and (old.booking_hold_expires_at is null or old.booking_hold_expires_at <= now()) then
+    raise exception 'This booking hold expired. Ask the client to submit a new request.';
+  end if;
+
   if (tg_op = 'INSERT' or new.status in ('approved', 'completed')) and exists (
     select 1 from public.appointments a
     where a.appointment_date = new.appointment_date
       and a.id <> new.id
-      and a.status in ('approved', 'completed')
+      and (
+        a.status in ('approved', 'completed')
+        or (a.status = 'pending' and a.booking_hold_expires_at > now())
+      )
   ) then
-    raise exception 'This date already has a confirmed appointment. Choose another date.';
+    raise exception 'This date has an active booking hold or confirmed appointment. Choose another date.';
   end if;
   return new;
 end;
@@ -279,6 +328,9 @@ create index if not exists appointments_customer_date_idx
   on public.appointments (customer_id, appointment_date);
 create index if not exists appointments_date_idx
   on public.appointments (appointment_date, appointment_time);
+create index if not exists appointments_active_hold_idx
+  on public.appointments (appointment_date, booking_hold_expires_at)
+  where status = 'pending';
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -453,6 +505,15 @@ begin
         and tablename = 'customer_messages'
     ) then
     alter publication supabase_realtime add table public.customer_messages;
+  end if;
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+    and not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime'
+        and schemaname = 'public'
+        and tablename = 'appointments'
+    ) then
+    alter publication supabase_realtime add table public.appointments;
   end if;
 end;
 $$;

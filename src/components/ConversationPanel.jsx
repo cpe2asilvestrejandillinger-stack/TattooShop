@@ -2,6 +2,7 @@
 import { createPortal } from 'react-dom'
 import { ChevronLeft, MessageCircle, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { formatConversationMessage } from '../utils/formatConversationMessage'
 import { formatTime } from '../utils/formatTime'
 import './ConversationPanel.css'
 
@@ -120,7 +121,7 @@ export default function ConversationPanel({ appointments = [], currentUser, onCl
                   const mine = message.sender_id === currentUser.id
                   return <article key={message.id} className={'conversation-panel__message' + (mine ? ' is-mine' : '')}>
                 <span>{mine ? 'You' : (isAdmin ? 'Client' : 'Studio')}</span>
-                    <p>{message.body}</p>
+                    <p>{formatConversationMessage(message.body)}</p>
                     <time dateTime={message.created_at}>{new Date(message.created_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</time>
                   </article>
                 })}

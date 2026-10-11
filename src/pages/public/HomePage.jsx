@@ -25,7 +25,7 @@ const ESTIMATOR_PLACEMENTS = [
   { name: 'Ribs / Neck', price: 1500 },
 ]
 
-export default function HomePage({ currentUser, openBooking, openBookingWithEstimate, openConversations, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, flashDesigns = [], flashLoaded = false, onClaimFlash }) {
+export default function HomePage({ currentUser, hasProfileUpdates = false, hasUnreadConversation = false, openBooking, openBookingWithEstimate, openConversations, handleLogout, setAuthModal, setIsAdminModalOpen, setSelectedImage, estStyle, setEstStyle, estSize, setEstSize, estPlacement, setEstPlacement, flashDesigns = [], flashLoaded = false, onClaimFlash }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileMenuMounted, setIsMobileMenuMounted] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
@@ -187,12 +187,13 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
               <button
                 type="button"
                 className="desktop-profile-trigger"
-                aria-label={`Open ${currentUser.name}'s profile menu`}
+                aria-label={`Open ${currentUser.name}'s profile menu${hasProfileUpdates || hasUnreadConversation ? ', updates available' : ''}`}
                 aria-expanded={isProfileMenuOpen}
                 aria-haspopup="true"
                 onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
               >
                 {currentUser.name.charAt(0).toUpperCase()}
+                {(hasProfileUpdates || hasUnreadConversation) && <span className="profile-notification-dot" aria-hidden="true" />}
               </button>
               {isProfileMenuOpen && (
                 <div className="desktop-profile-menu">
@@ -206,8 +207,8 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
                     </button>
                   )}
                   {currentUser.role === 'customer' && (
-                    <button type="button" onClick={() => { openConversations(); setIsProfileMenuOpen(false) }}>
-                      <MessageCircle size={15} /> Chat with admin
+                    <button type="button" className="home-page__conversation-link" onClick={() => { openConversations(); setIsProfileMenuOpen(false) }}>
+                      <MessageCircle size={15} /> Chat with admin{hasUnreadConversation && <span className="profile-notification-dot" aria-hidden="true" />}
                     </button>
                   )}
                   <button type="button" className="home-page__logout-button" onClick={() => { handleLogout(); setIsProfileMenuOpen(false) }}>
@@ -263,6 +264,7 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
                     onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
                   >
                     {currentUser.name.charAt(0).toUpperCase()}
+                    {(hasProfileUpdates || hasUnreadConversation) && <span className="profile-notification-dot" aria-hidden="true" />}
                   </button>
                 )}
                 <button
@@ -320,7 +322,7 @@ export default function HomePage({ currentUser, openBooking, openBookingWithEsti
                 setIsMobileMenuOpen(false)
                 setIsProfileMenuOpen(false)
               }}>
-                <MessageCircle size={16} /> Chat with admin
+                <MessageCircle size={16} /> Chat with admin{hasUnreadConversation && <span className="profile-notification-dot" aria-hidden="true" />}
               </button>
             )}
           </div>

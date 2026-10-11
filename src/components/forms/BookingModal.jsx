@@ -98,7 +98,7 @@ export default function BookingModal(props) {
                   <Check className="booking-modal__success-icon" />
                 </div>
                 <h3 className="booking-modal__success-title">Booking Request Received!</h3>
-                <p className="booking-modal__success-message">AirWizard will review your request and contact you via email or phone for deposit instructions.</p>
+                <p className="booking-modal__success-message">Your date is held for 2 hours while AirWizard reviews your request. If it is not approved before then, the date will reopen.</p>
               </div>
             ) : (
               <>
@@ -241,7 +241,7 @@ export default function BookingModal(props) {
                             key={date}
                             disabled={!isAvailable || isPast || availabilityLoading || Boolean(availabilityError)}
                             aria-pressed={selected}
-                            aria-label={`${new Date(`${date}T12:00:00`).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' })}: ${availabilityError ? 'Availability could not be loaded' : isUnavailable ? 'Confirmed booking' : isPast ? 'Past date' : 'Available to request'}`}
+                            aria-label={`${new Date(`${date}T12:00:00`).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' })}: ${availabilityError ? 'Availability could not be loaded' : isUnavailable ? 'Temporarily held or confirmed booking' : isPast ? 'Past date' : 'Available to request'}`}
                             className={`booking-calendar__day booking-calendar__day--${stateClass}${selected ? ' is-selected' : ''}`}
                             onClick={() => chooseDate(date)}
                           >{Number(date.slice(-2))}</button>
@@ -312,7 +312,7 @@ export default function BookingModal(props) {
                     </div>
                   </div>
                   {availabilityError && <p className="booking-modal__error-message" role="alert">{availabilityError}</p>}
-                  {availabilityLoading && <p className="booking-modal__schedule-note">Loading confirmed booking dates...</p>}
+                  {availabilityLoading && <p className="booking-modal__schedule-note">Loading pending holds and confirmed booking dates...</p>}
                   <div>
                     <label className="booking-modal__field-label">Reference Image (Optional)</label>
                     <div className="booking-modal__upload-field">

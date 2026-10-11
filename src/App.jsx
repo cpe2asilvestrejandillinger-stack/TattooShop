@@ -45,6 +45,7 @@ export default function App() {
   const [bookingError, setBookingError] = useState('')
   const [bookingSubmitting, setBookingSubmitting] = useState(false)
   const [isCustomerConversationsOpen, setIsCustomerConversationsOpen] = useState(false)
+  const [unreadConversationIds, setUnreadConversationIds] = useState([])
 
   // Modals
   const [authModal, setAuthModal] = useState(null); // 'login' | 'register' | null
@@ -138,25 +139,73 @@ export default function App() {
     if (!currentUser?.id) return
 
     let isActive = true
+    let isLoadingAppointments = false
     const loadAppointments = async () => {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(APPOINTMENT_SELECT)
-        .order('appointment_date', { ascending: true })
-        .order('appointment_time', { ascending: true })
+      if (isLoadingAppointments) return
+      isLoadingAppointments = true
+      try {
+        const { data, error } = await supabase
+          .from('appointments')
+          .select(APPOINTMENT_SELECT)
+          .order('appointment_date', { ascending: true })
+          .order('appointment_time', { ascending: true })
 
-      if (!isActive) return
-      if (error) {
-        setAppointmentError(`Could not load bookings: ${error.message}`)
-        return
+        if (!isActive) return
+        if (error) {
+          setAppointmentError(`Could not load bookings: ${error.message}`)
+          return
+        }
+
+        setAppointmentError('')
+        setAppointments((data || []).map(toAppointment))
+      } finally {
+        isLoadingAppointments = false
       }
-
-      setAppointmentError('')
-      setAppointments((data || []).map(toAppointment))
     }
 
     loadAppointments()
-    return () => { isActive = false }
+    const channel = supabase.channel('appointment-updates-' + currentUser.id)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, loadAppointments)
+      .subscribe()
+    const refreshInterval = window.setInterval(loadAppointments, 15000)
+    return () => {
+      isActive = false
+      window.clearInterval(refreshInterval)
+      supabase.removeChannel(channel)
+    }
+  }, [currentUser?.id])
+
+  useEffect(() => {
+    if (!currentUser?.id) { setUnreadConversationIds([]); return undefined }
+    setUnreadConversationIds([])
+    let isActive = true
+    const loadUnreadConversations = async () => {
+      const { data, error } = await supabase.from('customer_messages')
+        .select('id, customer_id, sender_id, created_at')
+        .order('created_at', { ascending: false }).limit(500)
+      if (!isActive || error) return
+      const latestByCustomer = new Map()
+      for (const message of data || []) {
+        if (!latestByCustomer.has(message.customer_id)) latestByCustomer.set(message.customer_id, message)
+      }
+      let readThrough = {}
+      try { readThrough = JSON.parse(window.localStorage.getItem(`tattoo-chat-read:${currentUser.id}`) || '{}') } catch { /* Ignore unavailable or invalid browser storage. */ }
+      setUnreadConversationIds([...latestByCustomer.values()]
+        .filter((message) => message.sender_id !== currentUser.id && readThrough[message.customer_id] !== message.id)
+        .map((message) => message.customer_id))
+    }
+    loadUnreadConversations()
+    const channel = supabase.channel('conversation-notifications-' + currentUser.id)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'customer_messages' }, (payload) => {
+        const message = payload.new
+        let readThrough = {}
+        try { readThrough = JSON.parse(window.localStorage.getItem(`tattoo-chat-read:${currentUser.id}`) || '{}') } catch { /* Ignore unavailable or invalid browser storage. */ }
+        const isRead = readThrough[message.customer_id] === message.id
+        setUnreadConversationIds((ids) => message.sender_id === currentUser.id || isRead
+          ? ids.filter((id) => id !== message.customer_id)
+          : ids.includes(message.customer_id) ? ids : [...ids, message.customer_id])
+      }).subscribe()
+    return () => { isActive = false; supabase.removeChannel(channel) }
   }, [currentUser?.id])
 
   useEffect(() => {
@@ -175,7 +224,17 @@ export default function App() {
     }).finally(() => {
       if (isActive) setAvailabilityLoading(false)
     })
-    return () => { isActive = false }
+
+    const refreshInterval = window.setInterval(() => {
+      fetchUnavailableDates().then((dates) => {
+        if (!isActive) return
+        setUnavailableDates(dates)
+        setAvailabilityError('')
+      }).catch((error) => {
+        if (isActive) setAvailabilityError(`Could not load booking availability: ${error.message}`)
+      })
+    }, 15000)
+    return () => { isActive = false; window.clearInterval(refreshInterval) }
   }, [currentUser?.role, isAdminModalOpen, isBookingOpen])
 
   useEffect(() => {
@@ -486,7 +545,7 @@ export default function App() {
       if (availabilityError) throw new Error('Booking availability could not be checked. Please try again.')
       if (!bookDate) throw new Error('Choose an available date on the calendar.')
       if (bookDate < localDateKey()) throw new Error('Choose a future date.')
-      if (unavailableDates.includes(bookDate)) throw new Error('That date has just been confirmed for another appointment. Choose another date.')
+      if (unavailableDates.includes(bookDate)) throw new Error('That date has an active booking hold or a confirmed appointment. Choose another date.')
       if (!/^09\d{9}$/.test(bookPhone)) throw new Error('Enter an 11-digit phone number starting with 09.')
 
       if (bookImageFile && !ALLOWED_REFERENCE_IMAGE_TYPES.has(bookImageFile.type)) {
@@ -531,6 +590,7 @@ export default function App() {
 
       if (bookingFlashId) setBookingFlashId(null)
       setAppointments((currentAppointments) => [...currentAppointments, toAppointment(data)])
+      fetchUnavailableDates().then(setUnavailableDates).catch((error) => setAvailabilityError(`Booking submitted, but availability could not refresh: ${error.message}`))
       setBookingSuccess(true)
       window.setTimeout(() => {
         setBookingSuccess(false)
@@ -559,7 +619,7 @@ export default function App() {
 
     setSelectedImage({ img: data.signedUrl, title: 'Booking Reference', description: '' })
   }
-  const updateAppointmentStatus = async (appointmentId, status) => {
+  const updateAppointmentStatus = async (appointmentId, status, rejectionReason = '') => {
     const appointment = appointments.find((item) => item.id === appointmentId)
     const { error } = await supabase
       .from('appointments')
@@ -568,11 +628,28 @@ export default function App() {
 
     if (error) {
       setAppointmentError(`Could not update booking: ${error.message}`)
-      return
+      return false
+    }
+
+    const bookingUpdateMessages = {
+      approved: 'Your booking has been approved.',
+      rejected: 'Your booking request has been rejected.',
+      completed: 'Your appointment has been marked as completed.',
+      cancelled: 'Your booking has been cancelled.',
+    }
+    if (appointment?.customerId && currentUser?.role === 'admin' && bookingUpdateMessages[status]) {
+      const { error: conversationError } = await supabase.from('customer_messages').insert({
+        customer_id: appointment.customerId,
+        sender_id: currentUser.id,
+        body: `Booking update: ${bookingUpdateMessages[status]}${status === 'rejected' && rejectionReason.trim() ? `\nReason: ${rejectionReason.trim()}` : ''}`,
+      })
+      if (conversationError) {
+        setAppointmentError(`Booking status changed, but the conversation update could not be sent: ${conversationError.message}`)
+      }
     }
 
     setAppointments((currentAppointments) => currentAppointments.map((appointment) => (
-      appointment.id === appointmentId ? { ...appointment, status } : appointment
+      appointment.id === appointmentId ? { ...appointment, status, holdExpiresAt: '' } : appointment
     )))
     if (appointment?.flashDesignId) {
       if (status === 'approved') {
@@ -591,13 +668,17 @@ export default function App() {
     } catch (refreshError) {
       setAvailabilityError(`Booking status changed, but availability could not refresh: ${refreshError.message}`)
     }
+    return true
   }
-  const modalProps = { unavailableDates, availabilityLoading, availabilityError, authModal, setAuthModal, closeAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, handleGoogleSignIn, isBookingOpen, setIsBookingOpen, closeBookingModal, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookPlacement, setBookPlacement, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns, flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability, selectedImage, setSelectedImage }
+  const markConversationRead = useCallback((customerId) => setUnreadConversationIds((ids) => ids.filter((id) => id !== customerId)), [])
+  const modalProps = { unreadConversationIds, markConversationRead, unavailableDates, availabilityLoading, availabilityError, authModal, setAuthModal, closeAuthModal, authEmail, setAuthEmail, authPassword, setAuthPassword, authName, setAuthName, authError, authMessage, authLoading, handleAuthSubmit, handlePasswordReset, handleGoogleSignIn, isBookingOpen, setIsBookingOpen, closeBookingModal, bookingSuccess, bookName, setBookName, bookPhone, setBookPhone, bookStyle, setBookStyle, bookSize, setBookSize, bookPlacement, setBookPlacement, bookDate, setBookDate, bookTime, setBookTime, setBookImageFile, handleReferenceImageChange, bookNotes, setBookNotes, bookingError, bookingSubmitting, handleBookingSubmit, isAdminModalOpen, setIsAdminModalOpen, currentUser, adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns, flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability, selectedImage, setSelectedImage }
 
   return (
     <>
       <HomePage
         currentUser={currentUser}
+        hasUnreadConversation={Boolean(currentUser && unreadConversationIds.includes(currentUser.id))}
+        hasProfileUpdates={currentUser?.role === 'admin' && appointments.some((appointment) => appointment.status === 'pending')}
         openBooking={openBooking}
         openBookingWithEstimate={openBookingWithEstimate}
         handleLogout={handleLogout}
@@ -617,7 +698,7 @@ export default function App() {
       />
       <AppModals {...modalProps} />
       {isCustomerConversationsOpen && currentUser?.role === 'customer' && (
-        <CustomerAdminChat currentUser={currentUser} onClose={() => setIsCustomerConversationsOpen(false)} />
+        <CustomerAdminChat currentUser={currentUser} onConversationRead={markConversationRead} onClose={() => setIsCustomerConversationsOpen(false)} />
       )}
     </>
   )

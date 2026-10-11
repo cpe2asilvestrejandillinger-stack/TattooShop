@@ -8,11 +8,14 @@ import CustomerAdminChat from '../../components/CustomerAdminChat'
 const localDateString = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
 export default function AppointmentManager(props) {
-  const { isAdminModalOpen, setIsAdminModalOpen, currentUser, unavailableDates = [], availabilityLoading = false, availabilityError = '', adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns = [], flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability } = props
+  const { isAdminModalOpen, setIsAdminModalOpen, currentUser, unreadConversationIds = [], markConversationRead, unavailableDates = [], availabilityLoading = false, availabilityError = '', adminSearch, setAdminSearch, adminStatusFilter, setAdminStatusFilter, appointmentError, appointments, viewAppointmentReference, updateAppointmentStatus, flashDesigns = [], flashError, flashSubmitting, handleFlashSubmit, deleteFlashDesign, toggleFlashAvailability } = props
   const [flashDraft, setFlashDraft] = useState({ title: '', size: '', price: '', description: '', imageFile: null })
   const [isFlashManagerOpen, setIsFlashManagerOpen] = useState(false)
   const [isFlashDesignListOpen, setIsFlashDesignListOpen] = useState(false)
   const [adminTab, setAdminTab] = useState('appointments')
+  const [rejectingAppointment, setRejectingAppointment] = useState(null)
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [isRejectingAppointment, setIsRejectingAppointment] = useState(false)
   const [selectedScheduleDate, setSelectedScheduleDate] = useState(localDateString())
   const [scheduleCalendarMonth, setScheduleCalendarMonth] = useState(() => { const today = new Date(); return new Date(today.getFullYear(), today.getMonth(), 1) })
   useEffect(() => {
@@ -35,6 +38,20 @@ export default function AppointmentManager(props) {
     if (saved) {
       setFlashDraft({ title: '', size: '', price: '', description: '', imageFile: null })
       setIsFlashDesignListOpen(true)
+    }
+  }
+  const submitRejection = async (event) => {
+    event.preventDefault()
+    if (!rejectingAppointment || !rejectionReason.trim() || isRejectingAppointment) return
+    setIsRejectingAppointment(true)
+    try {
+      const rejected = await updateAppointmentStatus(rejectingAppointment.id, 'rejected', rejectionReason.trim())
+      if (rejected) {
+        setRejectingAppointment(null)
+        setRejectionReason('')
+      }
+    } finally {
+      setIsRejectingAppointment(false)
     }
   }
   const pendingAppointments = appointments.filter((appointment) => appointment.status === 'pending').length
@@ -68,7 +85,7 @@ export default function AppointmentManager(props) {
                     <CalendarDays size={17} /> Availability
                   </button>
                   <button type="button" className={adminTab === 'messages' ? 'is-active' : ''} aria-current={adminTab === 'messages' ? 'page' : undefined} onClick={() => setAdminTab('messages')}>
-                    <MessageCircle size={17} /> Conversations
+                    <MessageCircle size={17} /> Conversations{unreadConversationIds.length > 0 && <span className="appointment-manager__unread-dot" aria-label="Unread messages" />}
                   </button>
                   <button type="button" onClick={() => setIsFlashManagerOpen(true)}>
                     <Images size={17} /> Flash designs
@@ -104,6 +121,7 @@ export default function AppointmentManager(props) {
                     >
                       <option value="All">All statuses</option>
                       <option value="pending">Pending</option>
+                      <option value="expired">Hold expired</option>
                       <option value="approved">Approved</option>
                       <option value="completed">Completed</option>
                       <option value="rejected">Rejected</option>
@@ -120,16 +138,16 @@ export default function AppointmentManager(props) {
                   <article><span className="appointment-manager__stat-icon"><CheckCircle2 size={17} /></span><div><small>Confirmed</small><strong>{approvedAppointments}</strong></div></article>
                   <button type="button" className="appointment-manager__stat-card" aria-label={`View uploaded flash designs; ${availableFlashDesigns} available`} onClick={() => setIsFlashDesignListOpen(true)}><span className="appointment-manager__stat-icon"><Images size={17} /></span><div><small>Available flash</small><strong>{availableFlashDesigns}</strong></div></button>
                 </div></>}
-            {adminTab === 'messages' && <CustomerAdminChat currentUser={currentUser} isAdmin onClose={() => setAdminTab('appointments')} />}
+            {adminTab === 'messages' && <CustomerAdminChat currentUser={currentUser} isAdmin onConversationRead={markConversationRead} onClose={() => setAdminTab('appointments')} />}
             {adminTab === 'schedule' && <section className="schedule-manager" aria-labelledby="schedule-manager-title">
               <div className="schedule-manager__heading">
                 <div>
                   <span className="appointment-manager__eyebrow">Booking availability</span>
-                  <h4 id="schedule-manager-title">Confirmed dates are unavailable</h4>
+                  <h4 id="schedule-manager-title">Held and confirmed dates are unavailable</h4>
                 </div>
                 <div className="schedule-manager__legend" aria-label="Calendar legend">
                   <span><i className="is-green" /> Available</span>
-                  <span><i className="is-red" /> Confirmed booking</span>
+                  <span><i className="is-red" /> Pending hold or confirmed booking</span>
                 </div>
               </div>
               <div className="schedule-admin-calendar">
@@ -138,22 +156,22 @@ export default function AppointmentManager(props) {
                   <strong>{scheduleCalendarMonth.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' })}</strong>
                   <button type="button" aria-label="Next month" onClick={() => setScheduleCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() + 1, 1))}><ChevronRight size={18} /></button>
                 </div>
-                <div className="schedule-admin-calendar__grid" role="grid" aria-label="Confirmed booking dates">
+                <div className="schedule-admin-calendar__grid" role="grid" aria-label="Dates with pending holds or confirmed bookings">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((weekday) => <span className="schedule-admin-calendar__weekday" role="columnheader" key={weekday}>{weekday}</span>)}
                   {scheduleCalendarDays.map((date, index) => {
                     if (!date) return <span className="schedule-admin-calendar__blank" aria-hidden="true" key={`blank-${index}`} />
                     const isUnavailable = unavailableDates.includes(date)
                     const past = date < localDateString()
                     const state = isUnavailable ? 'unavailable' : past ? 'past' : availabilityError ? 'empty' : 'open'
-                    return <button type="button" role="gridcell" key={date} disabled={past} aria-pressed={selectedScheduleDate === date} aria-label={`${date}: ${availabilityError ? 'availability could not be loaded' : isUnavailable ? 'confirmed booking' : past ? 'past date' : 'available'}`} className={`schedule-admin-calendar__day schedule-admin-calendar__day--${state}${selectedScheduleDate === date ? ' is-selected' : ''}`} onClick={() => setSelectedScheduleDate(date)}>{Number(date.slice(-2))}</button>
+                    return <button type="button" role="gridcell" key={date} disabled={past} aria-pressed={selectedScheduleDate === date} aria-label={`${date}: ${availabilityError ? 'availability could not be loaded' : isUnavailable ? 'pending hold or confirmed booking' : past ? 'past date' : 'available'}`} className={`schedule-admin-calendar__day schedule-admin-calendar__day--${state}${selectedScheduleDate === date ? ' is-selected' : ''}`} onClick={() => setSelectedScheduleDate(date)}>{Number(date.slice(-2))}</button>
                   })}
                 </div>
               </div>
-              <div className="schedule-manager__selected-date">
+                <div className="schedule-manager__selected-date">
                 <strong>{new Date(`${selectedScheduleDate}T12:00:00`).toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong>
-                <span>{availabilityError ? 'Availability could not be loaded' : unavailableDates.includes(selectedScheduleDate) ? 'Confirmed appointment - unavailable to new requests' : selectedScheduleDate < localDateString() ? 'Past date' : 'Available for booking requests'}</span>
+                <span>{availabilityError ? 'Availability could not be loaded' : unavailableDates.includes(selectedScheduleDate) ? 'Pending hold or confirmed appointment - unavailable to new requests' : selectedScheduleDate < localDateString() ? 'Past date' : 'Available for booking requests'}</span>
               </div>
-              {availabilityLoading && <p className="schedule-manager__loading">Refreshing confirmed dates?</p>}
+              {availabilityLoading && <p className="schedule-manager__loading">Refreshing booking holds and confirmed dates...</p>}
               {availabilityError && <p className="appointment-manager__error-message" role="alert">{availabilityError}</p>}
             </section>}
             {adminTab === 'appointments' && <>
@@ -198,8 +216,10 @@ export default function AppointmentManager(props) {
                           <p className="appointment-manager__appointment-style">{app.style}</p>
                           <p className="appointment-manager__secondary-text">{app.size}</p>
                         </td>
-                        <td className="appointment-manager__placement-cell">{app.placement}</td>
-                        <td className="appointment-manager__date-cell">{app.date}<br />{formatTime(app.time)}</td>
+                        <td className="appointment-manager__placement-cell">
+                          {app.placement}
+                        </td>
+                        <td className="appointment-manager__date-cell">{app.date}<br />{formatTime(app.time)}{app.status === 'pending' && app.holdExpiresAt && <small className="appointment-manager__hold-expiry">Held until {new Date(app.holdExpiresAt).toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' })}</small>}{app.status === 'expired' && <small className="appointment-manager__hold-expiry">Pending hold expired; this request cannot be confirmed.</small>}</td>
                         <td className="appointment-manager__standard-cell">
                           <span className={`appointment-status appointment-status--${app.status}`}>
                             {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
@@ -218,7 +238,7 @@ export default function AppointmentManager(props) {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => updateAppointmentStatus(app.id, 'rejected')}
+                                onClick={() => { setRejectingAppointment(app); setRejectionReason('') }}
                                 className="appointment-manager__reject-button"
                                 aria-label={`Reject appointment for ${app.clientName}`}
                               >
@@ -246,6 +266,26 @@ export default function AppointmentManager(props) {
               </main>
             </div>
 
+            {rejectingAppointment && createPortal(
+              <div className="appointment-rejection__backdrop" onMouseDown={(event) => {
+                if (event.target === event.currentTarget && !isRejectingAppointment) setRejectingAppointment(null)
+              }}>
+                <form className="appointment-rejection__dialog" role="dialog" aria-modal="true" aria-labelledby="appointment-rejection-title" onSubmit={submitRejection}>
+                  <header className="appointment-rejection__header">
+                    <div><span>Booking update</span><h3 id="appointment-rejection-title">Reject appointment</h3><p>Let {rejectingAppointment.clientName} know why this request can't be accepted.</p></div>
+                    <button type="button" className="flash-manager__close" onClick={() => setRejectingAppointment(null)} disabled={isRejectingAppointment} aria-label="Close rejection dialog"><X size={20} /></button>
+                  </header>
+                  <label className="appointment-rejection__field" htmlFor="appointment-rejection-reason">Reason</label>
+                  <textarea id="appointment-rejection-reason" required minLength={3} maxLength={500} autoFocus value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} placeholder="Add a short reason for the client" />
+                  {appointmentError && <p className="appointment-manager__error-message" role="alert">{appointmentError}</p>}
+                  <div className="appointment-rejection__actions">
+                    <button type="button" onClick={() => setRejectingAppointment(null)} disabled={isRejectingAppointment}>Cancel</button>
+                    <button type="submit" disabled={!rejectionReason.trim() || isRejectingAppointment}>{isRejectingAppointment ? 'Rejecting...' : 'Reject appointment'}</button>
+                  </div>
+                </form>
+              </div>,
+              document.body,
+            )}
             {isFlashManagerOpen && createPortal(
               <div className="flash-manager__backdrop" onMouseDown={(event) => {
               if (event.target === event.currentTarget) setIsFlashManagerOpen(false)

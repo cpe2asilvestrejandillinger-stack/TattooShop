@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronLeft, MessageCircle, Paperclip, Search, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { formatConversationMessage } from '../utils/formatConversationMessage'
 import './CustomerAdminChat.css'
 
 const formatMessageDate = (value) => new Date(value).toLocaleString('en-PH', {
@@ -20,9 +21,14 @@ const formatConversationTime = (value) => {
 }
 const isMissingChatTable = (error) => error?.code === 'PGRST205' || /could not find the table.*customer_messages/i.test(error?.message || '')
 const isOutdatedChatSchema = (error) => isMissingChatTable(error) || error?.code === 'PGRST204' || /attachment_path.*(customer_messages|schema cache|column)|customer_messages.*(schema cache|column)/i.test(error?.message || '')
+const isVerboseAppointmentConfirmation = (message) => /^Appointment confirmed(?:\r?\n|$)/i.test((message.body || '').trim()) && /confirmed by the studio/i.test(message.body || '')
 
-export default function CustomerAdminChat({ currentUser, onClose, isAdmin = false }) {
+export default function CustomerAdminChat({ currentUser, onClose, onConversationRead, isAdmin = false }) {
   const [clients, setClients] = useState([])
+  const readThroughStorageKey = `tattoo-chat-read:${currentUser.id}`
+  const [readThroughByClient, setReadThroughByClient] = useState(() => {
+    try { return JSON.parse(window.localStorage.getItem(readThroughStorageKey) || '{}') } catch { return {} }
+  })
   const [selectedClientId, setSelectedClientId] = useState(isAdmin ? '' : currentUser.id)
   const [messages, setMessages] = useState([])
   const [draft, setDraft] = useState('')
@@ -42,6 +48,8 @@ export default function CustomerAdminChat({ currentUser, onClose, isAdmin = fals
     ? clients.find((client) => client.id === selectedClientId)
     : { id: currentUser.id, name: currentUser.name || 'Client' }
   const activeClientId = activeClient?.id
+  const latestMessage = messages[messages.length - 1]
+  const isThreadVisible = !isAdmin || isMobileChatOpen || (typeof window !== 'undefined' && !window.matchMedia('(max-width: 760px)').matches)
 
   useEffect(() => {
     if (!isAdmin) return undefined
@@ -53,17 +61,17 @@ export default function CustomerAdminChat({ currentUser, onClose, isAdmin = fals
         if (queryError) setError(queryError.message)
         else {
           const { data: recentMessages } = await supabase.from('customer_messages')
-            .select('customer_id, sender_id, body, attachment_path, created_at')
+            .select('id, customer_id, sender_id, body, attachment_path, created_at')
             .order('created_at', { ascending: false })
             .limit(500)
           if (!active) return
           const latestByCustomer = new Map()
           for (const message of recentMessages || []) {
-            if (!latestByCustomer.has(message.customer_id)) latestByCustomer.set(message.customer_id, message)
+            if (!latestByCustomer.has(message.customer_id) && !isVerboseAppointmentConfirmation(message)) latestByCustomer.set(message.customer_id, message)
           }
           const nextClients = (data || []).map((client) => {
             const lastMessage = latestByCustomer.get(client.id)
-            return { id: client.id, name: client.full_name || 'Client', lastMessage: lastMessage?.body || '', hasLastMessageAttachment: Boolean(lastMessage?.attachment_path), lastMessageAt: lastMessage?.created_at || '', lastMessageSenderId: lastMessage?.sender_id || '' }
+            return { id: client.id, name: client.full_name || 'Client', lastMessage: lastMessage?.body || '', hasLastMessageAttachment: Boolean(lastMessage?.attachment_path), lastMessageAt: lastMessage?.created_at || '', lastMessageId: lastMessage?.id || '', lastMessageSenderId: lastMessage?.sender_id || '', hasIncomingUpdate: Boolean(lastMessage && lastMessage.sender_id !== currentUser.id) }
           })
           setClients(nextClients)
           setSelectedClientId((selectedId) => nextClients.some((client) => client.id === selectedId) ? selectedId : nextClients[0]?.id || '')
@@ -115,6 +123,18 @@ export default function CustomerAdminChat({ currentUser, onClose, isAdmin = fals
   }, [activeClientId, retryCount])
 
   useEffect(() => {
+    try { window.localStorage.setItem(readThroughStorageKey, JSON.stringify(readThroughByClient)) } catch { /* Chat still works when browser storage is unavailable. */ }
+  }, [readThroughByClient, readThroughStorageKey])
+
+  useEffect(() => {
+    if (!isThreadVisible || !activeClientId || !latestMessage?.id) return
+    setReadThroughByClient((readThrough) => readThrough[activeClientId] === latestMessage.id
+      ? readThrough
+      : { ...readThrough, [activeClientId]: latestMessage.id })
+    onConversationRead?.(activeClientId)
+  }, [activeClientId, isThreadVisible, latestMessage?.id, onConversationRead])
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages])
 
@@ -147,6 +167,11 @@ export default function CustomerAdminChat({ currentUser, onClose, isAdmin = fals
   const selectClient = (clientId) => {
     if (clientId !== selectedClientId) setDraft('')
     if (clientId !== selectedClientId) setAttachmentFile(null)
+    const selectedClient = clients.find((client) => client.id === clientId)
+    if (selectedClient?.lastMessageId) {
+      setReadThroughByClient((readThrough) => ({ ...readThrough, [clientId]: selectedClient.lastMessageId }))
+      onConversationRead?.(clientId)
+    }
     setSelectedClientId(clientId)
     setIsMobileChatOpen(true)
   }
@@ -206,6 +231,8 @@ export default function CustomerAdminChat({ currentUser, onClose, isAdmin = fals
     }
   }
 
+  const visibleMessages = messages.filter((message) => !isVerboseAppointmentConfirmation(message))
+  const shouldHighlightUnreadClient = (client) => client.hasIncomingUpdate && readThroughByClient[client.id] !== client.lastMessageId && (!isThreadVisible || client.id !== activeClientId)
   const visibleClients = clients.filter((client) => client.name.toLowerCase().includes(search.trim().toLowerCase()))
 
   return createPortal((
@@ -224,8 +251,8 @@ export default function CustomerAdminChat({ currentUser, onClose, isAdmin = fals
             <div className="customer-chat__client-heading"><strong>Clients</strong><span>Select a client to open a private chat.</span></div>
             <label className="customer-chat__search"><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search clients" aria-label="Search clients" /></label>
             {loadingClients ? <p className="customer-chat__list-empty">Loading clients…</p> : visibleClients.length === 0 ? <p className="customer-chat__list-empty">{search ? 'No clients match that search.' : 'Client accounts will appear here.'}</p> : visibleClients.map((client) => (
-              <button type="button" key={client.id} className={'customer-chat__client' + (client.id === activeClientId ? ' is-selected' : '')} onClick={() => selectClient(client.id)}>
-                <span className="customer-chat__avatar">{client.name.charAt(0).toUpperCase()}</span>
+              <button type="button" key={client.id} aria-label={`${client.name}${shouldHighlightUnreadClient(client) ? ', unread message' : ''}`} className={'customer-chat__client' + (client.id === activeClientId ? ' is-selected' : '') + (shouldHighlightUnreadClient(client) ? ' has-unread' : '')} onClick={() => selectClient(client.id)}>
+                <span className={'customer-chat__avatar' + (shouldHighlightUnreadClient(client) ? ' has-update' : '')}>{client.name.charAt(0).toUpperCase()}</span>
                 <span className="customer-chat__client-copy">
                   <span className="customer-chat__client-topline"><strong className="customer-chat__client-name">{client.name}</strong><time>{formatConversationTime(client.lastMessageAt)}</time></span>
                   <span className="customer-chat__client-preview">{client.lastMessage ? `${client.lastMessageSenderId === currentUser.id ? 'You: ' : ''}${client.lastMessage}` : client.hasLastMessageAttachment ? 'Photo' : 'Start a conversation'}</span>
@@ -242,20 +269,20 @@ export default function CustomerAdminChat({ currentUser, onClose, isAdmin = fals
                 <div><strong>{isAdmin ? activeClient.name : 'Studio admin'}</strong><span>{isAdmin ? 'Private customer conversation' : 'Send a message to the studio admin'}</span></div>
               </div>
               <div className="customer-chat__messages" aria-live="polite">
-                {loadingMessages ? <p className="customer-chat__hint">Loading conversation…</p> : chatSetupRequired ? <div className="customer-chat__setup-state"><span className="customer-chat__setup-icon"><MessageCircle size={22} /></span><strong>{isAdmin ? 'Chat setup is incomplete' : 'Messaging is unavailable'}</strong><p>{isAdmin ? 'Run the updated supabase/schema.sql in the Supabase SQL Editor, then retry.' : 'The studio chat is being set up. Please contact the studio directly for now.'}</p>{isAdmin && <small>{error}</small>}<button type="button" onClick={() => setRetryCount((count) => count + 1)}>Retry connection</button></div> : error && messages.length === 0 ? <div className="customer-chat__empty"><MessageCircle size={28} /><strong>Conversation unavailable</strong><p>Please retry in a moment.</p><span className="customer-chat__error" role="alert">{error}</span><button type="button" className="customer-chat__retry" onClick={() => setRetryCount((count) => count + 1)}>Try again</button></div> : messages.length === 0 ? <div className="customer-chat__empty"><MessageCircle size={28} /><strong>Start a conversation</strong><p>{isAdmin ? 'Send a message to this client.' : 'Ask a question about your tattoo or booking. The admin will reply here.'}</p></div> : messages.map((message) => {
+                {loadingMessages ? <p className="customer-chat__hint">Loading conversation…</p> : chatSetupRequired ? <div className="customer-chat__setup-state"><span className="customer-chat__setup-icon"><MessageCircle size={22} /></span><strong>{isAdmin ? 'Chat setup is incomplete' : 'Messaging is unavailable'}</strong><p>{isAdmin ? 'Run the updated supabase/schema.sql in the Supabase SQL Editor, then retry.' : 'The studio chat is being set up. Please contact the studio directly for now.'}</p>{isAdmin && <small>{error}</small>}<button type="button" onClick={() => setRetryCount((count) => count + 1)}>Retry connection</button></div> : error && visibleMessages.length === 0 ? <div className="customer-chat__empty"><MessageCircle size={28} /><strong>Conversation unavailable</strong><p>Please retry in a moment.</p><span className="customer-chat__error" role="alert">{error}</span><button type="button" className="customer-chat__retry" onClick={() => setRetryCount((count) => count + 1)}>Try again</button></div> : visibleMessages.length === 0 ? <div className="customer-chat__empty"><MessageCircle size={28} /><strong>Start a conversation</strong><p>{isAdmin ? 'Send a message to this client.' : 'Ask a question about your tattoo or booking. The admin will reply here.'}</p></div> : visibleMessages.map((message) => {
                   const mine = message.sender_id === currentUser.id
                   return <article key={message.id} className={'customer-chat__message' + (mine ? ' is-mine' : '')}>
                     <span>{mine ? 'You' : isAdmin ? 'Client' : 'Studio admin'}</span>
                     {message.attachment_path && (message.attachmentUrl
                       ? <a className="customer-chat__message-image-link" href={message.attachmentUrl} target="_blank" rel="noreferrer"><img className="customer-chat__message-image" src={message.attachmentUrl} alt="Image attachment" loading="lazy" /></a>
                       : <div className="customer-chat__message-image-unavailable">Image unavailable</div>)}
-                    {message.body && <p>{message.body}</p>}
+                    {message.body && <p>{formatConversationMessage(message.body)}</p>}
                     <time dateTime={message.created_at}>{formatMessageDate(message.created_at)}</time>
                   </article>
                 })}
                 <div ref={messagesEndRef} />
               </div>
-              {error && messages.length > 0 && <p className="customer-chat__error" role="alert">{error}</p>}
+              {error && visibleMessages.length > 0 && <p className="customer-chat__error" role="alert">{error}</p>}
               {!chatSetupRequired && <>{attachmentFile && <div className="customer-chat__attachment-preview" role="status">
                 <img src={attachmentPreview} alt="Selected image preview" />
                 <span>{attachmentFile.name}<small>{(attachmentFile.size / (1024 * 1024)).toFixed(1)} MB</small></span>

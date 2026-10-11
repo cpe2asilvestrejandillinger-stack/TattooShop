@@ -60,7 +60,7 @@
 .auth-modal-heading p {
   margin: 8px 0 0;
   color: #9ca3af;
-  font-size: 14px;
+  font-size: var(--type-small);
   line-height: 1.5;
 }
 
@@ -96,7 +96,7 @@
   color: #f9fafb;
   background: transparent;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--type-small);
 }
 
 .auth-modal-field input::placeholder {
@@ -132,7 +132,7 @@
   color: #fbbf24;
   background: transparent;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--type-small);
   font-weight: 700;
   cursor: pointer;
 }
@@ -150,7 +150,7 @@
 
 .auth-modal-message {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--type-small);
   line-height: 1.5;
 }
 
@@ -171,7 +171,7 @@
   background: #fbbf24;
   box-shadow: 0 10px 24px rgb(251 191 36 / 16%);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--type-small);
   font-weight: 850;
   cursor: pointer;
   transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
@@ -191,7 +191,7 @@
 .auth-modal-switch {
   margin-top: 24px;
   color: #9ca3af;
-  font-size: 13px;
+  font-size: var(--type-small);
   text-align: center;
 }
 
@@ -231,7 +231,7 @@
   align-items: center;
   gap: 12px;
   color: #85858f;
-  font-size: 12px;
+  font-size: var(--type-caption);
   text-transform: uppercase;
   letter-spacing: .08em;
 }
@@ -255,7 +255,7 @@
   color: #f4f4f5;
   background: rgb(255 255 255 / 4%);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--type-small);
   font-weight: 600;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
