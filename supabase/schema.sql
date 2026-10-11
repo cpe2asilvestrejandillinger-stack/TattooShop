@@ -45,7 +45,8 @@ create table if not exists public.appointments (
   description text,
   reference_image_url text,
   status text not null default 'pending'
-    check (status in ('pending', 'approved', 'rejected', 'completed', 'cancelled')),
+    check (status in ('pending', 'awaiting_payment', 'approved', 'rejected', 'completed', 'cancelled')),
+  total_amount numeric(10,2) not null default 0 check (total_amount >= 0),
   deposit_amount numeric(10,2) not null default 0,
   balance_amount numeric(10,2) not null default 0,
   payment_status text not null default 'unpaid'
@@ -59,6 +60,11 @@ alter table public.appointments add column if not exists tattoo_size text not nu
 alter table public.appointments add column if not exists body_placement text not null default '';
 alter table public.appointments add column if not exists booking_hold_expires_at timestamptz;
 alter table public.appointments add column if not exists flash_design_id uuid references public.designs(id) on delete set null;
+alter table public.appointments add column if not exists total_amount numeric(10,2) not null default 0;
+
+alter table public.appointments drop constraint if exists appointments_status_check;
+alter table public.appointments add constraint appointments_status_check
+  check (status in ('pending', 'awaiting_payment', 'approved', 'rejected', 'completed', 'cancelled'));
 
 -- Keep only the earliest pending request as the hold when migrating duplicate requests.
 with ranked_pending as (
@@ -83,7 +89,7 @@ where ranked_pending.id = a.id;
 
 update public.appointments
 set booking_hold_expires_at = null
-where status <> 'pending' and booking_hold_expires_at is not null;
+where status not in ('pending', 'awaiting_payment') and booking_hold_expires_at is not null;
 
 create or replace function public.reserve_flash_for_appointment()
 returns trigger
@@ -105,15 +111,18 @@ begin
         select 1 from public.appointments a
         where a.flash_design_id = old.flash_design_id
           and a.id <> old.id
-          and a.status in ('approved', 'completed')
+          and (
+            a.status in ('approved', 'completed')
+            or (a.status = 'awaiting_payment' and a.booking_hold_expires_at > now())
+          )
       ) then
       update public.designs set is_available = true where id = old.flash_design_id;
     end if;
 
-    should_reserve := new.status = 'approved'
-      and not (old.status in ('approved', 'completed') and old.flash_design_id is not distinct from new.flash_design_id);
+    should_reserve := new.status in ('awaiting_payment', 'approved')
+      and not (old.status in ('awaiting_payment', 'approved', 'completed') and old.flash_design_id is not distinct from new.flash_design_id);
   else
-    should_reserve := new.status = 'approved';
+    should_reserve := new.status in ('awaiting_payment', 'approved');
   end if;
 
   if should_reserve and new.flash_design_id is not null then
@@ -142,11 +151,13 @@ set is_available = true
 where not d.is_available
   and exists (
     select 1 from public.appointments a
-    where a.flash_design_id = d.id and a.status = 'pending'
+    where a.flash_design_id = d.id and a.status in ('pending', 'awaiting_payment')
+      and (a.status <> 'awaiting_payment' or a.booking_hold_expires_at > now())
   )
   and not exists (
     select 1 from public.appointments a
-    where a.flash_design_id = d.id and a.status in ('approved', 'completed')
+    where a.flash_design_id = d.id
+      and (a.status in ('approved', 'completed') or (a.status = 'awaiting_payment' and a.booking_hold_expires_at > now()))
   );
 
 create table if not exists public.schedules (
@@ -272,7 +283,7 @@ as $$
   where a.appointment_date >= coalesce(p_start_date, current_date)
     and (
       a.status in ('approved', 'completed')
-      or (a.status = 'pending' and a.booking_hold_expires_at > now())
+      or (a.status in ('pending', 'awaiting_payment') and a.booking_hold_expires_at > now())
     )
   order by a.appointment_date;
 $$;
@@ -293,24 +304,37 @@ begin
     new.booking_hold_expires_at := now() + interval '2 hours';
   elsif tg_op = 'UPDATE' and new.status = 'pending' and old.status <> 'pending' then
     new.booking_hold_expires_at := now() + interval '2 hours';
+  elsif tg_op = 'UPDATE' and new.status = 'awaiting_payment' and old.status <> 'awaiting_payment' then
+    new.booking_hold_expires_at := now() + interval '24 hours';
   elsif new.status in ('approved', 'completed', 'rejected', 'cancelled') then
     new.booking_hold_expires_at := null;
   end if;
 
   if tg_op = 'UPDATE'
      and old.status = 'pending'
-     and new.status in ('approved', 'completed')
+     and new.status in ('awaiting_payment', 'approved', 'completed')
      and (old.booking_hold_expires_at is null or old.booking_hold_expires_at <= now()) then
     raise exception 'This booking hold expired. Ask the client to submit a new request.';
   end if;
 
-  if (tg_op = 'INSERT' or new.status in ('approved', 'completed')) and exists (
+  if tg_op = 'UPDATE'
+     and old.status = 'awaiting_payment'
+     and new.status = 'approved'
+     and (old.booking_hold_expires_at is null or old.booking_hold_expires_at <= now()) then
+    raise exception 'The deposit deadline expired. Ask the client to submit a new request.';
+  end if;
+  if tg_op = 'UPDATE' and old.status = 'awaiting_payment' and new.status = 'approved'
+     and new.payment_status not in ('partial', 'paid') then
+    raise exception 'Verify the downpayment before confirming this appointment.';
+  end if;
+
+  if (tg_op = 'INSERT' or new.status in ('awaiting_payment', 'approved', 'completed')) and exists (
     select 1 from public.appointments a
     where a.appointment_date = new.appointment_date
       and a.id <> new.id
       and (
         a.status in ('approved', 'completed')
-        or (a.status = 'pending' and a.booking_hold_expires_at > now())
+        or (a.status in ('pending', 'awaiting_payment') and a.booking_hold_expires_at > now())
       )
   ) then
     raise exception 'This date has an active booking hold or confirmed appointment. Choose another date.';
@@ -328,9 +352,10 @@ create index if not exists appointments_customer_date_idx
   on public.appointments (customer_id, appointment_date);
 create index if not exists appointments_date_idx
   on public.appointments (appointment_date, appointment_time);
-create index if not exists appointments_active_hold_idx
+drop index if exists public.appointments_active_hold_idx;
+create index appointments_active_hold_idx
   on public.appointments (appointment_date, booking_hold_expires_at)
-  where status = 'pending';
+  where status in ('pending', 'awaiting_payment');
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -435,7 +460,14 @@ using (customer_id = (select auth.uid()) or (select public.is_admin()));
 drop policy if exists "Customers can create their own appointments" on public.appointments;
 create policy "Customers can create their own appointments" on public.appointments
 for insert to authenticated
-with check (customer_id = (select auth.uid()) and status = 'pending');
+with check (
+  customer_id = (select auth.uid())
+  and status = 'pending'
+  and payment_status = 'unpaid'
+  and total_amount = 0
+  and deposit_amount = 0
+  and balance_amount = 0
+);
 
 drop policy if exists "Admins can manage appointments" on public.appointments;
 create policy "Admins can manage appointments" on public.appointments
@@ -450,10 +482,18 @@ create table if not exists public.customer_messages (
   sender_id uuid not null references public.profiles(id) on delete cascade,
   body text,
   attachment_path text,
+  message_type text not null default 'text',
   created_at timestamptz not null default now()
 );
 
 alter table public.customer_messages add column if not exists attachment_path text;
+alter table public.customer_messages add column if not exists message_type text not null default 'text';
+alter table public.customer_messages drop constraint if exists customer_messages_message_type_check;
+alter table public.customer_messages add constraint customer_messages_message_type_check
+  check (
+    message_type in ('text', 'payment_qr', 'payment_proof')
+    and (message_type = 'text' or attachment_path is not null)
+  );
 alter table public.customer_messages alter column body drop not null;
 alter table public.customer_messages drop constraint if exists customer_messages_body_check;
 alter table public.customer_messages drop constraint if exists customer_messages_body_or_attachment_check;
@@ -492,7 +532,10 @@ create policy "Customers and admins can send customer messages" on public.custom
 for insert to authenticated
 with check (
   sender_id = (select auth.uid())
-  and (customer_id = (select auth.uid()) or (select public.is_admin()))
+  and (
+    (customer_id = (select auth.uid()) and message_type in ('text', 'payment_proof'))
+    or ((select public.is_admin()) and message_type in ('text', 'payment_qr', 'payment_proof'))
+  )
 );
 
 do $$

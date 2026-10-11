@@ -86,6 +86,10 @@
 .customer-chat__composer button:hover:not(:disabled) { background: #ffd04f; transform: translateY(-1px); }
 .customer-chat__composer button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .customer-chat__composer button:disabled { cursor: not-allowed; opacity: .48; box-shadow: none; }
+.customer-chat__qr-button { display: flex !important; width: auto !important; height: 46px !important; flex: 0 0 auto !important; align-items: center; gap: 7px; padding: 0 12px !important; color: #ffcd53 !important; background: #302515 !important; border: 1px solid #76530c !important; border-radius: 14px !important; box-shadow: none !important; font: inherit; font-size: var(--type-caption); font-weight: 750; }
+.customer-chat__qr-button:hover:not(:disabled) { color: #17130a !important; background: #ffbd17 !important; transform: translateY(-1px); }
+.customer-chat__hidden-input { display: none; }
+.customer-chat__payment-label { display: block; margin: 0 6px 5px; color: #ffd568; font-size: var(--type-caption); }
 .customer-chat__note { align-self: flex-end; padding-top: 6px; color: #77747e; font-size: var(--type-caption); }
 
 @media (max-width: 760px) {
@@ -109,6 +113,8 @@
   .customer-chat__composer { gap: 8px; padding-top: 10px; }
   .customer-chat__composer textarea { min-height: 46px; max-height: 110px; padding: 11px 13px; font-size: var(--type-body); }
   .customer-chat__composer button svg { width: 18px; }
+  .customer-chat__qr-button { width: 46px !important; justify-content: center; padding: 0 !important; }
+  .customer-chat__qr-button span { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -13,11 +13,33 @@ export default function AppointmentManager(props) {
   const [isFlashManagerOpen, setIsFlashManagerOpen] = useState(false)
   const [isFlashDesignListOpen, setIsFlashDesignListOpen] = useState(false)
   const [adminTab, setAdminTab] = useState('appointments')
+  const [chatClientId, setChatClientId] = useState('')
   const [rejectingAppointment, setRejectingAppointment] = useState(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [isRejectingAppointment, setIsRejectingAppointment] = useState(false)
   const [selectedScheduleDate, setSelectedScheduleDate] = useState(localDateString())
   const [scheduleCalendarMonth, setScheduleCalendarMonth] = useState(() => { const today = new Date(); return new Date(today.getFullYear(), today.getMonth(), 1) })
+  const requestDeposit = async (appointment) => {
+    const totalValue = window.prompt(`Enter the total tattoo price for ${appointment.clientName} (PHP):`)
+    if (totalValue === null) return
+    const totalAmount = Number(totalValue.replaceAll(',', '').trim())
+    if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
+      window.alert('Enter a total price greater than ₱0.')
+      return
+    }
+    const depositValue = window.prompt('Enter the required downpayment amount (PHP):', String(Math.ceil(totalAmount * 0.3)))
+    if (depositValue === null) return
+    const depositAmount = Number(depositValue.replaceAll(',', '').trim())
+    if (!Number.isFinite(depositAmount) || depositAmount <= 0 || depositAmount > totalAmount) {
+      window.alert('The downpayment must be greater than ₱0 and no more than the total price.')
+      return
+    }
+    const updated = await updateAppointmentStatus(appointment.id, 'awaiting_payment', '', { totalAmount, depositAmount })
+    if (updated) {
+      setChatClientId(appointment.customerId)
+      setAdminTab('messages')
+    }
+  }
   useEffect(() => {
     if (!isFlashDesignListOpen) return undefined
     const closeOnEscape = (event) => {
@@ -121,7 +143,9 @@ export default function AppointmentManager(props) {
                     >
                       <option value="All">All statuses</option>
                       <option value="pending">Pending</option>
+                      <option value="awaiting_payment">Awaiting deposit</option>
                       <option value="expired">Hold expired</option>
+                      <option value="awaiting_payment_expired">Deposit deadline passed</option>
                       <option value="approved">Approved</option>
                       <option value="completed">Completed</option>
                       <option value="rejected">Rejected</option>
@@ -138,7 +162,7 @@ export default function AppointmentManager(props) {
                   <article><span className="appointment-manager__stat-icon"><CheckCircle2 size={17} /></span><div><small>Confirmed</small><strong>{approvedAppointments}</strong></div></article>
                   <button type="button" className="appointment-manager__stat-card" aria-label={`View uploaded flash designs; ${availableFlashDesigns} available`} onClick={() => setIsFlashDesignListOpen(true)}><span className="appointment-manager__stat-icon"><Images size={17} /></span><div><small>Available flash</small><strong>{availableFlashDesigns}</strong></div></button>
                 </div></>}
-            {adminTab === 'messages' && <CustomerAdminChat currentUser={currentUser} isAdmin onConversationRead={markConversationRead} onClose={() => setAdminTab('appointments')} />}
+            {adminTab === 'messages' && <CustomerAdminChat currentUser={currentUser} isAdmin initialClientId={chatClientId} onConversationRead={markConversationRead} onClose={() => setAdminTab('appointments')} />}
             {adminTab === 'schedule' && <section className="schedule-manager" aria-labelledby="schedule-manager-title">
               <div className="schedule-manager__heading">
                 <div>
@@ -219,22 +243,23 @@ export default function AppointmentManager(props) {
                         <td className="appointment-manager__placement-cell">
                           {app.placement}
                         </td>
-                        <td className="appointment-manager__date-cell">{app.date}<br />{formatTime(app.time)}{app.status === 'pending' && app.holdExpiresAt && <small className="appointment-manager__hold-expiry">Held until {new Date(app.holdExpiresAt).toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' })}</small>}{app.status === 'expired' && <small className="appointment-manager__hold-expiry">Pending hold expired; this request cannot be confirmed.</small>}</td>
+                        <td className="appointment-manager__date-cell">{app.date}<br />{formatTime(app.time)}{['pending', 'awaiting_payment'].includes(app.status) && app.holdExpiresAt && <small className="appointment-manager__hold-expiry">Held until {new Date(app.holdExpiresAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' })}</small>}{app.status === 'expired' && <small className="appointment-manager__hold-expiry">Pending hold expired; this request cannot be confirmed.</small>}{app.status === 'awaiting_payment_expired' && <small className="appointment-manager__hold-expiry">Deposit deadline passed; request a new booking.</small>}</td>
                         <td className="appointment-manager__standard-cell">
                           <span className={`appointment-status appointment-status--${app.status}`}>
-                            {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                            {app.status.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())}
                           </span>
+                          {app.depositAmount > 0 && <small className="appointment-manager__hold-expiry">Deposit: ₱{app.depositAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })} · {app.paymentStatus}</small>}
                         </td>
                         <td className="appointment-manager__action-cell">
                           {app.status === 'pending' && (
                             <>
                               <button
                                 type="button"
-                                onClick={() => updateAppointmentStatus(app.id, 'approved')}
+                                onClick={() => requestDeposit(app)}
                                 className="appointment-manager__approve-button"
-                                aria-label={`Confirm appointment for ${app.clientName}`}
+                                aria-label={`Request downpayment for ${app.clientName}`}
                               >
-                                Confirm
+                                Request deposit
                               </button>
                               <button
                                 type="button"
@@ -245,6 +270,29 @@ export default function AppointmentManager(props) {
                                 Reject
                               </button>
                             </>
+                          )}
+                          {app.status === 'awaiting_payment' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (window.confirm('Confirm that you verified the downpayment in the receiving account?')) updateAppointmentStatus(app.id, 'approved')
+                                }}
+                                className="appointment-manager__approve-button"
+                                disabled={Boolean(app.holdExpiresAt && new Date(app.holdExpiresAt).getTime() <= Date.now())}
+                                title="Verify the incoming transfer before confirming"
+                              >
+                                Confirm payment
+                              </button>
+                              <button type="button" onClick={() => updateAppointmentStatus(app.id, 'cancelled')} className="appointment-manager__reject-button">
+                                Cancel
+                              </button>
+                            </>
+                          )}
+                          {app.status === 'awaiting_payment_expired' && (
+                            <button type="button" onClick={() => updateAppointmentStatus(app.id, 'cancelled')} className="appointment-manager__reject-button">
+                              Close expired request
+                            </button>
                           )}
                           {app.status === 'approved' && (
                             <button

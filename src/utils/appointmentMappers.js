@@ -18,7 +18,13 @@ export const toAppointment = (row) => ({
   date: row.appointment_date,
   time: row.appointment_time,
   notes: row.description || '',
-  status: row.status === 'pending' && row.booking_hold_expires_at && new Date(row.booking_hold_expires_at).getTime() <= Date.now() ? 'expired' : row.status,
+  totalAmount: Number(row.total_amount || 0),
+  depositAmount: Number(row.deposit_amount || 0),
+  balanceAmount: Number(row.balance_amount || 0),
+  paymentStatus: row.payment_status || 'unpaid',
+  status: ['pending', 'awaiting_payment'].includes(row.status) && row.booking_hold_expires_at && new Date(row.booking_hold_expires_at).getTime() <= Date.now()
+    ? (row.status === 'pending' ? 'expired' : 'awaiting_payment_expired')
+    : row.status,
   holdExpiresAt: row.booking_hold_expires_at || '',
   refImage: row.reference_image_url,
 })

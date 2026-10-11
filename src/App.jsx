@@ -619,11 +619,21 @@ export default function App() {
 
     setSelectedImage({ img: data.signedUrl, title: 'Booking Reference', description: '' })
   }
-  const updateAppointmentStatus = async (appointmentId, status, rejectionReason = '') => {
+  const updateAppointmentStatus = async (appointmentId, status, rejectionReason = '', paymentDetails = {}) => {
     const appointment = appointments.find((item) => item.id === appointmentId)
+    const update = { status }
+    if (status === 'awaiting_payment') {
+      update.total_amount = paymentDetails.totalAmount
+      update.deposit_amount = paymentDetails.depositAmount
+      update.balance_amount = paymentDetails.totalAmount - paymentDetails.depositAmount
+      update.payment_status = 'unpaid'
+    } else if (status === 'approved' && appointment?.status === 'awaiting_payment') {
+      update.payment_status = appointment.depositAmount >= appointment.totalAmount ? 'paid' : 'partial'
+      update.balance_amount = Math.max(0, appointment.totalAmount - appointment.depositAmount)
+    }
     const { error } = await supabase
       .from('appointments')
-      .update({ status })
+      .update(update)
       .eq('id', appointmentId)
 
     if (error) {
@@ -632,6 +642,7 @@ export default function App() {
     }
 
     const bookingUpdateMessages = {
+      awaiting_payment: `Your request is accepted pending the downpayment. Please send ₱${Number(paymentDetails.depositAmount).toLocaleString('en-PH', { minimumFractionDigits: 2 })} within 24 hours using the payment QR we will send here. Your session is confirmed after the studio verifies payment.`,
       approved: 'Your booking has been approved.',
       rejected: 'Your booking request has been rejected.',
       completed: 'Your appointment has been marked as completed.',
@@ -649,14 +660,20 @@ export default function App() {
     }
 
     setAppointments((currentAppointments) => currentAppointments.map((appointment) => (
-      appointment.id === appointmentId ? { ...appointment, status, holdExpiresAt: '' } : appointment
+      appointment.id === appointmentId ? {
+        ...appointment,
+        ...('total_amount' in update ? { totalAmount: update.total_amount, depositAmount: update.deposit_amount, balanceAmount: update.balance_amount, paymentStatus: update.payment_status } : {}),
+        ...('payment_status' in update ? { paymentStatus: update.payment_status, balanceAmount: update.balance_amount } : {}),
+        status,
+        holdExpiresAt: status === 'awaiting_payment' ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : '',
+      } : appointment
     )))
     if (appointment?.flashDesignId) {
-      if (status === 'approved') {
+      if (['awaiting_payment', 'approved'].includes(status)) {
         setFlashDesigns((items) => items.map((item) => (
           item.id === appointment.flashDesignId ? { ...item, is_available: false } : item
         )))
-      } else if (['rejected', 'cancelled'].includes(status) && ['approved', 'completed'].includes(appointment.status)) {
+      } else if (['rejected', 'cancelled'].includes(status) && ['awaiting_payment', 'awaiting_payment_expired', 'approved', 'completed'].includes(appointment.status)) {
         setFlashDesigns((items) => items.map((item) => (
           item.id === appointment.flashDesignId ? { ...item, is_available: true } : item
         )))

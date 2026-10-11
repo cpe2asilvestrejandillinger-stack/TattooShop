@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronLeft, MessageCircle, Paperclip, Search, Send, X } from 'lucide-react'
+import { ChevronLeft, MessageCircle, Paperclip, QrCode, Receipt, Search, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { formatConversationMessage } from '../utils/formatConversationMessage'
 import './CustomerAdminChat.css'
@@ -23,16 +23,17 @@ const isMissingChatTable = (error) => error?.code === 'PGRST205' || /could not f
 const isOutdatedChatSchema = (error) => isMissingChatTable(error) || error?.code === 'PGRST204' || /attachment_path.*(customer_messages|schema cache|column)|customer_messages.*(schema cache|column)/i.test(error?.message || '')
 const isVerboseAppointmentConfirmation = (message) => /^Appointment confirmed(?:\r?\n|$)/i.test((message.body || '').trim()) && /confirmed by the studio/i.test(message.body || '')
 
-export default function CustomerAdminChat({ currentUser, onClose, onConversationRead, isAdmin = false }) {
+export default function CustomerAdminChat({ currentUser, onClose, onConversationRead, isAdmin = false, initialClientId = '' }) {
   const [clients, setClients] = useState([])
   const readThroughStorageKey = `tattoo-chat-read:${currentUser.id}`
   const [readThroughByClient, setReadThroughByClient] = useState(() => {
     try { return JSON.parse(window.localStorage.getItem(readThroughStorageKey) || '{}') } catch { return {} }
   })
-  const [selectedClientId, setSelectedClientId] = useState(isAdmin ? '' : currentUser.id)
+  const [selectedClientId, setSelectedClientId] = useState(isAdmin ? initialClientId : currentUser.id)
   const [messages, setMessages] = useState([])
   const [draft, setDraft] = useState('')
   const [attachmentFile, setAttachmentFile] = useState(null)
+  const [attachmentKind, setAttachmentKind] = useState('text')
   const [attachmentPreview, setAttachmentPreview] = useState('')
   const [search, setSearch] = useState('')
   const [loadingClients, setLoadingClients] = useState(false)
@@ -44,6 +45,8 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
   const [retryCount, setRetryCount] = useState(0)
   const messagesEndRef = useRef(null)
   const composerRef = useRef(null)
+  const qrInputRef = useRef(null)
+  const receiptInputRef = useRef(null)
   const activeClient = isAdmin
     ? clients.find((client) => client.id === selectedClientId)
     : { id: currentUser.id, name: currentUser.name || 'Client' }
@@ -61,7 +64,7 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
         if (queryError) setError(queryError.message)
         else {
           const { data: recentMessages } = await supabase.from('customer_messages')
-            .select('id, customer_id, sender_id, body, attachment_path, created_at')
+            .select('id, customer_id, sender_id, body, attachment_path, message_type, created_at')
             .order('created_at', { ascending: false })
             .limit(500)
           if (!active) return
@@ -74,12 +77,14 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
             return { id: client.id, name: client.full_name || 'Client', lastMessage: lastMessage?.body || '', hasLastMessageAttachment: Boolean(lastMessage?.attachment_path), lastMessageAt: lastMessage?.created_at || '', lastMessageId: lastMessage?.id || '', lastMessageSenderId: lastMessage?.sender_id || '', hasIncomingUpdate: Boolean(lastMessage && lastMessage.sender_id !== currentUser.id) }
           })
           setClients(nextClients)
-          setSelectedClientId((selectedId) => nextClients.some((client) => client.id === selectedId) ? selectedId : nextClients[0]?.id || '')
+          setSelectedClientId((selectedId) => nextClients.some((client) => client.id === initialClientId)
+            ? initialClientId
+            : nextClients.some((client) => client.id === selectedId) ? selectedId : nextClients[0]?.id || '')
         }
         setLoadingClients(false)
       })
     return () => { active = false }
-  }, [isAdmin])
+  }, [initialClientId, isAdmin])
 
   useEffect(() => {
     if (!activeClientId) { setMessages([]); return undefined }
@@ -88,7 +93,7 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
     setLoadingMessages(true)
     setError('')
     setChatSetupRequired(false)
-    supabase.from('customer_messages').select('id, customer_id, sender_id, body, attachment_path, created_at')
+    supabase.from('customer_messages').select('id, customer_id, sender_id, body, attachment_path, message_type, created_at')
       .eq('customer_id', activeClientId).order('created_at', { ascending: true })
       .then(async ({ data, error: queryError }) => {
         if (!active) return
@@ -176,7 +181,7 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
     setIsMobileChatOpen(true)
   }
 
-  const handleAttachmentSelection = (event) => {
+  const handleAttachmentSelection = (event, kind = 'payment_proof') => {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file) return
@@ -190,6 +195,7 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
     }
     setError('')
     setAttachmentFile(file)
+    setAttachmentKind(kind)
   }
 
   const sendMessage = async (event) => {
@@ -211,8 +217,8 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
         if (uploadError) throw uploadError
       }
       const { data, error: sendError } = await supabase.from('customer_messages')
-        .insert({ customer_id: activeClientId, sender_id: currentUser.id, body: body || null, attachment_path: uploadedAttachmentPath || null })
-        .select('id, customer_id, sender_id, body, attachment_path, created_at').single()
+        .insert({ customer_id: activeClientId, sender_id: currentUser.id, body: body || null, attachment_path: uploadedAttachmentPath || null, message_type: attachmentFile ? attachmentKind : 'text' })
+        .select('id, customer_id, sender_id, body, attachment_path, message_type, created_at').single()
       if (sendError) throw sendError
       let attachmentUrl = ''
       if (uploadedAttachmentPath) {
@@ -222,6 +228,7 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
       setMessages((items) => items.some((item) => item.id === data.id) ? items : [...items, { ...data, attachmentUrl }])
       setDraft('')
       setAttachmentFile(null)
+      setAttachmentKind('text')
     } catch (sendFailure) {
       setError(sendFailure.message || 'Could not send your message. Please try again.')
       setChatSetupRequired(isOutdatedChatSchema(sendFailure))
@@ -273,6 +280,8 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
                   const mine = message.sender_id === currentUser.id
                   return <article key={message.id} className={'customer-chat__message' + (mine ? ' is-mine' : '')}>
                     <span>{mine ? 'You' : isAdmin ? 'Client' : 'Studio admin'}</span>
+                    {message.message_type === 'payment_qr' && <strong className="customer-chat__payment-label">Studio payment QR</strong>}
+                    {message.message_type === 'payment_proof' && <strong className="customer-chat__payment-label">Payment receipt</strong>}
                     {message.attachment_path && (message.attachmentUrl
                       ? <a className="customer-chat__message-image-link" href={message.attachmentUrl} target="_blank" rel="noreferrer"><img className="customer-chat__message-image" src={message.attachmentUrl} alt="Image attachment" loading="lazy" /></a>
                       : <div className="customer-chat__message-image-unavailable">Image unavailable</div>)}
@@ -288,9 +297,17 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
                 <span>{attachmentFile.name}<small>{(attachmentFile.size / (1024 * 1024)).toFixed(1)} MB</small></span>
                 <button type="button" onClick={() => setAttachmentFile(null)} aria-label="Remove attachment"><X size={16} /></button>
               </div>}<form className="customer-chat__composer" onSubmit={sendMessage}>
+                {isAdmin && <>
+                  <button type="button" className="customer-chat__qr-button" onClick={() => qrInputRef.current?.click()} disabled={!activeClientId || sending} title="Send a payment QR image"><QrCode size={18} /><span>Send QR</span></button>
+                  <input ref={qrInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="customer-chat__hidden-input" onChange={(event) => handleAttachmentSelection(event, 'payment_qr')} />
+                </>}
+                {!isAdmin && <>
+                  <button type="button" className="customer-chat__qr-button" onClick={() => receiptInputRef.current?.click()} disabled={sending} title="Send payment receipt"><Receipt size={18} /><span>Receipt</span></button>
+                  <input ref={receiptInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="customer-chat__hidden-input" onChange={(event) => handleAttachmentSelection(event, 'payment_proof')} />
+                </>}
                 <label className="customer-chat__attach-button" aria-label="Attach image" title="Attach image">
                   <Paperclip size={19} />
-                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAttachmentSelection} />
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => handleAttachmentSelection(event, 'text')} />
                 </label>
                 <textarea ref={composerRef} value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit() } }} maxLength={2000} rows={1} placeholder="Write a message…" aria-label="Message; press Enter to send, Shift plus Enter for a new line" />
                 <button type="submit" disabled={(!draft.trim() && !attachmentFile) || sending} aria-label={sending ? 'Sending message' : 'Send message'} title={sending ? 'Sending message' : 'Send message'}><Send size={18} /></button>
