@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronLeft, MessageCircle, Paperclip, QrCode, Search, Send, X } from 'lucide-react'
+import { ChevronLeft, MessageCircle, MoreHorizontal, Paperclip, QrCode, Search, Send, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { formatConversationMessage } from '../utils/formatConversationMessage'
 import './CustomerAdminChat.css'
@@ -36,6 +36,8 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
   const [attachmentKind, setAttachmentKind] = useState('text')
   const [attachmentPreview, setAttachmentPreview] = useState('')
   const [search, setSearch] = useState('')
+  const [openMenuClientId, setOpenMenuClientId] = useState('')
+  const [deletingClientId, setDeletingClientId] = useState('')
   const [loadingClients, setLoadingClients] = useState(false)
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [sending, setSending] = useState(false)
@@ -186,6 +188,36 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
     setIsMobileChatOpen(true)
   }
 
+  const deleteConversation = async (client) => {
+    setOpenMenuClientId('')
+    if (!window.confirm(`Delete the conversation with ${client.name}? This will permanently remove its messages.`)) return
+    setDeletingClientId(client.id)
+    setError('')
+    try {
+      const { data: deletedMessages, error: deleteError } = await supabase.from('customer_messages')
+        .delete().eq('customer_id', client.id).select('attachment_path')
+      if (deleteError) throw deleteError
+      const attachmentPaths = (deletedMessages || []).map((message) => message.attachment_path).filter(Boolean)
+      if (attachmentPaths.length) {
+        const { error: storageError } = await supabase.storage.from('customer-chat-attachments').remove(attachmentPaths)
+        if (storageError) setError(`Messages were deleted, but some attachments could not be removed: ${storageError.message}`)
+      }
+      setClients((items) => items.map((item) => item.id === client.id
+        ? { ...item, lastMessage: '', hasLastMessageAttachment: false, lastMessageAt: '', lastMessageId: '', lastMessageSenderId: '', hasIncomingUpdate: false }
+        : item))
+      setMessages((items) => client.id === activeClientId ? [] : items)
+      setReadThroughByClient((items) => {
+        const next = { ...items }
+        delete next[client.id]
+        return next
+      })
+    } catch (deleteFailure) {
+      setError(`Could not delete this conversation: ${deleteFailure.message || 'Please try again.'}`)
+    } finally {
+      setDeletingClientId('')
+    }
+  }
+
   const handleAttachmentSelection = (event, kind = 'payment_proof') => {
     const file = event.target.files?.[0]
     event.target.value = ''
@@ -263,15 +295,23 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
             <div className="customer-chat__client-heading"><strong>Clients</strong><span>Select a client to open a private chat.</span></div>
             <label className="customer-chat__search"><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search clients" aria-label="Search clients" /></label>
             {loadingClients ? <p className="customer-chat__list-empty">Loading clients…</p> : visibleClients.length === 0 ? <p className="customer-chat__list-empty">{search ? 'No clients match that search.' : 'Client accounts will appear here.'}</p> : visibleClients.map((client) => (
-              <button type="button" key={client.id} aria-label={`${client.name}${shouldHighlightUnreadClient(client) ? ', unread message' : ''}`} className={'customer-chat__client' + (client.id === activeClientId ? ' is-selected' : '') + (shouldHighlightUnreadClient(client) ? ' has-unread' : '')} onClick={() => selectClient(client.id)}>
-                <span className={'customer-chat__avatar' + (shouldHighlightUnreadClient(client) ? ' has-update' : '')}>{client.name.charAt(0).toUpperCase()}</span>
-                <span className="customer-chat__client-copy">
-                  <span className="customer-chat__client-topline"><strong className="customer-chat__client-name">{client.name}</strong><time>{formatConversationTime(client.lastMessageAt)}</time></span>
-                  <span className="customer-chat__client-preview">{client.lastMessage ? `${client.lastMessageSenderId === currentUser.id ? 'You: ' : ''}${client.lastMessage}` : client.hasLastMessageAttachment ? 'Photo' : 'Start a conversation'}</span>
-                </span>
-              </button>
+              <div className="customer-chat__client-row" key={client.id}>
+                <button type="button" aria-label={`${client.name}${shouldHighlightUnreadClient(client) ? ', unread message' : ''}`} className={'customer-chat__client' + (client.id === activeClientId ? ' is-selected' : '') + (shouldHighlightUnreadClient(client) ? ' has-unread' : '')} onClick={() => selectClient(client.id)}>
+                  <span className={'customer-chat__avatar' + (shouldHighlightUnreadClient(client) ? ' has-update' : '')}>{client.name.charAt(0).toUpperCase()}</span>
+                  <span className="customer-chat__client-copy">
+                    <span className="customer-chat__client-topline"><strong className="customer-chat__client-name">{client.name}</strong><time>{formatConversationTime(client.lastMessageAt)}</time></span>
+                    <span className="customer-chat__client-preview">{client.lastMessage ? `${client.lastMessageSenderId === currentUser.id ? 'You: ' : ''}${client.lastMessage}` : client.hasLastMessageAttachment ? 'Photo' : 'Start a conversation'}</span>
+                  </span>
+                </button>
+                <div className="customer-chat__client-menu-wrap">
+                  <button type="button" className="customer-chat__client-menu-button" aria-label={`More options for ${client.name}`} aria-haspopup="menu" aria-expanded={openMenuClientId === client.id} onClick={() => setOpenMenuClientId((id) => id === client.id ? '' : client.id)}><MoreHorizontal size={19} /></button>
+                  {openMenuClientId === client.id && <div className="customer-chat__client-menu" role="menu">
+                    <button type="button" role="menuitem" disabled={deletingClientId === client.id} onClick={() => deleteConversation(client)}><Trash2 size={15} />{deletingClientId === client.id ? 'Deleting…' : 'Delete conversation'}</button>
+                  </div>}
+                </div>
+              </div>
             ))}
-            {error && !activeClientId && <p className="customer-chat__error" role="alert">{error}</p>}
+            {error && <p className="customer-chat__error" role="alert">{error}</p>}
           </aside>}
 
           <main key={activeClientId || 'no-client'} className="customer-chat__thread">

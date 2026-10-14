@@ -570,12 +570,17 @@ end;
 $$;
 
 alter table public.customer_messages enable row level security;
-grant select, insert on public.customer_messages to authenticated;
+grant select, insert, delete on public.customer_messages to authenticated;
 
 drop policy if exists "Customers and admins can read customer conversations" on public.customer_messages;
 create policy "Customers and admins can read customer conversations" on public.customer_messages
 for select to authenticated
 using (customer_id = (select auth.uid()) or (select public.is_admin()));
+
+drop policy if exists "Admins can delete customer conversations" on public.customer_messages;
+create policy "Admins can delete customer conversations" on public.customer_messages
+for delete to authenticated
+using ((select public.is_admin()));
 
 drop policy if exists "Customers and admins can send customer messages" on public.customer_messages;
 create policy "Customers and admins can send customer messages" on public.customer_messages
@@ -653,6 +658,11 @@ using (
     or (select public.is_admin())
   )
 );
+
+drop policy if exists "Admins can delete conversation images" on storage.objects;
+create policy "Admins can delete conversation images" on storage.objects
+for delete to authenticated
+using (bucket_id = 'customer-chat-attachments' and (select public.is_admin()));
 
 -- Private storage for booking reference images.
 insert into storage.buckets (id, name, public)
