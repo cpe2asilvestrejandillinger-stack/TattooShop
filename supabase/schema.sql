@@ -1,5 +1,26 @@
 -- AirWizard tattoo booking schema and row-level security.
--- Run this script in the Supabase SQL Editor.
+-- Before running: back up production data and review the data updates below.
+-- Run the entire script in Supabase Dashboard > SQL Editor as the postgres role.
+-- The transaction makes the migration all-or-nothing if any statement fails.
+-- Do not grant schema CREATE privileges to anon or authenticated.
+
+begin;
+
+do $$
+begin
+  if current_user <> 'postgres' then
+    raise exception 'Run this migration as postgres in Supabase SQL Editor. Current role: %.', current_user;
+  end if;
+
+  if not has_schema_privilege(current_user, 'public', 'usage') then
+    raise exception 'The postgres role needs USAGE on schema public before this migration can run.';
+  end if;
+
+  if not has_schema_privilege(current_user, 'public', 'create') then
+    raise exception 'The postgres role needs CREATE on schema public. Ask the schema owner to grant CREATE to postgres, then rerun this migration.';
+  end if;
+end;
+$$;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -319,6 +340,12 @@ security definer
 set search_path = ''
 as $$
 begin
+  if (tg_op = 'INSERT' and (new.appointment_time < time '08:00' or new.appointment_time >= time '24:00'))
+     or (tg_op = 'UPDATE' and new.appointment_time is distinct from old.appointment_time
+         and (new.appointment_time < time '08:00' or new.appointment_time >= time '24:00')) then
+    raise exception 'Appointments must be scheduled during store hours (8:00 AM to midnight).';
+  end if;
+
   perform pg_advisory_xact_lock(hashtext(new.appointment_date::text));
 
   if tg_op = 'INSERT' and new.status = 'pending' then
@@ -668,3 +695,5 @@ create policy "Admins can manage flash design images" on storage.objects
 for all to authenticated
 using (bucket_id = 'flash-designs' and (select public.is_admin()))
 with check (bucket_id = 'flash-designs' and (select public.is_admin()));
+
+commit;

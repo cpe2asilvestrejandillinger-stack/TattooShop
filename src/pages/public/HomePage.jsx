@@ -570,7 +570,7 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
                   onClick={() => onClaimFlash(flash)}
                   className={flash.available ? 'flash-claim-button' : 'flash-claim-button is-unavailable'}
                 >
-                  {!flashLoaded ? 'Loading...' : flash.available ? 'Claim Flash' : 'Taken'}
+                  {!flashLoaded ? 'Loading...' : flash.available ? 'Claim Flash' : 'Claimed'}
                 </button>
               </div>
             </div>

@@ -445,6 +445,11 @@ export default function App() {
 
       if (result.error) throw result.error
 
+      if (authModal === 'register' && result.data.user?.identities?.length === 0) {
+        setAuthError('This email may already be registered. Try logging in or resetting your password.')
+        return
+      }
+
       if (authModal === 'reset-password') {
         setAuthPassword('')
         setAuthModal(null)
@@ -569,6 +574,8 @@ export default function App() {
       if (availabilityLoading) throw new Error('Wait for booking availability to finish loading.')
       if (availabilityError) throw new Error('Booking availability could not be checked. Please try again.')
       if (!bookDate) throw new Error('Choose an available date on the calendar.')
+      if (!bookTime) throw new Error('Choose a preferred appointment time.')
+      if (bookTime < '08:00' || bookTime >= '24:00') throw new Error('Choose a time during opening hours: 8:00 AM to 12:00 midnight.')
       if (!['studio', 'home'].includes(bookLocation)) throw new Error('Choose whether the session will be at the studio or at home.')
       if (bookLocation === 'home' && !bookAddress.trim()) throw new Error('Enter the home visit address.')
       if (bookDate < localDateKey()) throw new Error('Choose a future date.')
