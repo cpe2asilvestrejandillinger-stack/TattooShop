@@ -6,6 +6,7 @@ import facebookLogo from '../../assets/fblogo.jpg'
 import tiktokLogo from '../../assets/tiktoklogo.jpg'
 import { Sparkles, Clock, MapPin, Calendar, ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Menu, X, Phone, MessageCircle } from 'lucide-react'
 import { PORTFOLIO_ITEMS } from '../../data/siteData'
+import TattooPainChart from '../../components/TattooPainChart'
 
 const ESTIMATOR_STYLES = [
   { name: 'Fine Line', price: 3000 },
@@ -137,6 +138,7 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
         <div className="home-page__desktop-nav">
           <a href="#home" className={activeNavId === 'home' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('home')}>Home</a>
           <a href="#portfolio" className={activeNavId === 'portfolio' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('portfolio')}>Portfolio</a>
+          <a href="#pain-guide" className={activeNavId === 'pain-guide' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('pain-guide')}>Pain Guide</a>
           <a href="#estimator" className={activeNavId === 'estimator' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('estimator')}>Estimator</a>
           <a href="#flash" className={activeNavId === 'flash' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('flash')}>1/1 Flash</a>
           <a href="#location" className={activeNavId === 'location' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('location')}>Location</a>
@@ -300,6 +302,7 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
             )}
             <a href="#home" className={activeNavId === 'home' ? 'is-active' : ''} onClick={() => { setActiveNavId('home'); setIsMobileMenuOpen(false) }}>Home</a>
             <a href="#portfolio" className={activeNavId === 'portfolio' ? 'is-active' : ''} onClick={() => { setActiveNavId('portfolio'); setIsMobileMenuOpen(false) }}>Portfolio</a>
+            <a href="#pain-guide" className={activeNavId === 'pain-guide' ? 'is-active' : ''} onClick={() => { setActiveNavId('pain-guide'); setIsMobileMenuOpen(false) }}>Pain Guide</a>
             <a href="#estimator" className={activeNavId === 'estimator' ? 'is-active' : ''} onClick={() => { setActiveNavId('estimator'); setIsMobileMenuOpen(false) }}>Estimator</a>
             <a href="#flash" className={activeNavId === 'flash' ? 'is-active' : ''} onClick={() => { setActiveNavId('flash'); setIsMobileMenuOpen(false) }}>1/1 Flash</a>
             <a href="#location" className={activeNavId === 'location' ? 'is-active' : ''} onClick={() => { setActiveNavId('location'); setIsMobileMenuOpen(false) }}>Location</a>
@@ -434,6 +437,9 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
           </div>
         </div>
       </section>
+
+      {/* TATTOO PAIN GUIDE */}
+      <TattooPainChart />
 
       {/* PRICE ESTIMATOR SECTION */}
       <section id="estimator" className="home-page__estimator-section scroll-reveal">

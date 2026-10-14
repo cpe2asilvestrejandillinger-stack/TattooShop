@@ -2,6 +2,8 @@
 
 A responsive tattoo portfolio and appointment booking web app for AirWizard Tattoo. The public site showcases the artist's work, offers a price estimate, and lets customers request appointments. Supabase provides authentication, database, and private reference-image storage.
 
+See the [Project Guide](docs/PROJECT_GUIDE.md) for the feature overview, code map, setup and build instructions, deployment notes, and Supabase database design.
+
 ## Tech stack
 
 - React 19 for the user interface

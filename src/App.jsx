@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 import { APPOINTMENT_SELECT } from './lib/appointmentFields'
 import HomePage from './pages/public/HomePage'
-import AppModals from './components/forms/AppModals'
-import CustomerAdminChat from './components/CustomerAdminChat'
 import { toAppointment, toCurrentUser } from './utils/appointmentMappers'
+
+const AppModals = lazy(() => import('./components/forms/AppModals'))
+const CustomerAdminChat = lazy(() => import('./components/CustomerAdminChat'))
 
 const ALLOWED_REFERENCE_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const MAX_REFERENCE_IMAGE_SIZE = 10 * 1024 * 1024
@@ -86,6 +87,7 @@ export default function App() {
   const [adminStatusFilter, setAdminStatusFilter] = useState('All');
 
   const hasOpenModal = Boolean(authModal || isAdminModalOpen || isBookingOpen || selectedImage || isCustomerConversationsOpen);
+  const hasOpenModalContent = Boolean(authModal || isAdminModalOpen || isBookingOpen || selectedImage);
   useEffect(() => {
     if (!hasOpenModal) return undefined;
     const previousBodyOverflow = document.body.style.overflow;
@@ -744,9 +746,15 @@ export default function App() {
         flashLoaded={flashLoaded}
         onClaimFlash={handleClaimFlash}
       />
-      <AppModals {...modalProps} />
+      {hasOpenModalContent && (
+        <Suspense fallback={null}>
+          <AppModals {...modalProps} />
+        </Suspense>
+      )}
       {isCustomerConversationsOpen && currentUser?.role === 'customer' && (
-        <CustomerAdminChat currentUser={currentUser} onConversationRead={markConversationRead} onClose={() => setIsCustomerConversationsOpen(false)} />
+        <Suspense fallback={null}>
+          <CustomerAdminChat currentUser={currentUser} onConversationRead={markConversationRead} onClose={() => setIsCustomerConversationsOpen(false)} />
+        </Suspense>
       )}
     </>
   )

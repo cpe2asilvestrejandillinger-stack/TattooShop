@@ -1,0 +1,71 @@
+.pain-chart {
+  padding: 6.5rem clamp(1rem, 5vw, 5rem);
+  background: #0d0e11;
+  scroll-margin-top: 5.5rem;
+}
+
+.pain-chart__heading {
+  max-width: 50rem;
+  margin: 0 auto 2.4rem;
+  text-align: center;
+}
+
+.pain-chart__heading .home-page__section-subtitle { margin: .65rem auto 0; }
+
+.pain-chart__layout {
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
+.pain-chart__viewer-wrap { position: relative; }
+.pain-chart__viewer {
+  height: clamp(19rem, 43vw, 29rem);
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 42%, #29252a 0, #17171b 39%, #111216 75%);
+}
+.pain-chart__viewer canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.pain-chart__viewer canvas:active { cursor: grabbing; }
+
+.pain-chart__viewer-caption {
+  position: absolute;
+  right: .8rem;
+  bottom: .8rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 999px;
+  padding: .45rem .7rem;
+  background: rgb(12 12 14 / 78%);
+  color: #d3d0d0;
+  font-size: .68rem;
+  backdrop-filter: blur(10px);
+}
+
+.pain-chart__live-dot { width: .42rem; height: .42rem; border-radius: 50%; background: #e0a34f; box-shadow: 0 0 .7rem #e0a34f; }
+.pain-chart__viewer-error { position: absolute; inset: 0; display: grid; place-items: center; padding: 2rem; background: #141418; color: #d8c9bd; text-align: center; }
+.pain-chart__viewer-status { position: absolute; inset: 0; display: grid; place-items: center; background: rgb(17 18 22 / 78%); color: #d8c9bd; font-size: .85rem; pointer-events: none; }
+
+.pain-chart__scale { padding-top: 1.2rem; }
+.pain-chart__scale--model { margin-top: .8rem; padding: 0 1rem; }
+.pain-chart__scale-labels { display: flex; justify-content: space-between; margin-bottom: .5rem; color: #96928d; font-size: .63rem; }
+.pain-chart__scale-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: .22rem; }
+.pain-chart__scale-bar i { height: .28rem; border-radius: 99px; background: #bbca6b; }
+.pain-chart__scale-bar i:nth-child(2) { background: #d2c365; }
+.pain-chart__scale-bar i:nth-child(3) { background: #dfbd5f; }
+.pain-chart__scale-bar i:nth-child(4) { background: #ec9b52; }
+.pain-chart__scale-bar i:nth-child(5) { background: #f07859; }
+
+@media (max-width: 850px) {
+  .pain-chart__layout { max-width: 40rem; }
+  .pain-chart__viewer { height: 25rem; }
+}
+
+@media (max-width: 480px) {
+  .pain-chart { padding: 4.3rem 1rem; }
+  .pain-chart__viewer { height: 21rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pain-chart__viewer-caption { backdrop-filter: none; }
+}
