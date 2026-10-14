@@ -73,7 +73,7 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
           for (const message of recentMessages || []) {
             if (!latestByCustomer.has(message.customer_id) && !isVerboseAppointmentConfirmation(message)) latestByCustomer.set(message.customer_id, message)
           }
-          const nextClients = (data || []).map((client) => {
+          const nextClients = (data || []).filter((client) => latestByCustomer.has(client.id) || client.id === initialClientId).map((client) => {
             const lastMessage = latestByCustomer.get(client.id)
             return { id: client.id, name: client.full_name || 'Client', lastMessage: lastMessage?.body || '', hasLastMessageAttachment: Boolean(lastMessage?.attachment_path), lastMessageAt: lastMessage?.created_at || '', lastMessageId: lastMessage?.id || '', lastMessageSenderId: lastMessage?.sender_id || '', hasIncomingUpdate: Boolean(lastMessage && lastMessage.sender_id !== currentUser.id) }
           })
@@ -202,9 +202,9 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
         const { error: storageError } = await supabase.storage.from('customer-chat-attachments').remove(attachmentPaths)
         if (storageError) setError(`Messages were deleted, but some attachments could not be removed: ${storageError.message}`)
       }
-      setClients((items) => items.map((item) => item.id === client.id
-        ? { ...item, lastMessage: '', hasLastMessageAttachment: false, lastMessageAt: '', lastMessageId: '', lastMessageSenderId: '', hasIncomingUpdate: false }
-        : item))
+      setClients((items) => items.filter((item) => item.id !== client.id))
+      setSelectedClientId((selectedId) => selectedId === client.id ? '' : selectedId)
+      if (client.id === activeClientId) setIsMobileChatOpen(false)
       setMessages((items) => client.id === activeClientId ? [] : items)
       setReadThroughByClient((items) => {
         const next = { ...items }
