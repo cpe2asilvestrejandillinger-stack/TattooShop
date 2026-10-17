@@ -164,7 +164,7 @@ export default function BookingModal(props) {
               <>
                 <div className="booking-modal__form-heading">
                   <span className="booking-modal__eyebrow">Consultation Request · {bookLocation === 'home' ? 'Home service' : 'At the studio'}</span>
-                  <h3 id="booking-modal-title" className="booking-modal__title">{bookingStep === 1 ? 'Your Contact Details' : bookingStep === 2 ? 'Tattoo Details' : 'Choose Date & Time'}</h3>
+                  <h3 id="booking-modal-title" className="booking-modal__title">{bookingStep === 1 ? 'Contact Details' : bookingStep === 2 ? 'Tattoo Details' : 'Choose Date & Time'}</h3>
                   <p className="booking-modal__step-description">{bookingStep === 1 ? 'Tell us how to reach you about your booking.' : bookingStep === 2 ? 'Share what you have in mind and attach a reference image if you have one.' : 'Choose a preferred date and time. Your time is a request, not a confirmed appointment.'}</p>
                 </div>
 
