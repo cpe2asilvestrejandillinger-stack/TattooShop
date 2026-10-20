@@ -1,6 +1,6 @@
 .pain-chart {
   padding: 6.5rem clamp(1rem, 5vw, 5rem);
-  background: #0d0e11;
+  background: transparent;
   scroll-margin-top: 5.5rem;
 }
 
@@ -21,7 +21,10 @@
 .pain-chart__viewer {
   height: clamp(19rem, 43vw, 29rem);
   overflow: hidden;
+  border: 1px solid rgb(245 158 11 / 18%);
+  border-radius: 1.25rem;
   background: radial-gradient(ellipse at 50% 42%, #29252a 0, #17171b 39%, #111216 75%);
+  box-shadow: 0 24px 55px rgb(0 0 0 / 35%), 0 0 34px rgb(245 158 11 / 6%);
 }
 .pain-chart__viewer canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
 .pain-chart__viewer canvas:active { cursor: grabbing; }
@@ -50,7 +53,7 @@
 .pain-chart__scale--model { margin-top: .8rem; padding: 0 1rem; }
 .pain-chart__scale-labels { display: flex; justify-content: space-between; margin-bottom: .5rem; color: #96928d; font-size: .63rem; }
 .pain-chart__scale-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: .22rem; }
-.pain-chart__scale-bar i { height: .28rem; border-radius: 99px; background: #bbca6b; }
+.pain-chart__scale-bar i { height: .32rem; border-radius: 99px; background: #bbca6b; box-shadow: 0 0 .8rem rgb(187 202 107 / 18%); }
 .pain-chart__scale-bar i:nth-child(2) { background: #d2c365; }
 .pain-chart__scale-bar i:nth-child(3) { background: #dfbd5f; }
 .pain-chart__scale-bar i:nth-child(4) { background: #ec9b52; }

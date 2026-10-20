@@ -1610,7 +1610,10 @@
 }
 
 .location-section {
-  padding: 72px 24px;
+  display: grid;
+  min-height: 52rem;
+  place-items: center;
+  padding: 6.5rem clamp(1rem, 5vw, 5rem);
   border-top: 1px solid rgb(255 255 255 / 7%);
   background: #09090c;
   scroll-margin-top: 88px;
@@ -1622,6 +1625,30 @@
   gap: 24px;
   width: min(1152px, 100%);
   margin: 0 auto;
+}
+
+.location-section-inner {
+  width: min(1152px, 100%);
+  margin: 0 auto;
+}
+
+.location-section-heading {
+  margin: 0 0 24px 4px;
+}
+
+.location-section-heading h2 {
+  margin: 8px 0 0;
+  color: #fff;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  font-weight: 850;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.location-map-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
 }
 
 .location-map-card {
@@ -1721,13 +1748,21 @@
   transform: translateY(-1px);
 }
 
+@media (max-width: 850px) {
+  .location-section { min-height: 48rem; }
+}
+
+@media (max-width: 480px) {
+  section.location-section { padding: 4.3rem 1rem; }
+}
 @media (max-width: 760px) {
   .location-section {
-    padding: 48px 18px;
+    min-height: 0;
+    padding: 6.5rem 18px;
   }
 
   .location-content {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 
@@ -1738,6 +1773,37 @@
 
   .location-details {
     padding: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .location-section-inner { width: 100%; }
+
+  .location-section-heading {
+    margin: 0 0 16px;
+  }
+
+  .location-section-heading h2 {
+    font-size: clamp(1.55rem, 7vw, 2rem);
+  }
+
+  .location-map-card,
+  .location-map {
+    min-height: 260px;
+  }
+
+  .location-map-card { border-radius: 16px; }
+
+  .location-details {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .location-description { margin: 16px 0; }
+
+  .location-directions {
+    width: 100%;
+    margin-top: 20px;
   }
 }
 
@@ -2171,5 +2237,202 @@
   .home-page__navbar {
     padding-left: calc(50vw - 720px);
     padding-right: calc(50vw - 720px);
+  }
+}
+
+/* Location section studio accents */
+.location-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 18% 50%, rgb(245 158 11 / 9%), transparent 34rem),
+    radial-gradient(ellipse at 86% 45%, rgb(245 158 11 / 6%), transparent 30rem),
+    #09090c;
+}
+
+.location-section::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 2.2%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 2.2%) 1px, transparent 1px);
+  background-size: 56px 56px;
+  content: "";
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  pointer-events: none;
+}
+
+/* Carry the location section's subtle studio grid through the main content. */
+.home-page__root {
+  background-color: #09090c;
+  background-image:
+    radial-gradient(ellipse 38rem 30rem at 12% 24%, rgb(245 158 11 / 5%), transparent 100%),
+    radial-gradient(ellipse 42rem 34rem at 86% 68%, rgb(245 158 11 / 4%), transparent 100%),
+    linear-gradient(rgb(255 255 255 / 1.5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 1.5%) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 56px 56px, 56px 56px;
+  background-repeat: no-repeat, no-repeat, repeat, repeat;
+}
+
+.home-page__portfolio-section,
+.home-page__estimator-section,
+.home-page__flash-section,
+.pain-chart,
+.location-section {
+  background-color: transparent;
+  background-image: none;
+}
+
+.home-page__portfolio-section,
+.home-page__flash-section,
+.location-section {
+  border-color: rgb(255 255 255 / 3%);
+}
+
+.home-page__flash-section {
+  position: relative;
+  border-top: 0;
+}
+
+.home-page__flash-section::before {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: 1px;
+  transform: translateX(-50%);
+  background: rgb(255 255 255 / 3%);
+  content: "";
+  pointer-events: none;
+}
+
+.location-content {
+  position: relative;
+  z-index: 1;
+}
+
+.location-section::before {
+  display: none;
+}
+
+.location-map-card {
+  border-color: rgb(245 158 11 / 24%);
+  box-shadow: 0 28px 70px rgb(0 0 0 / 42%), 0 0 32px rgb(245 158 11 / 7%);
+}
+
+.location-map-card::after {
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 13px;
+  content: "";
+  pointer-events: none;
+}
+
+.location-details {
+  position: relative;
+  overflow: hidden;
+  border-color: rgb(245 158 11 / 20%);
+  box-shadow: 0 28px 70px rgb(0 0 0 / 38%), inset 0 1px rgb(255 255 255 / 4%);
+}
+
+.location-details::before {
+  position: absolute;
+  top: -88px;
+  right: -78px;
+  width: 220px;
+  aspect-ratio: 1;
+  border: 1px solid rgb(245 158 11 / 21%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 18px rgb(245 158 11 / 4%), 0 0 0 40px rgb(245 158 11 / 3%);
+  content: "";
+  pointer-events: none;
+}
+
+.location-details > * {
+  position: relative;
+  z-index: 1;
+}
+
+.location-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.location-eyebrow::before {
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: #fbbf24;
+  box-shadow: 0 0 12px rgb(251 191 36 / 65%);
+  content: "";
+}
+
+.location-directions {
+  box-shadow: 0 8px 24px rgb(245 158 11 / 18%);
+}
+
+.location-directions:hover {
+  box-shadow: 0 12px 30px rgb(245 158 11 / 28%);
+}
+
+@media (max-width: 760px) {
+  .location-map-card::after { inset: 8px; }
+}
+
+/* Add a shared studio finish to the portfolio, estimator, and flash panels. */
+.home-page__portfolio-card,
+.home-page__flash-card {
+  border-color: rgb(255 255 255 / 11%);
+  background: linear-gradient(155deg, rgb(255 255 255 / 5%), rgb(255 255 255 / 2%) 48%, rgb(0 0 0 / 20%));
+  box-shadow: 0 18px 42px rgb(0 0 0 / 30%), inset 0 1px rgb(255 255 255 / 4%);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.home-page__portfolio-card:hover,
+.home-page__flash-card:hover {
+  border-color: rgb(251 191 36 / 48%);
+  box-shadow: 0 22px 48px rgb(0 0 0 / 40%), 0 0 26px rgb(245 158 11 / 9%);
+  transform: translateY(-5px);
+}
+
+.home-page__portfolio-image-wrap::after,
+.home-page__flash-image-wrap::after {
+  position: absolute;
+  inset: 35% 0 0;
+  background: linear-gradient(transparent, rgb(0 0 0 / 24%));
+  content: "";
+  pointer-events: none;
+}
+
+.home-page__estimator-card {
+  border-color: rgb(245 158 11 / 20%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 5%), rgb(18 17 17 / 92%) 56%, rgb(245 158 11 / 3%));
+  box-shadow: 0 26px 70px rgb(0 0 0 / 32%), inset 0 1px rgb(255 255 255 / 5%);
+}
+
+.home-page__estimate-summary {
+  border-color: rgb(245 158 11 / 24%);
+  background: radial-gradient(ellipse at 50% 0%, rgb(245 158 11 / 12%), transparent 68%), rgb(0 0 0 / 35%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 5%);
+}
+
+.estimator-choice:not(.is-active) {
+  border-color: rgb(255 255 255 / 12%);
+  background: rgb(255 255 255 / 4%);
+}
+
+.estimator-choice:hover:not(.is-active) {
+  border-color: rgb(251 191 36 / 40%);
+  box-shadow: 0 0 18px rgb(245 158 11 / 8%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page__portfolio-card,
+  .home-page__flash-card {
+    transition: none;
   }
 }

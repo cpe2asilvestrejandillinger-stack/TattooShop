@@ -638,39 +638,48 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
 
       {/* LOCATION */}
       <section id="location" className="location-section scroll-reveal">
-        <div className="location-content">
-          <div className="location-map-card">
-            <iframe
-              className="location-map"
-              title="Google Maps: JayTATTOO, Malis, Guiguinto, Bulacan"
-              src="https://maps.google.com/maps?q=JayTATTOO%2C%20Malis%2C%20Guiguinto%2C%20Bulacan%2C%20Philippines&z=16&output=embed"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
+        <div className="location-section-inner">
+          <div className="location-section-heading">
+            <span className="location-eyebrow">Visit JayTATTOO</span>
+            <h2>Find the studio</h2>
           </div>
 
-          <div className="location-details">
-            <span className="location-eyebrow">Find the studio</span>
-            <h2>JayTATTOO</h2>
-            <p className="location-address">Malis, Guiguinto, Bulacan</p>
-            <p className="location-description">
-              Find JayTATTOO in Malis, Guiguinto, Bulacan. Use the map below to open the location in Google Maps.
-            </p>
-            <div className="location-appointment-note">
-              <Clock size={17} aria-hidden="true" />
-              <span>By appointment only</span>
+          <div className="location-content">
+            <div className="location-map-column">
+              <div className="location-map-card">
+                <iframe
+                  className="location-map"
+                  title="Google Maps: JayTATTOO, Malis, Guiguinto, Bulacan"
+                  src="https://maps.google.com/maps?q=JayTATTOO%2C%20Malis%2C%20Guiguinto%2C%20Bulacan%2C%20Philippines&z=16&output=embed"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
             </div>
-            <a
-              className="location-directions"
-              href="https://www.google.com/maps/search/?api=1&query=JayTATTOO%2C%20Malis%2C%20Guiguinto%2C%20Bulacan%2C%20Philippines"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <MapPin size={17} aria-hidden="true" />
-              <span>Open in Google Maps</span>
-              <ChevronRight size={17} aria-hidden="true" />
-            </a>
+
+            <div className="location-details">
+              <h2>JayTATTOO</h2>
+              <p className="location-address">Malis, Guiguinto, Bulacan</p>
+              <p className="location-description">
+                Find JayTATTOO in Malis, Guiguinto, Bulacan. Use the map to open the location in Google Maps.
+              </p>
+              <div className="location-appointment-note">
+                <Clock size={17} aria-hidden="true" />
+                <span>By appointment only</span>
+              </div>
+              <a
+                className="location-directions"
+                href="https://www.google.com/maps/search/?api=1&query=JayTATTOO%2C%20Malis%2C%20Guiguinto%2C%20Bulacan%2C%20Philippines"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MapPin size={17} aria-hidden="true" />
+                <span>Open in Google Maps</span>
+                <ChevronRight size={17} aria-hidden="true" />
+              </a>
+            </div>
+
           </div>
         </div>
       </section>
