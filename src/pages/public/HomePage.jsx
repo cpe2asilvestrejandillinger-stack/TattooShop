@@ -1,5 +1,5 @@
 import './HomePage.css'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import artistImage from '../../assets/artist.jpg'
 import instagramLogo from '../../assets/iglogo.jpg'
 import facebookLogo from '../../assets/fblogo.jpg'
@@ -37,6 +37,7 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
   const flashCarouselRef = useRef(null)
   const [canScrollFlashLeft, setCanScrollFlashLeft] = useState(false)
   const [canScrollFlashRight, setCanScrollFlashRight] = useState(false)
+  const [activeFlashIndex, setActiveFlashIndex] = useState(0)
 
   useEffect(() => {
     if (isMobileMenuOpen || !isMobileMenuMounted) return undefined
@@ -63,6 +64,22 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
   const estimateTotal = estStyle + estSize + estPlacement
   const estimateCurrency = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(estimateTotal)
 
+  const focusFlashCard = useCallback((index, behavior = 'smooth') => {
+    const carousel = flashCarouselRef.current
+    const cards = carousel?.querySelectorAll('.home-page__flash-card')
+    const target = cards?.[index]
+    if (!carousel || !target) return
+
+    const carouselRect = carousel.getBoundingClientRect()
+    const targetRect = target.getBoundingClientRect()
+    const centeredScrollLeft = carousel.scrollLeft
+      + targetRect.left - carouselRect.left
+      - (carousel.clientWidth - targetRect.width) / 2
+
+    setActiveFlashIndex(index)
+    carousel.scrollTo({ left: centeredScrollLeft, behavior })
+  }, [])
+
   useEffect(() => {
     const carousel = flashCarouselRef.current
     if (!carousel) return undefined
@@ -71,6 +88,20 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
       const maxScroll = carousel.scrollWidth - carousel.clientWidth
       setCanScrollFlashLeft(carousel.scrollLeft > 2)
       setCanScrollFlashRight(maxScroll - carousel.scrollLeft > 2)
+
+      const center = carousel.getBoundingClientRect().left + carousel.clientWidth / 2
+      const cards = Array.from(carousel.querySelectorAll('.home-page__flash-card'))
+      let nearestIndex = 0
+      let nearestDistance = Infinity
+      cards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect()
+        const distance = Math.abs(rect.left + rect.width / 2 - center)
+        if (distance < nearestDistance) {
+          nearestIndex = index
+          nearestDistance = distance
+        }
+      })
+      setActiveFlashIndex((current) => current === nearestIndex ? current : nearestIndex)
     }
 
     updateArrows()
@@ -83,7 +114,12 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
       resizeObserver?.disconnect()
       if (!resizeObserver) window.removeEventListener('resize', updateArrows)
     }
-  }, [flashItems.length, flashLoaded])
+  }, [flashItems.length, flashLoaded, focusFlashCard])
+
+  useEffect(() => {
+    if (!flashLoaded || flashItems.length === 0) return
+    focusFlashCard(Math.floor(flashItems.length / 2), 'auto')
+  }, [flashItems.length, flashLoaded, focusFlashCard])
 
   const selectNavSection = (sectionId) => {
     navScrollTargetRef.current = sectionId
@@ -94,13 +130,9 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
     }, 1500)
   }
   const scrollFlashCarousel = (direction) => {
-    const carousel = flashCarouselRef.current
-    if (!carousel) return
-
-    const card = carousel.querySelector('.home-page__flash-card')
-    if (!card) return
-    const gap = Number.parseFloat(window.getComputedStyle(carousel).columnGap) || 0
-    carousel.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: 'smooth' })
+    const nextIndex = activeFlashIndex + direction
+    if (nextIndex < 0 || nextIndex >= flashItems.length) return
+    focusFlashCard(nextIndex)
   }
 
   useEffect(() => {
@@ -587,13 +619,23 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
             <ChevronLeft size={20} aria-hidden="true" />
           </button>
           <div className="home-page__flash-grid" ref={flashCarouselRef} role="region" aria-label="1/1 flash designs" tabIndex={0}>
-          {!flashLoaded ? (
-            <p className="home-page__flash-empty">Loading flash designs...</p>
-          ) : flashItems.length === 0 ? (
-            <p className="home-page__flash-empty">No flash designs are available right now. Check back soon.</p>
-          ) : flashItems.map((flash) => (
-            <div key={flash.id} className="home-page__flash-card">
-              <div>
+            {!flashLoaded ? (
+              <p className="home-page__flash-empty">Loading flash designs...</p>
+            ) : flashItems.length === 0 ? (
+              <p className="home-page__flash-empty">No flash designs are available right now. Check back soon.</p>
+            ) : flashItems.map((flash, index) => (
+              <div
+                key={flash.id}
+                className={
+                  'home-page__flash-card'
+                  + (index === activeFlashIndex
+                    ? ' is-active'
+                    : index < activeFlashIndex
+                      ? ` is-left ${Math.abs(index - activeFlashIndex) === 1 ? 'is-near' : 'is-far'}`
+                      : ` is-right ${Math.abs(index - activeFlashIndex) === 1 ? 'is-near' : 'is-far'}`)
+                }
+                onClick={() => focusFlashCard(index)}
+              >
                 <div className="home-page__flash-image-wrap">
                   <button
                     type="button"
@@ -612,23 +654,28 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
                     )}
                   </div>
                 </div>
-                <div className="home-page__flash-details">
+
+                <div className="home-page__flash-card-content">
+                  <span className="home-page__flash-unique-tag"><Sparkles size={14} aria-hidden="true" /> One of one</span>
                   <h4 className="home-page__flash-title">{flash.title}</h4>
+                  {flash.description && <p className="home-page__flash-description">{flash.description}</p>}
                   <p className="home-page__flash-size">Size: {flash.size}</p>
+                  <div className="home-page__flash-card-footer">
+                    <span className="home-page__flash-price">{flash.price}</span>
+                    <button
+                      disabled={!flashLoaded || !flash.available}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onClaimFlash(flash)
+                      }}
+                      className={flash.available ? 'flash-claim-button' : 'flash-claim-button is-unavailable'}
+                    >
+                      {!flashLoaded ? 'Loading...' : flash.available ? 'Claim Flash' : 'Claimed'}
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="home-page__flash-card-footer">
-                <span className="home-page__flash-price">{flash.price}</span>
-                <button 
-                  disabled={!flashLoaded || !flash.available}
-                  onClick={() => onClaimFlash(flash)}
-                  className={flash.available ? 'flash-claim-button' : 'flash-claim-button is-unavailable'}
-                >
-                  {!flashLoaded ? 'Loading...' : flash.available ? 'Claim Flash' : 'Claimed'}
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
           </div>
           <button className="home-page__flash-arrow" type="button" aria-label="Next flash designs" onClick={() => scrollFlashCarousel(1)} disabled={!canScrollFlashRight}>
             <ChevronRight size={20} aria-hidden="true" />

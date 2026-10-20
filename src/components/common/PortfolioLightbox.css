@@ -1,8 +1,8 @@
 @reference "tailwindcss";
 
-/* fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-start justify-center p-4 overflow-y-auto */
+/* fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto */
 .portfolio-lightbox__lightbox-backdrop {
-  @apply fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-start justify-center p-4 overflow-y-auto;
+  @apply fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto;
 }
 /* relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center */
 .portfolio-lightbox__lightbox-content {
