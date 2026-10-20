@@ -7,7 +7,7 @@
 /* relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center */
 .portfolio-lightbox__lightbox-content {
   @apply relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center;
-  max-height: calc(100dvh - 2rem);
+  max-height: calc(100dvh - 3rem);
 }
 /* absolute -top-12 right-0 text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all */
 .portfolio-lightbox__close-button {
@@ -23,6 +23,7 @@
 /* max-h-[75vh] w-auto object-contain rounded-2xl border border-white/10 shadow-2xl */
 .portfolio-lightbox__image {
   @apply max-h-[75vh] w-auto object-contain rounded-2xl border border-white/10 shadow-2xl;
+  max-height: min(65vh, calc(100dvh - 8rem));
 }
 /* mt-4 text-center */
 .portfolio-lightbox__caption {

@@ -38,6 +38,7 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
   const [canScrollFlashLeft, setCanScrollFlashLeft] = useState(false)
   const [canScrollFlashRight, setCanScrollFlashRight] = useState(false)
   const [activeFlashIndex, setActiveFlashIndex] = useState(0)
+  const [isFlashCarouselPaused, setIsFlashCarouselPaused] = useState(false)
 
   useEffect(() => {
     if (isMobileMenuOpen || !isMobileMenuMounted) return undefined
@@ -120,6 +121,23 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
     if (!flashLoaded || flashItems.length === 0) return
     focusFlashCard(Math.floor(flashItems.length / 2), 'auto')
   }, [flashItems.length, flashLoaded, focusFlashCard])
+
+  useEffect(() => {
+    if (!flashLoaded || flashItems.length < 2 || isFlashCarouselPaused) return undefined
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+
+    const timer = window.setInterval(() => {
+      const carousel = flashCarouselRef.current
+      if (!carousel || document.hidden) return
+
+      const bounds = carousel.getBoundingClientRect()
+      if (bounds.bottom <= 0 || bounds.top >= window.innerHeight) return
+
+      focusFlashCard((activeFlashIndex + 1) % flashItems.length)
+    }, 4500)
+
+    return () => window.clearInterval(timer)
+  }, [activeFlashIndex, flashItems.length, flashLoaded, focusFlashCard, isFlashCarouselPaused])
 
   const selectNavSection = (sectionId) => {
     navScrollTargetRef.current = sectionId
@@ -614,7 +632,17 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
           </div>
         </div>
 
-        <div className="home-page__flash-carousel-shell" role="group" aria-label="Flash design carousel">
+        <div
+          className="home-page__flash-carousel-shell"
+          role="group"
+          aria-label="Flash design carousel"
+          onPointerEnter={() => setIsFlashCarouselPaused(true)}
+          onPointerLeave={() => setIsFlashCarouselPaused(false)}
+          onFocus={() => setIsFlashCarouselPaused(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setIsFlashCarouselPaused(false)
+          }}
+        >
           <button className="home-page__flash-arrow" type="button" aria-label="Previous flash designs" onClick={() => scrollFlashCarousel(-1)} disabled={!canScrollFlashLeft}>
             <ChevronLeft size={20} aria-hidden="true" />
           </button>

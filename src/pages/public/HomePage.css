@@ -2465,14 +2465,14 @@
 
 .home-page__flash-carousel-shell {
   width: 100%;
-  max-width: 88rem;
+  max-width: 100rem;
   margin-inline: auto;
   grid-template-columns: 3rem minmax(0, 1fr) 3rem;
   gap: 0.85rem;
 }
 
 .home-page__flash-grid {
-  --flash-card-width: clamp(11rem, 18vw, 18rem);
+  --flash-card-width: clamp(18rem, 18vw, 20rem);
   gap: 0.9rem;
   overflow-y: hidden;
   padding: 2.5rem max(0px, calc((100% - var(--flash-card-width)) / 2));
@@ -2514,11 +2514,11 @@
   box-shadow: 0 28px 65px rgb(0 0 0 / 55%), 0 0 35px rgb(245 158 11 / 14%), inset 0 1px rgb(255 255 255 / 8%);
   opacity: 1;
   filter: none;
-  transform: scale(1.08);
+  transform: scale(1);
   cursor: default;
 }
 
-.home-page__flash-card.is-active:hover { transform: scale(1.08) translateY(-3px); }
+.home-page__flash-card.is-active:hover { transform: scale(1) translateY(-3px); }
 .home-page__flash-card.is-near.is-left:hover { transform: perspective(900px) rotateY(12deg) scale(0.84) translateY(-3px); }
 .home-page__flash-card.is-near.is-right:hover { transform: perspective(900px) rotateY(-12deg) scale(0.84) translateY(-3px); }
 .home-page__flash-card.is-far.is-left { transform: perspective(900px) rotateY(19deg) scale(0.66); }
@@ -2527,14 +2527,14 @@
 .home-page__flash-card.is-far.is-right:hover { transform: perspective(900px) rotateY(-19deg) scale(0.68) translateY(-3px); }
 
 .home-page__flash-image-wrap {
-  height: auto;
-  aspect-ratio: 4 / 5;
+  height: 18rem;
+  aspect-ratio: auto;
   min-height: 0;
-  background: radial-gradient(ellipse at center, rgb(245 158 11 / 10%), transparent 72%), #111114;
+  background: #f4f4f5;
 }
 
 .home-page__flash-image {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .home-page__flash-card-content {
@@ -2599,7 +2599,7 @@
 }
 
 @media (max-width: 850px) {
-  .home-page__flash-grid { --flash-card-width: clamp(9.5rem, 33vw, 15rem); }
+  .home-page__flash-grid { --flash-card-width: clamp(18rem, 30vw, 20rem); }
 }
 
 @media (max-width: 639px) {
