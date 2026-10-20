@@ -94,6 +94,28 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
   }
 
   useEffect(() => {
+    const sectionIds = ['home', 'portfolio', 'pain-guide', 'estimator', 'flash', 'location', 'contact']
+    const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean)
+    if (!sections.length) return undefined
+
+    const updateActiveSection = () => {
+      let activeId = sections[0].id
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= 140) activeId = section.id
+      }
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) activeId = 'contact'
+      setActiveNavId(activeId)
+    }
+
+    updateActiveSection()
+    window.addEventListener('scroll', updateActiveSection, { passive: true })
+    window.addEventListener('resize', updateActiveSection)
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection)
+      window.removeEventListener('resize', updateActiveSection)
+    }
+  }, [])
+  useEffect(() => {
     const revealElements = pageRef.current?.querySelectorAll('.scroll-reveal')
     if (!revealElements?.length) return
 
