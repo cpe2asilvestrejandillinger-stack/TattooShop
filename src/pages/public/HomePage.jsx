@@ -31,6 +31,8 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
   const [isMobileMenuMounted, setIsMobileMenuMounted] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [activeNavId, setActiveNavId] = useState('home')
+  const navScrollTargetRef = useRef('')
+  const navScrollTimerRef = useRef(null)
   const pageRef = useRef(null)
   const flashCarouselRef = useRef(null)
   const [canScrollFlashLeft, setCanScrollFlashLeft] = useState(false)
@@ -83,6 +85,14 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
     }
   }, [flashItems.length, flashLoaded])
 
+  const selectNavSection = (sectionId) => {
+    navScrollTargetRef.current = sectionId
+    setActiveNavId(sectionId)
+    window.clearTimeout(navScrollTimerRef.current)
+    navScrollTimerRef.current = window.setTimeout(() => {
+      if (navScrollTargetRef.current === sectionId) navScrollTargetRef.current = ''
+    }, 1500)
+  }
   const scrollFlashCarousel = (direction) => {
     const carousel = flashCarouselRef.current
     if (!carousel) return
@@ -99,6 +109,10 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
     if (!sections.length) return undefined
 
     const updateActiveSection = () => {
+      if (navScrollTargetRef.current) {
+        setActiveNavId(navScrollTargetRef.current)
+        return
+      }
       let activeId = sections[0].id
       for (const section of sections) {
         if (section.getBoundingClientRect().top <= 140) activeId = section.id
@@ -107,11 +121,29 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
       setActiveNavId(activeId)
     }
 
+    const finishNavScroll = () => {
+      window.clearTimeout(navScrollTimerRef.current)
+      const targetId = navScrollTargetRef.current
+      navScrollTargetRef.current = ''
+      if (targetId) setActiveNavId(targetId)
+      else updateActiveSection()
+    }
+    const handleScroll = () => {
+      if (navScrollTargetRef.current) {
+        setActiveNavId(navScrollTargetRef.current)
+        window.clearTimeout(navScrollTimerRef.current)
+        navScrollTimerRef.current = window.setTimeout(finishNavScroll, 180)
+      } else updateActiveSection()
+    }
+
     updateActiveSection()
-    window.addEventListener('scroll', updateActiveSection, { passive: true })
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('scrollend', finishNavScroll)
     window.addEventListener('resize', updateActiveSection)
     return () => {
-      window.removeEventListener('scroll', updateActiveSection)
+      window.clearTimeout(navScrollTimerRef.current)
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scrollend', finishNavScroll)
       window.removeEventListener('resize', updateActiveSection)
     }
   }, [])
@@ -158,13 +190,13 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
         </button>
 
         <div className="home-page__desktop-nav">
-          <a href="#home" className={activeNavId === 'home' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('home')}>Home</a>
-          <a href="#portfolio" className={activeNavId === 'portfolio' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('portfolio')}>Portfolio</a>
-          <a href="#pain-guide" className={activeNavId === 'pain-guide' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('pain-guide')}>Pain Guide</a>
-          <a href="#estimator" className={activeNavId === 'estimator' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('estimator')}>Estimator</a>
-          <a href="#flash" className={activeNavId === 'flash' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('flash')}>1/1 Flash</a>
-          <a href="#location" className={activeNavId === 'location' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('location')}>Location</a>
-          <a href="#contact" className={activeNavId === 'contact' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => setActiveNavId('contact')}>Contact</a>
+          <a href="#home" className={activeNavId === 'home' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => selectNavSection('home')}>Home</a>
+          <a href="#portfolio" className={activeNavId === 'portfolio' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => selectNavSection('portfolio')}>Portfolio</a>
+          <a href="#pain-guide" className={activeNavId === 'pain-guide' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => selectNavSection('pain-guide')}>Pain Guide</a>
+          <a href="#estimator" className={activeNavId === 'estimator' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => selectNavSection('estimator')}>Estimator</a>
+          <a href="#flash" className={activeNavId === 'flash' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => selectNavSection('flash')}>1/1 Flash</a>
+          <a href="#location" className={activeNavId === 'location' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => selectNavSection('location')}>Location</a>
+          <a href="#contact" className={activeNavId === 'contact' ? 'home-page__nav-link is-active' : 'home-page__nav-link'} onClick={() => selectNavSection('contact')}>Contact</a>
         </div>
 
         <div className="home-page__nav-actions">
@@ -322,13 +354,13 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
                 </div>
               </div>
             )}
-            <a href="#home" className={activeNavId === 'home' ? 'is-active' : ''} onClick={() => { setActiveNavId('home'); setIsMobileMenuOpen(false) }}>Home</a>
-            <a href="#portfolio" className={activeNavId === 'portfolio' ? 'is-active' : ''} onClick={() => { setActiveNavId('portfolio'); setIsMobileMenuOpen(false) }}>Portfolio</a>
-            <a href="#pain-guide" className={activeNavId === 'pain-guide' ? 'is-active' : ''} onClick={() => { setActiveNavId('pain-guide'); setIsMobileMenuOpen(false) }}>Pain Guide</a>
-            <a href="#estimator" className={activeNavId === 'estimator' ? 'is-active' : ''} onClick={() => { setActiveNavId('estimator'); setIsMobileMenuOpen(false) }}>Estimator</a>
-            <a href="#flash" className={activeNavId === 'flash' ? 'is-active' : ''} onClick={() => { setActiveNavId('flash'); setIsMobileMenuOpen(false) }}>1/1 Flash</a>
-            <a href="#location" className={activeNavId === 'location' ? 'is-active' : ''} onClick={() => { setActiveNavId('location'); setIsMobileMenuOpen(false) }}>Location</a>
-            <a href="#contact" className={activeNavId === 'contact' ? 'is-active' : ''} onClick={() => { setActiveNavId('contact'); setIsMobileMenuOpen(false) }}>Contact</a>
+            <a href="#home" className={activeNavId === 'home' ? 'is-active' : ''} onClick={() => { selectNavSection('home'); setIsMobileMenuOpen(false) }}>Home</a>
+            <a href="#portfolio" className={activeNavId === 'portfolio' ? 'is-active' : ''} onClick={() => { selectNavSection('portfolio'); setIsMobileMenuOpen(false) }}>Portfolio</a>
+            <a href="#pain-guide" className={activeNavId === 'pain-guide' ? 'is-active' : ''} onClick={() => { selectNavSection('pain-guide'); setIsMobileMenuOpen(false) }}>Pain Guide</a>
+            <a href="#estimator" className={activeNavId === 'estimator' ? 'is-active' : ''} onClick={() => { selectNavSection('estimator'); setIsMobileMenuOpen(false) }}>Estimator</a>
+            <a href="#flash" className={activeNavId === 'flash' ? 'is-active' : ''} onClick={() => { selectNavSection('flash'); setIsMobileMenuOpen(false) }}>1/1 Flash</a>
+            <a href="#location" className={activeNavId === 'location' ? 'is-active' : ''} onClick={() => { selectNavSection('location'); setIsMobileMenuOpen(false) }}>Location</a>
+            <a href="#contact" className={activeNavId === 'contact' ? 'is-active' : ''} onClick={() => { selectNavSection('contact'); setIsMobileMenuOpen(false) }}>Contact</a>
             {!currentUser && (
               <div className="mobile-nav-auth">
                 <button type="button" onClick={() => { setAuthModal('login'); setIsMobileMenuOpen(false) }}>Log In</button>
