@@ -2,7 +2,8 @@
   padding: 6.5rem clamp(1rem, 5vw, 5rem);
   background: transparent;
   border-bottom: 1px solid rgb(255 255 255 / 3%);
-  scroll-margin-top: 5.5rem;
+  /* The page already reserves space for the sticky navbar via html scroll-padding. */
+  scroll-margin-top: 0;
 }
 
 .pain-chart__heading {

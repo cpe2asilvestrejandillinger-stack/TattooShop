@@ -2626,3 +2626,24 @@
 @media (prefers-reduced-motion: reduce) {
   .home-page__flash-card { transition: none; }
 }
+
+@media (max-width: 639px) {
+  .home-page__flash-image-wrap {
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .home-page__flash-grid .home-page__flash-card,
+  .home-page__flash-grid .home-page__flash-card.is-active,
+  .home-page__flash-grid .home-page__flash-card.is-near.is-left,
+  .home-page__flash-grid .home-page__flash-card.is-near.is-right,
+  .home-page__flash-grid .home-page__flash-card.is-far.is-left,
+  .home-page__flash-grid .home-page__flash-card.is-far.is-right,
+  .home-page__flash-grid .home-page__flash-card.is-active:hover,
+  .home-page__flash-grid .home-page__flash-card.is-near.is-left:hover,
+  .home-page__flash-grid .home-page__flash-card.is-near.is-right:hover,
+  .home-page__flash-grid .home-page__flash-card.is-far.is-left:hover,
+  .home-page__flash-grid .home-page__flash-card.is-far.is-right:hover {
+    transform: none;
+  }
+}
