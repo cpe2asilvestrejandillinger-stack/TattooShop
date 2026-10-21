@@ -1791,7 +1791,7 @@
   color: #fff;
   text-align: left;
   cursor: pointer;
-  transform: translate(-50%, -50%) rotateY(var(--item-angle)) translateZ(clamp(330px, 38vw, 500px));
+  transform: translate(-50%, -50%) rotateY(var(--item-angle)) translateZ(clamp(295px, 34vw, 440px));
   backface-visibility: hidden;
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
@@ -1890,6 +1890,12 @@
   .portfolio-gallery__caption { padding: 12px; }
   .portfolio-gallery__title { font-size: 13px; }
   .portfolio-gallery__description { font-size: 10px; }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .portfolio-gallery__card {
+    transform: translate(-50%, -50%) rotateY(var(--item-angle)) translateZ(clamp(360px, 48vw, 480px));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

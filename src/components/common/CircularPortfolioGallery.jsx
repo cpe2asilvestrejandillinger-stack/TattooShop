@@ -27,7 +27,7 @@ export default function CircularPortfolioGallery({ items, onSelect }) {
         previousTime = 0
         return
       }
-      if (previousTime) applyRotation(rotationRef.current + (time - previousTime) * 0.011)
+      if (previousTime) applyRotation(rotationRef.current + (time - previousTime) * 0.004)
       previousTime = time
       animationFrameId = window.requestAnimationFrame(animate)
     }
