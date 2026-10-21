@@ -7,6 +7,7 @@ import tiktokLogo from '../../assets/tiktoklogo.jpg'
 import { Sparkles, Clock, MapPin, Calendar, ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Menu, X, Phone, MessageCircle } from 'lucide-react'
 import { PORTFOLIO_ITEMS } from '../../data/siteData'
 import TattooPainChart from '../../components/TattooPainChart'
+import PerspectiveTunnelIntro from '../../components/PerspectiveTunnelIntro'
 
 const ESTIMATOR_STYLES = [
   { name: 'Fine Line', price: 3000 },
@@ -242,6 +243,7 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
 
   return (
     <div id="home" ref={pageRef} className="home-page__root">
+      <PerspectiveTunnelIntro />
       <div className="scroll-progress" aria-hidden="true" />
 
       
