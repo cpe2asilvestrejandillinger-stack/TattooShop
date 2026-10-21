@@ -35,17 +35,24 @@ export default function PerspectiveTunnelIntro() {
 
     const previousHtmlOverflow = document.documentElement.style.overflow
     const previousBodyOverflow = document.body.style.overflow
+    const restorePageScroll = () => {
+      document.documentElement.style.overflow = previousHtmlOverflow
+      document.body.style.overflow = previousBodyOverflow
+    }
+
     document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
 
     const leaveTimer = window.setTimeout(() => setLeaving(true), 6900)
-    const finishTimer = window.setTimeout(() => setFinished(true), 7700)
+    const finishTimer = window.setTimeout(() => {
+      restorePageScroll()
+      setFinished(true)
+    }, 7700)
 
     return () => {
       window.clearTimeout(leaveTimer)
       window.clearTimeout(finishTimer)
-      document.documentElement.style.overflow = previousHtmlOverflow
-      document.body.style.overflow = previousBodyOverflow
+      restorePageScroll()
     }
   }, [])
 
