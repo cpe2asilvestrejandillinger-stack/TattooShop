@@ -19,13 +19,13 @@
 .perspective-intro__cards { position: absolute; inset: 0; pointer-events: none; }
 .perspective-intro__grid {
   opacity: .28;
-  background-image: radial-gradient(rgb(251 191 36 / 45%) 1px, transparent 1px);
+  background-image: radial-gradient(rgb(255 255 255 / 16%) 1px, transparent 1px);
   background-position: center;
   background-size: 30px 30px;
   mask-image: radial-gradient(ellipse at center, #000 20%, transparent 78%);
 }
 .perspective-intro__glow {
-  background: radial-gradient(ellipse at center, rgb(180 83 9 / 24%), transparent 63%);
+  background: radial-gradient(ellipse at center, rgb(255 255 255 / 5%), transparent 63%);
 }
 .perspective-intro__logo {
   position: absolute;
