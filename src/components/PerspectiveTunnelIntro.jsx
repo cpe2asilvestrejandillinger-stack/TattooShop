@@ -25,6 +25,7 @@ const INTRO_IMAGES = [
 
 export default function PerspectiveTunnelIntro() {
   const [leaving, setLeaving] = useState(false)
+  const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
 
   useEffect(() => {
@@ -43,13 +44,45 @@ export default function PerspectiveTunnelIntro() {
     document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
 
-    const leaveTimer = window.setTimeout(() => setLeaving(true), 6900)
-    const finishTimer = window.setTimeout(() => {
-      restorePageScroll()
-      setFinished(true)
-    }, 7700)
+    let cancelled = false
+    let introStarted = false
+    let fallbackTimer
+    let leaveTimer
+    let finishTimer
+
+    const beginIntro = () => {
+      if (cancelled || introStarted) return
+      introStarted = true
+      window.clearTimeout(fallbackTimer)
+      setStarted(true)
+      leaveTimer = window.setTimeout(() => setLeaving(true), 6900)
+      finishTimer = window.setTimeout(() => {
+        restorePageScroll()
+        setFinished(true)
+      }, 7700)
+    }
+
+    const decodeImage = (src) => new Promise((resolve) => {
+      const image = new Image()
+      const finish = () => {
+        if (typeof image.decode === 'function') {
+          image.decode().catch(() => {}).finally(resolve)
+        } else {
+          resolve()
+        }
+      }
+      image.onload = finish
+      image.onerror = resolve
+      image.src = src
+      if (image.complete && image.naturalWidth > 0) finish()
+    })
+
+    fallbackTimer = window.setTimeout(beginIntro, 2500)
+    Promise.all(INTRO_IMAGES.map(({ src }) => decodeImage(src))).then(beginIntro)
 
     return () => {
+      cancelled = true
+      window.clearTimeout(fallbackTimer)
       window.clearTimeout(leaveTimer)
       window.clearTimeout(finishTimer)
       restorePageScroll()
@@ -59,7 +92,7 @@ export default function PerspectiveTunnelIntro() {
   if (finished) return null
 
   return (
-    <div className={`perspective-intro${leaving ? ' is-leaving' : ''}`} role="status" aria-label="Welcome to AirWizard Tattoo">
+    <div className={`perspective-intro${started ? ' is-started' : ''}${leaving ? ' is-leaving' : ''}`} role="status" aria-label="Welcome to AirWizard Tattoo">
       <div className="perspective-intro__grid" aria-hidden="true" />
       <div className="perspective-intro__glow" aria-hidden="true" />
       <img className="perspective-intro__logo" src={artistImage} alt="" aria-hidden="true" decoding="async" />
