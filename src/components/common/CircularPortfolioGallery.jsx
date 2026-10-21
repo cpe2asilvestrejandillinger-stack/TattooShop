@@ -5,6 +5,9 @@ export default function CircularPortfolioGallery({ items, onSelect }) {
   const rotationRef = useRef(0)
   const galleryRef = useRef(null)
   const isVisibleRef = useRef(false)
+  const isDraggingRef = useRef(false)
+  const dragPointerRef = useRef(null)
+  const suppressClickRef = useRef(false)
   const anglePerItem = items.length ? 360 / items.length : 0
 
   useEffect(() => {
@@ -27,7 +30,7 @@ export default function CircularPortfolioGallery({ items, onSelect }) {
         previousTime = 0
         return
       }
-      if (previousTime) applyRotation(rotationRef.current + (time - previousTime) * 0.004)
+      if (previousTime && !isDraggingRef.current) applyRotation(rotationRef.current + (time - previousTime) * 0.004)
       previousTime = time
       animationFrameId = window.requestAnimationFrame(animate)
     }
@@ -57,8 +60,51 @@ export default function CircularPortfolioGallery({ items, onSelect }) {
     }
   }, [])
 
+  const startDrag = (event) => {
+    if (event.button !== 0 || !galleryRef.current) return
+    isDraggingRef.current = true
+    dragPointerRef.current = { id: event.pointerId, x: event.clientX, distance: 0 }
+    suppressClickRef.current = false
+    event.target.setPointerCapture(event.pointerId)
+  }
+
+  const moveDrag = (event) => {
+    const drag = dragPointerRef.current
+    if (!drag || drag.id !== event.pointerId) return
+    const delta = event.clientX - drag.x
+    drag.x = event.clientX
+    drag.distance += Math.abs(delta)
+    if (drag.distance > 6) suppressClickRef.current = true
+    if (ringRef.current) {
+      rotationRef.current += delta * 0.45
+      ringRef.current.style.transform = `rotateY(${rotationRef.current}deg)`
+    }
+  }
+
+  const endDrag = (event) => {
+    if (dragPointerRef.current?.id !== event.pointerId) return
+    dragPointerRef.current = null
+    isDraggingRef.current = false
+  }
+
   return (
-    <div ref={galleryRef} className="portfolio-gallery" role="region" aria-label="Tattoo portfolio gallery">
+    <div
+      ref={galleryRef}
+      className="portfolio-gallery"
+      role="region"
+      aria-label="Tattoo portfolio gallery. Swipe or drag to rotate."
+      onPointerDown={startDrag}
+      onPointerMove={moveDrag}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onClickCapture={(event) => {
+        if (suppressClickRef.current) {
+          event.preventDefault()
+          event.stopPropagation()
+          suppressClickRef.current = false
+        }
+      }}
+    >
       <div className="portfolio-gallery__stage">
         <div ref={ringRef} className="portfolio-gallery__ring">
           {items.map((item, index) => (

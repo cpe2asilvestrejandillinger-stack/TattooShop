@@ -528,7 +528,7 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
             <span className="home-page__eyebrow">Recent Works</span>
             <h2 className="home-page__section-title">Portfolio Showcase</h2>
           </div>
-          <p className="portfolio-description">Explore the artist's tattoo work. Scroll to turn the gallery and select any piece for a closer look.</p>
+          <p className="portfolio-description">Swipe or drag to explore the artist's tattoo work. Select any piece for a closer look.</p>
         </div>
         <CircularPortfolioGallery items={PORTFOLIO_ITEMS} onSelect={setSelectedImage} />
       </section>
