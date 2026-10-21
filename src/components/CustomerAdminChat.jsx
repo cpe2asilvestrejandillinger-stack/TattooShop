@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronLeft, MessageCircle, MoreHorizontal, Paperclip, QrCode, Search, Send, Trash2, X } from 'lucide-react'
+import { ChevronLeft, MessageCircle, MoreHorizontal, Paperclip, Search, Send, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { formatConversationMessage } from '../utils/formatConversationMessage'
 import './CustomerAdminChat.css'
@@ -47,7 +47,6 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
   const [retryCount, setRetryCount] = useState(0)
   const messagesContainerRef = useRef(null)
   const composerRef = useRef(null)
-  const qrInputRef = useRef(null)
   const activeClient = isAdmin
     ? clients.find((client) => client.id === selectedClientId)
     : { id: currentUser.id, name: currentUser.name || 'Client' }
@@ -341,10 +340,6 @@ export default function CustomerAdminChat({ currentUser, onClose, onConversation
                 <span>{attachmentFile.name}<small>{(attachmentFile.size / (1024 * 1024)).toFixed(1)} MB</small></span>
                 <button type="button" onClick={() => setAttachmentFile(null)} aria-label="Remove attachment"><X size={16} /></button>
               </div>}<form className="customer-chat__composer" onSubmit={sendMessage}>
-                {isAdmin && <>
-                  <button type="button" className="customer-chat__qr-button" onClick={() => qrInputRef.current?.click()} disabled={!activeClientId || sending} title="Send a payment QR image"><QrCode size={18} /><span>Send QR</span></button>
-                  <input ref={qrInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="customer-chat__hidden-input" onChange={(event) => handleAttachmentSelection(event, 'payment_qr')} />
-                </>}
                 <label className="customer-chat__attach-button" aria-label="Attach image" title="Attach image">
                   <Paperclip size={19} />
                   <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => handleAttachmentSelection(event, 'text')} />
