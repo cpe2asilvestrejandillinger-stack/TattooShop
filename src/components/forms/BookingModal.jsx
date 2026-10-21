@@ -231,7 +231,7 @@ export default function BookingModal(props) {
                   </div>
 
                   {bookingError && <p className="booking-modal__error-message" role="alert">{bookingError}</p>}
-                  <button type="submit" className="booking-modal__submit-button">Next: tattoo details</button>
+                  <button type="submit" className="booking-modal__submit-button">Next</button>
                   </>}
 
                   {bookingStep === 2 && <>
@@ -450,7 +450,7 @@ export default function BookingModal(props) {
                   </div>
 
                   {bookingError && <p className="booking-modal__error-message" role="alert">{bookingError}</p>}
-                  <button type="submit" className="booking-modal__submit-button">Next: date & time</button>
+                  <button type="submit" className="booking-modal__submit-button">Next</button>
                   </>}
                 </form>
               </>
