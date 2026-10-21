@@ -3,10 +3,8 @@ import { useEffect, useRef } from 'react'
 export default function CircularPortfolioGallery({ items, onSelect }) {
   const ringRef = useRef(null)
   const rotationRef = useRef(0)
-  const scrollTimeoutRef = useRef(null)
   const galleryRef = useRef(null)
   const isVisibleRef = useRef(false)
-  const isScrollingRef = useRef(false)
   const anglePerItem = items.length ? 360 / items.length : 0
 
   useEffect(() => {
@@ -24,7 +22,7 @@ export default function CircularPortfolioGallery({ items, onSelect }) {
     }
 
     const animate = (time) => {
-      if (!isVisibleRef.current || isScrollingRef.current) {
+      if (!isVisibleRef.current) {
         animationFrameId = null
         previousTime = 0
         return
@@ -35,7 +33,7 @@ export default function CircularPortfolioGallery({ items, onSelect }) {
     }
 
     const startAnimation = () => {
-      if (prefersReducedMotion || !isVisibleRef.current || isScrollingRef.current || animationFrameId !== null) return
+      if (prefersReducedMotion || !isVisibleRef.current || animationFrameId !== null) return
       previousTime = 0
       animationFrameId = window.requestAnimationFrame(animate)
     }
@@ -53,26 +51,7 @@ export default function CircularPortfolioGallery({ items, onSelect }) {
     }, { threshold: 0.05 })
     observer.observe(gallery)
 
-    const handleScroll = () => {
-      if (!isVisibleRef.current) return
-      isScrollingRef.current = true
-      stopAnimation()
-      window.clearTimeout(scrollTimeoutRef.current)
-
-      const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight
-      const scrollProgress = scrollableHeight > 0 ? window.scrollY / scrollableHeight : 0
-      applyRotation(scrollProgress * 360)
-      scrollTimeoutRef.current = window.setTimeout(() => {
-        isScrollingRef.current = false
-        startAnimation()
-      }, 150)
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-
     return () => {
-      window.removeEventListener('scroll', handleScroll)
-      window.clearTimeout(scrollTimeoutRef.current)
       stopAnimation()
       observer.disconnect()
     }
@@ -103,7 +82,6 @@ export default function CircularPortfolioGallery({ items, onSelect }) {
           ))}
         </div>
       </div>
-      <p className="portfolio-gallery__hint">Scroll to turn the gallery | Select a piece to view it</p>
     </div>
   )
 }

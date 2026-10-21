@@ -1867,14 +1867,6 @@
   -webkit-line-clamp: 2;
 }
 
-.portfolio-gallery__hint {
-  margin: -2px 0 0;
-  color: #8b8b91;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-align: center;
-}
-
 @media (max-width: 639px) {
   .portfolio-heading {
     margin-bottom: 20px;
