@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import artistImage from '../assets/artist.jpg'
 import design1Image from '../assets/design1.jpg'
 import design2Image from '../assets/design2.jpg'
 import design3Image from '../assets/design3.jpg'
@@ -54,7 +55,7 @@ export default function PerspectiveTunnelIntro() {
     <div className={`perspective-intro${leaving ? ' is-leaving' : ''}`} role="status" aria-label="Welcome to AirWizard Tattoo">
       <div className="perspective-intro__grid" aria-hidden="true" />
       <div className="perspective-intro__glow" aria-hidden="true" />
-      <div className="perspective-intro__rings" aria-hidden="true" />
+      <img className="perspective-intro__logo" src={artistImage} alt="" aria-hidden="true" decoding="async" />
       <div className="perspective-intro__cards" aria-hidden="true">
         {INTRO_IMAGES.map((image, index) => (
           <div
@@ -67,7 +68,7 @@ export default function PerspectiveTunnelIntro() {
               '--card-rotation': image.rotation,
             }}
           >
-            <img src={image.src} alt="" />
+            <img src={image.src} alt="" decoding="async" />
             <span>{image.title}</span>
           </div>
         ))}
