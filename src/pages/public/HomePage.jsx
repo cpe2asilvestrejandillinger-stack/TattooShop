@@ -8,6 +8,7 @@ import { Sparkles, Clock, MapPin, Calendar, ChevronLeft, ChevronRight, LogOut, L
 import { PORTFOLIO_ITEMS } from '../../data/siteData'
 import TattooPainChart from '../../components/TattooPainChart'
 import PerspectiveTunnelIntro from '../../components/PerspectiveTunnelIntro'
+import CircularPortfolioGallery from '../../components/common/CircularPortfolioGallery'
 
 const ESTIMATOR_STYLES = [
   { name: 'Fine Line', price: 3000 },
@@ -520,48 +521,16 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
         </div>
       </header>
 
-      {/* CONTINUOUS SMOOTH MARQUEE CAROUSEL */}
+      {/* ROTATING TATTOO PORTFOLIO */}
       <section id="portfolio" className="home-page__portfolio-section scroll-reveal">
         <div className="portfolio-heading">
           <div>
             <span className="home-page__eyebrow">Recent Works</span>
             <h2 className="home-page__section-title">Portfolio Showcase</h2>
           </div>
-          <p className="portfolio-description">Explore the artist's tattoo work and open any piece for a closer look.</p>
+          <p className="portfolio-description">Explore the artist's tattoo work. Scroll to turn the gallery and select any piece for a closer look.</p>
         </div>
-
-        {/* Marquee Track */}
-        <div className="home-page__carousel-window portfolio-carousel-window">
-          <div className="home-page__carousel-fade-left" />
-          <div className="home-page__carousel-fade-right" />
-
-          <div className="home-page__carousel-track portfolio-carousel-track marquee-track">
-            {[...PORTFOLIO_ITEMS, ...PORTFOLIO_ITEMS].map((item, index) => (
-              <div 
-                key={`${item.id}-${index}`}
-                onClick={() => setSelectedImage(item)}
-                className="home-page__portfolio-card"
-              >
-                <div className="home-page__portfolio-image-wrap">
-                  <img 
-                    src={item.img}
-                    loading="lazy"
-                    decoding="async" 
-                    alt={item.title} 
-                    className="home-page__portfolio-image"
-                  />
-                  <span className="home-page__portfolio-category">
-                    {item.category}
-                  </span>
-                </div>
-                <div className="home-page__portfolio-card-content">
-                  <h4 className="home-page__portfolio-title">{item.title}</h4>
-                  <p className="home-page__portfolio-description">{item.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <CircularPortfolioGallery items={PORTFOLIO_ITEMS} onSelect={setSelectedImage} />
       </section>
 
       {/* TATTOO PAIN GUIDE */}
