@@ -544,7 +544,9 @@ export default function HomePage({ currentUser, hasProfileUpdates = false, hasUn
               >
                 <div className="home-page__portfolio-image-wrap">
                   <img 
-                    src={item.img} 
+                    src={item.img}
+                    loading="lazy"
+                    decoding="async" 
                     alt={item.title} 
                     className="home-page__portfolio-image"
                   />

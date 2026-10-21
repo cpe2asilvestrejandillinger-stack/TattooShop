@@ -4,6 +4,9 @@ import design3 from '../assets/design3.jpg'
 import design4 from '../assets/design4.png'
 import design5 from '../assets/design5.jpg'
 import design6 from '../assets/design6.jpg'
+import design7 from '../assets/design7.jpg'
+import design8 from '../assets/design8.jpg'
+import design9 from '../assets/design9.jpg'
 
 export const PORTFOLIO_ITEMS = [
   {
@@ -47,5 +50,26 @@ export const PORTFOLIO_ITEMS = [
     category: 'Color',
     img: design6,
     description: 'A vibrant red rose with flowing green leaves and stem.',
+  },
+  {
+    id: 7,
+    title: 'Fortune Toad',
+    category: 'Color',
+    img: design7,
+    description: 'A colorful Japanese-inspired toad tattoo with bold red and gold details.',
+  },
+  {
+    id: 8,
+    title: 'Warrior Portrait',
+    category: 'Black & Grey',
+    img: design8,
+    description: 'A detailed black-and-grey portrait of a warrior wearing a feathered headdress.',
+  },
+  {
+    id: 9,
+    title: 'Mushroom Figure',
+    category: 'Illustrative',
+    img: design9,
+    description: 'A whimsical linework figure beneath a spotted mushroom cap.',
   },
 ]
