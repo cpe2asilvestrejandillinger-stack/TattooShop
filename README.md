@@ -1,86 +1,130 @@
-# AirWizard Tattoo
+﻿# AirWizard Tattoo
 
-A responsive tattoo portfolio and appointment booking web app for AirWizard Tattoo. The public site showcases the artist's work, offers a price estimate, and lets customers request appointments. Supabase provides authentication, database, and private reference-image storage.
+AirWizard Tattoo is a website for a tattoo studio. Visitors can explore tattoo work, browse available flash designs, learn about tattoo placement, and get a starting price estimate. Customers can create an account, request an appointment, and message the studio. The studio admin can review requests, manage flash designs, update booking status, and chat with customers.
 
-See the [Project Guide](docs/PROJECT_GUIDE.md) for the feature overview, code map, setup and build instructions, deployment notes, and Supabase database design.
+The site is a React single-page app. Supabase provides sign-in, the database, file storage, and live message updates. There is no separate custom server in this project.
 
-## Tech stack
+## What the website can do
 
-- React 19 for the user interface
-- Vite 8 for development and production builds
-- Tailwind CSS 4 for styling
-- Supabase for authentication, PostgreSQL, Row Level Security, and storage
-- Lucide React for icons
-- ESLint for code quality checks
+- Show the artist, studio details, social links, and tattoo portfolio.
+- Open portfolio images in a larger gallery view.
+- Show an interactive 3D tattoo placement and pain guide.
+- Estimate a starting tattoo price based on style, size, and placement.
+- Browse one-of-a-kind flash designs and request one as part of a booking.
+- Register or sign in with email and password, or Google; reset a password by email.
+- Request a studio or home-service appointment, choose a date and time, and attach a reference image.
+- Let the admin review requests, search and filter bookings, set a quote and deposit, and update booking status.
+- Let customers and the admin exchange chat messages and image attachments.
+- Show studio location and contact information.
 
-## Current features
+Price estimates are for guidance. The admin provides the final quote. A booking request is not confirmed until the studio approves it. The site does not process payments; the admin checks payments separately.
 
-- Responsive portfolio homepage with design gallery and image lightbox
-- Tattoo price estimator based on selected style, size, and placement
-- Claimable flash design cards with artwork, availability, and pricing
-- Customer registration and sign-in
-- Appointment request form with tattoo details and reference-image upload
-- Admin appointment list with search, status filtering, and status updates
-- Studio location and contact information
+## Technology stack
+
+| Technology | Use in this project |
+| --- | --- |
+| React 19 | Builds the page, forms, galleries, and interactive features. |
+| Vite 8 | Runs the local development server and creates the production build. |
+| Tailwind CSS 4 and regular CSS | Style the layout, responsive views, and animations. |
+| Supabase | Provides sign-in, PostgreSQL data, file storage, database functions, security rules, and live updates. |
+| Three.js | Displays the interactive 3D anatomy model in the placement guide. |
+| Lucide React | Provides interface icons. |
+| ESLint | Checks JavaScript and JSX for common code issues. |
+| Vercel | Deployment configuration for hosting the built website. |
 
 ## Project structure
 
 ```text
-src/
-  assets/                 # Artist, portfolio, and flash design images
-  components/
-    common/               # Shared UI such as the portfolio lightbox
-    forms/                # Authentication, booking, and modal components
-  data/                   # Portfolio and flash content
-  lib/                    # Supabase client and appointment field definitions
-  pages/
-    admin/                # Appointment management
-    public/               # Public homepage and portfolio
-  utils/                  # Appointment data mapping helpers
-  App.jsx                 # App state and feature coordination
-  index.css               # Global styles
-  main.jsx                # React entry point
-
-supabase/
-  schema.sql              # Database tables, triggers, RLS policies, and storage setup
+TattooShop/
+├── public/                         # Static files served as-is, including the 3D model
+├── src/
+│   ├── assets/                     # Artist, portfolio, and social media images
+│   ├── components/
+│   │   ├── common/                 # Shared gallery and lightbox pieces
+│   │   ├── forms/                  # Booking, sign-in, and modal forms
+│   │   ├── CustomerAdminChat.jsx   # Customer and admin messages
+│   │   ├── ConversationPanel.jsx   # Admin conversation view
+│   │   ├── PerspectiveTunnelIntro.jsx # Intro animation
+│   │   └── TattooPainChart.jsx     # Interactive 3D placement guide
+│   ├── data/siteData.js            # Portfolio content used by the homepage
+│   ├── lib/                        # Supabase client and appointment field names
+│   ├── pages/
+│   │   ├── public/                 # Public homepage and its styles
+│   │   └── admin/                  # Admin booking and design management
+│   ├── utils/                      # Date, message, and database data helpers
+│   ├── App.jsx                     # Main app state and feature coordination
+│   ├── index.css                   # Global styles
+│   └── main.jsx                    # Starts the React app
+├── supabase/schema.sql             # Database tables, rules, and setup functions
+├── docs/PROJECT_GUIDE.md           # Longer feature and database guide
+├── index.html                      # Browser page template
+├── package.json                    # Dependencies and project commands
+├── vite.config.js                  # Vite and Tailwind setup
+└── vercel.json                     # Vercel deployment settings
 ```
 
-## Local setup
+### How the main parts fit together
 
-1. Install dependencies with `npm install`.
-2. Create a `.env.local` file in the project root with `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
-3. Run `supabase/schema.sql` in the Supabase SQL Editor.
-4. Start the development server with `npm run dev`.
+- `main.jsx` starts React and loads `App.jsx`.
+- `App.jsx` coordinates the signed-in user, bookings, designs, and modals. It also sends and receives data through Supabase.
+- `HomePage.jsx` displays the public sections. Form and gallery components are kept in `components/` so they can be reused.
+- `AppointmentManager.jsx` contains the admin booking tools.
+- `supabase/schema.sql` sets up the database and access rules used by the app.
 
-Use only the Supabase publishable key in this Vite frontend. Never place a Supabase secret or service-role key in a `VITE_` variable.
+The website currently uses one main homepage rather than separate page URLs. Booking, sign-in, admin, and chat tools open as dialogs or panels.
 
-## Scripts
+## Run the project locally
 
-- `npm run dev` starts the local Vite server.
-- `npm run build` creates the production build in `dist/`.
-- `npm run preview` serves the production build locally.
-- `npm run lint` checks the source with ESLint.
+### Requirements
 
-## Three-week build plan
+- Node.js and npm
+- A Supabase project
 
-### Week 1 - Current: Scheduling and booking reliability
+### Setup
 
-- [x] Show all future dates as available; mark a date unavailable after an admin confirms a booking.
-- [x] Prevent new requests or confirmations on a date that already has a confirmed appointment.
-- [x] Show the same confirmed-date calendar to the admin without requiring manual schedule setup.
-- [ ] Apply the updated `supabase/schema.sql` to Supabase and verify date availability with customer and admin accounts.
-- [ ] Verify booking requests and reference-image access with customer and admin accounts.
+1. Open a terminal in the project folder.
+2. Install the packages:
 
-### Week 2 - Customer follow-up
+   ```bash
+   npm install
+   ```
 
-- [ ] Add a customer appointment history with current booking statuses.
-- [ ] Add clear booking confirmation and status-update messages.
-- [ ] Review and refine the customer booking flow based on testing.
+3. Create a `.env.local` file in the project root with your Supabase project values:
 
-### Week 3 - Testing and release preparation
+   ```env
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
+   ```
 
-- [ ] Test the customer and admin flows on desktop and mobile.
-- [ ] Deploy a Vercel preview and resolve issues.
-- [ ] Review production settings before opening the site to customers.
+4. In the Supabase dashboard, open the SQL Editor and run `supabase/schema.sql`.
+5. Start the development server:
 
-Update the checkboxes as work is completed each week.
+   ```bash
+   npm run dev
+   ```
+
+6. Open the local address printed in the terminal, usually `http://localhost:5173`.
+
+Use the Supabase publishable key in this browser app. Do not put a Supabase secret or service-role key in a `VITE_` variable. Supabase Row Level Security policies in the schema control access to customer and admin data. An admin account must be assigned the admin role in Supabase; visitors cannot choose that role when signing up.
+
+## Project commands
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Starts the local development server. |
+| `npm run build` | Creates the production website in `dist/`. |
+| `npm run preview` | Serves the production build locally for a preview. |
+| `npm run lint` | Runs ESLint on the project files. |
+
+## Data and setup notes
+
+- Portfolio content is kept in `src/data/siteData.js`; its images are in `src/assets/`.
+- Flash design details, profiles, appointments, and chat messages are stored in Supabase.
+- Flash design art, booking reference images, and chat attachments use Supabase Storage.
+- Customer and admin access is limited by Supabase Row Level Security policies.
+- Appointment availability is checked by date. The current booking form does not select admin-created time slots.
+- The `docs/PROJECT_GUIDE.md` file explains the features and database behavior in more detail.
+
+## Deployment
+
+The project includes `vercel.json` for deployment on Vercel. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` to the deployment environment, apply the Supabase schema, and deploy the project. Vite writes the built site to `dist/`.
