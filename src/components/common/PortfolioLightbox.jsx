@@ -12,6 +12,7 @@ export default function PortfolioLightbox(props) {
             <button 
               onClick={() => setSelectedImage(null)}
               className="portfolio-lightbox__close-button"
+              aria-label="Close image"
             >
               <X className="portfolio-lightbox__close-icon" />
             </button>
