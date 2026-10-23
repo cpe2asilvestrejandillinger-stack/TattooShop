@@ -840,6 +840,23 @@
     border-radius: 0;
   }
 
+  .flash-manager__heading {
+    position: relative;
+    padding-right: 2.75rem;
+  }
+
+  .flash-manager__close {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    z-index: 2;
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    padding: 0;
+  }
+
   .flash-manager__form {
     margin-top: 1.25rem;
   }
